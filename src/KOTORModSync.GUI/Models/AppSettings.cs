@@ -58,7 +58,7 @@ namespace KOTORModSync.Models
         public bool ValidateAndReplaceInvalidArchives { get; set; } = true;
 
         [JsonPropertyName("filterDownloadsByResolution")]
-        public bool FilterDownloadsByResolution { get; set; } = true;
+        public bool FilterDownloadsByResolution { get; set; } = false;
 
         [JsonPropertyName("nexusModsApiKey")]
         [CanBeNull]

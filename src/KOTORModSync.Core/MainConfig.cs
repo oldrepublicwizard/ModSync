@@ -55,7 +55,7 @@ namespace KOTORModSync.Core
             noAdmin = false;
             caseInsensitivePathing = true;
             validateAndReplaceInvalidArchives = true;
-            filterDownloadsByResolution = true;
+            filterDownloadsByResolution = false;
         }
 
         [JetBrains.Annotations.NotNull]

@@ -310,7 +310,7 @@ namespace KOTORModSync.Core.CLI
             public bool ValidateAndReplaceInvalidArchives { get; set; } = true;
 
             [JsonProperty("filterDownloadsByResolution")]
-            public bool FilterDownloadsByResolution { get; set; } = true;
+            public bool FilterDownloadsByResolution { get; set; } = false;
 
             [JsonProperty("nexusModsApiKey")]
             public string NexusModsApiKey { get; set; }
