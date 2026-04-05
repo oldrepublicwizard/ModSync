@@ -437,7 +437,7 @@ namespace KOTORModSync
         {
             Dispatcher.UIThread.Post(() =>
             {
-                DownloadProgress existing = _allDownloadItems.Find(p => string.Equals(p.Url, progress.Url, StringComparison.Ordinal));
+                DownloadProgress existing = _allDownloadItems.Find(p => IsSameDownload(p, progress));
                 if (existing != null)
                 {
 
@@ -467,6 +467,22 @@ namespace KOTORModSync
                     AddDownload(progress);
                 }
             });
+        }
+
+        private static bool IsSameDownload(DownloadProgress existing, DownloadProgress incoming)
+        {
+            if (existing is null || incoming is null)
+            {
+                return false;
+            }
+
+            if (existing.ComponentGuid.HasValue && incoming.ComponentGuid.HasValue)
+            {
+                return existing.ComponentGuid.Value == incoming.ComponentGuid.Value
+                    && string.Equals(existing.Url, incoming.Url, StringComparison.Ordinal);
+            }
+
+            return string.Equals(existing.Url, incoming.Url, StringComparison.Ordinal);
         }
 
         public void MarkCompleted()
