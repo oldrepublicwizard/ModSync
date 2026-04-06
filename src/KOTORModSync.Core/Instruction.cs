@@ -1282,7 +1282,11 @@ namespace KOTORModSync.Core
                     if (int.TryParse(Arguments.Trim(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int namespaceId))
                     {
                         string message = $"If asked to pick an option, select the {Serializer.ToOrdinal(namespaceId + 1)} from the top.";
-                        _ = CallbackObjects.InformationCallback.ShowInformationDialog(message);
+                        if (CallbackObjects.InformationCallback != null)
+                        {
+                            _ = CallbackObjects.InformationCallback.ShowInformationDialog(message);
+                        }
+
                         await Logger.LogWarningAsync(message).ConfigureAwait(false);
                     }
 

@@ -35,6 +35,10 @@ namespace KOTORModSync.Core
             UserCancelledInstall,
             [Description("An invalid operation was attempted.")]
             InvalidOperation,
+            [Description("Required mod archive or file was not found in the mod workspace (download or copy files first).")]
+            MissingSourceFiles,
+            [Description("One or more mods failed but the batch continued (--continue-on-mod-failure).")]
+            CompletedWithFailures,
             UnknownError,
         }
         public enum ComponentInstallState
@@ -832,6 +836,11 @@ namespace KOTORModSync.Core
                     InstallState = ComponentInstallState.Blocked;
                     LastCompletedUtc = DateTimeOffset.UtcNow;
                 }
+                else if (exitCode == InstallExitCode.MissingSourceFiles && MainConfig.ContinueInstallOnMissingSources)
+                {
+                    InstallState = ComponentInstallState.Skipped;
+                    LastCompletedUtc = DateTimeOffset.UtcNow;
+                }
                 else
                 {
                     InstallState = ComponentInstallState.Failed;
@@ -885,6 +894,265 @@ namespace KOTORModSync.Core
             }
             return InstallExitCode.UnknownError;
         }
+        /// <summary>
+        /// Resolves instruction source paths on disk, optionally pulling from downloaded archives first.
+        /// Returns false when sources are still missing (caller should return <see cref="Instruction.ActionExitCode.FileNotFoundPre"/>).
+        /// </summary>
+        private async Task<bool> TryResolveInstructionSourcesAsync(
+            [NotNull] Instruction instruction,
+            [NotNull] Services.FileSystem.IFileSystemProvider fileSystemProvider,
+            bool skipExistenceCheck = false,
+            bool sourceIsNotFilePath = false)
+        {
+            try
+            {
+                instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                return true;
+            }
+            catch (FileNotFoundException)
+            {
+                await Logger.LogVerboseAsync("Source files not found, attempting auto-extraction...").ConfigureAwait(false);
+                if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
+                {
+                    instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                    return true;
+                }
+
+                if (TryRemapMoveFirstModSubfolderToVariant(instruction, fileSystemProvider))
+                {
+                    instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exceptions.WildcardPatternNotFoundException)
+            {
+                await Logger.LogVerboseAsync("Source pattern not found, attempting auto-extraction...").ConfigureAwait(false);
+                if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
+                {
+                    instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                    return true;
+                }
+
+                if (TryRemapMoveFirstModSubfolderToVariant(instruction, fileSystemProvider))
+                {
+                    instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Archives sometimes extract to a variant folder (e.g. HQSkyboxesII_K1_1k) while TOML says HQSkyboxesII_K1.
+        /// Remap the first path segment under &lt;&lt;modDirectory&gt;&gt; to a matching sibling directory.
+        /// </summary>
+        private static bool TryRemapMoveFirstModSubfolderToVariant(
+            [NotNull] Instruction instruction,
+            [NotNull] Services.FileSystem.IFileSystemProvider fileSystemProvider)
+        {
+            if (instruction.Action != Instruction.ActionType.Move)
+            {
+                return false;
+            }
+
+            if (MainConfig.SourcePath is null || instruction.Source is null || instruction.Source.Count == 0)
+            {
+                return false;
+            }
+
+            string modRoot = MainConfig.SourcePath.FullName;
+            if (string.IsNullOrEmpty(modRoot) || !fileSystemProvider.DirectoryExists(modRoot))
+            {
+                return false;
+            }
+
+            var newSources = new List<string>(instruction.Source.Count);
+            bool anyRemap = false;
+
+            foreach (string raw in instruction.Source)
+            {
+                if (string.IsNullOrWhiteSpace(raw) ||
+                    raw.IndexOf("<<modDirectory>>", StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    newSources.Add(raw);
+                    continue;
+                }
+
+                string marker = "<<modDirectory>>";
+                int m = raw.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+                int afterMarker = m + marker.Length;
+                while (afterMarker < raw.Length && (raw[afterMarker] == '\\' || raw[afterMarker] == '/'))
+                {
+                    afterMarker++;
+                }
+
+                if (afterMarker >= raw.Length)
+                {
+                    newSources.Add(raw);
+                    continue;
+                }
+
+                int endSeg = afterMarker;
+                while (endSeg < raw.Length && raw[endSeg] != '\\' && raw[endSeg] != '/')
+                {
+                    endSeg++;
+                }
+
+                string expectedFolder = raw.Substring(afterMarker, endSeg - afterMarker);
+                if (string.IsNullOrEmpty(expectedFolder))
+                {
+                    newSources.Add(raw);
+                    continue;
+                }
+
+                string expectedPath = Path.Combine(modRoot, expectedFolder);
+                if (fileSystemProvider.DirectoryExists(expectedPath))
+                {
+                    newSources.Add(raw);
+                    continue;
+                }
+
+                string[] subdirs = Directory.GetDirectories(modRoot);
+                string bestDir = null;
+                foreach (string d in subdirs)
+                {
+                    string name = Path.GetFileName(d);
+                    if (name.Length < expectedFolder.Length)
+                    {
+                        continue;
+                    }
+
+                    if (!name.StartsWith(expectedFolder, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (name.Length > expectedFolder.Length)
+                    {
+                        char c = name[expectedFolder.Length];
+                        if (c != '_' && c != '-' && !char.IsDigit(c))
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (endSeg < raw.Length)
+                    {
+                        string tail = raw.Substring(endSeg).Replace('\\', Path.DirectorySeparatorChar).TrimStart(Path.DirectorySeparatorChar);
+                        if (!string.IsNullOrEmpty(tail))
+                        {
+                            int sep = tail.IndexOfAny(new[] { Path.DirectorySeparatorChar, '/', '*' });
+                            string nextSeg = sep >= 0 ? tail.Substring(0, sep) : tail;
+                            if (!string.IsNullOrEmpty(nextSeg) && nextSeg.IndexOf('*') < 0)
+                            {
+                                string probe = Path.Combine(d, nextSeg);
+                                if (!fileSystemProvider.DirectoryExists(probe))
+                                {
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+
+                    if (bestDir is null || name.Length < Path.GetFileName(bestDir).Length)
+                    {
+                        bestDir = d;
+                    }
+                }
+
+                if (bestDir is null)
+                {
+                    newSources.Add(raw);
+                    continue;
+                }
+
+                string actualFolder = Path.GetFileName(bestDir);
+                string rebuilt = raw.Substring(0, afterMarker) + actualFolder + raw.Substring(endSeg);
+                newSources.Add(rebuilt);
+                anyRemap = true;
+                Logger.LogVerbose(
+                    $"[TryRemapMoveFirstModSubfolderToVariant] Remapped '{expectedFolder}' -> '{actualFolder}' for Move instruction"
+                );
+            }
+
+            if (!anyRemap)
+            {
+                return false;
+            }
+
+            instruction.Source = newSources;
+            return true;
+        }
+
+        /// <summary>
+        /// Some TOMLs chain Patcher (writes into game dir) with Move from a separate "patch" folder that was never
+        /// extracted. If every named file already exists at the Move destination, treat the step as satisfied.
+        /// </summary>
+        private async Task<bool> TrySatisfyRedundantMoveToGameAsync(
+            [NotNull] Instruction instruction,
+            [NotNull] Services.FileSystem.IFileSystemProvider fileSystemProvider)
+        {
+            if (instruction.Action != Instruction.ActionType.Move)
+            {
+                return false;
+            }
+
+            if (MainConfig.DestinationPath is null || instruction.Source is null || instruction.Source.Count == 0)
+            {
+                return false;
+            }
+
+            string destRaw = instruction.Destination ?? string.Empty;
+            if (!destRaw.Contains("<<kotorDirectory>>", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            string relToGame = destRaw
+                .Replace("<<kotorDirectory>>", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace("<<KotorDirectory>>", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Trim()
+                .Trim('\\', '/');
+            string gameRoot = MainConfig.DestinationPath.FullName;
+            string destDir = string.IsNullOrEmpty(relToGame)
+                ? gameRoot
+                : Path.Combine(gameRoot, relToGame);
+            destDir = Path.GetFullPath(destDir);
+            if (!fileSystemProvider.DirectoryExists(destDir))
+            {
+                return false;
+            }
+
+            foreach (string src in instruction.Source)
+            {
+                if (string.IsNullOrWhiteSpace(src))
+                {
+                    return false;
+                }
+
+                string resolved = UtilityHelper.ReplaceCustomVariables(src).Replace('\\', Path.DirectorySeparatorChar);
+                string fileName = Path.GetFileName(resolved);
+                if (string.IsNullOrEmpty(fileName) || fileName.IndexOf('*') >= 0 || fileName.IndexOf('?') >= 0)
+                {
+                    return false;
+                }
+
+                string destFile = Path.Combine(destDir, fileName);
+                if (!fileSystemProvider.FileExists(destFile))
+                {
+                    return false;
+                }
+            }
+
+            await Logger.LogVerboseAsync(
+                $"Move skipped: all {instruction.Source.Count} file(s) already present under '{destDir}' (likely applied by a prior Patcher step)."
+            ).ConfigureAwait(false);
+            return true;
+        }
+
         /// <summary>
         /// Attempts to find and extract files from archives if they're missing.
         /// Returns true if files were found and extracted (or don't need extraction).
@@ -1063,7 +1331,14 @@ namespace KOTORModSync.Core
             switch (instruction.Action)
             {
                 case Instruction.ActionType.Extract:
-                    instruction.SetRealPaths();
+                    if (!await TryResolveInstructionSourcesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
+                    {
+                        await Logger.LogErrorAsync(
+                            $"Missing mod archive(s) for '{Name}'; run Fetch Downloads or place files in the mod workspace."
+                        ).ConfigureAwait(false);
+                        return Instruction.ActionExitCode.FileNotFoundPre;
+                    }
+
                     exitCode = await instruction.ExtractFileAsync().ConfigureAwait(false);
                     break;
                 case Instruction.ActionType.Delete:
@@ -1076,67 +1351,31 @@ namespace KOTORModSync.Core
                     exitCode = Instruction.ActionExitCode.Success;
                     break;
                 case Instruction.ActionType.Copy:
-                    // Try auto-extraction if files are missing
-                    try
+                    if (!await TryResolveInstructionSourcesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
                     {
-                        instruction.SetRealPaths();
+                        await Logger.LogErrorAsync(
+                            $"Missing mod file(s) for '{Name}'; run Fetch Downloads or place archives in the mod workspace."
+                        ).ConfigureAwait(false);
+                        return Instruction.ActionExitCode.FileNotFoundPre;
                     }
-                    catch (FileNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source files not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
-                    catch (Exceptions.WildcardPatternNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source pattern not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
+
                     exitCode = await instruction.CopyFileAsync().ConfigureAwait(false);
                     break;
                 case Instruction.ActionType.Move:
-                    // Try auto-extraction if files are missing
-                    try
+                    if (!await TryResolveInstructionSourcesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
                     {
-                        instruction.SetRealPaths();
+                        if (await TrySatisfyRedundantMoveToGameAsync(instruction, fileSystemProvider).ConfigureAwait(false))
+                        {
+                            exitCode = Instruction.ActionExitCode.Success;
+                            break;
+                        }
+
+                        await Logger.LogErrorAsync(
+                            $"Missing mod file(s) for '{Name}'; run Fetch Downloads or place archives in the mod workspace."
+                        ).ConfigureAwait(false);
+                        return Instruction.ActionExitCode.FileNotFoundPre;
                     }
-                    catch (FileNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source files not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
-                    catch (Exceptions.WildcardPatternNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source pattern not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
+
                     exitCode = await instruction.MoveFileAsync().ConfigureAwait(false);
                     break;
                 case Instruction.ActionType.Rename:
@@ -1144,35 +1383,14 @@ namespace KOTORModSync.Core
                     exitCode = instruction.RenameFile();
                     break;
                 case Instruction.ActionType.Patcher:
-                    // Try auto-extraction if files are missing
-                    try
+                    if (!await TryResolveInstructionSourcesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
                     {
-                        instruction.SetRealPaths();
+                        await Logger.LogErrorAsync(
+                            $"Missing patcher folder/archive for '{Name}'; run Fetch Downloads or extract mod files to the workspace."
+                        ).ConfigureAwait(false);
+                        return Instruction.ActionExitCode.FileNotFoundPre;
                     }
-                    catch (FileNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source files not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
-                    catch (Exceptions.WildcardPatternNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source pattern not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
+
                     exitCode = await instruction.ExecuteTSLPatcherAsync().ConfigureAwait(false);
                     break;
                 case Instruction.ActionType.Execute:
@@ -1391,6 +1609,12 @@ namespace KOTORModSync.Core
                         if (exitCode == Instruction.ActionExitCode.OptionalInstallFailed)
                         {
                             return InstallExitCode.UserCancelledInstall;
+                        }
+
+                        if (exitCode == Instruction.ActionExitCode.FileNotFoundPre ||
+                            exitCode == Instruction.ActionExitCode.FileNotFoundPost)
+                        {
+                            return InstallExitCode.MissingSourceFiles;
                         }
 
                         return InstallExitCode.UnknownError;

@@ -89,7 +89,7 @@ namespace KOTORModSync.Core.Services.Download
 
             try
             {
-                // GameFront requires JavaScript, metadata extraction not feasible
+                // GameFront requires JavaScript, metadata extraction not feasible.
                 await Logger.LogVerboseAsync($"[GameFront] Metadata extraction not supported for GameFront URLs: {url}").ConfigureAwait(false);
                 await Task.CompletedTask.ConfigureAwait(false);
             }
