@@ -13,6 +13,7 @@ permissions:
 
 env:
   DOTNET_VERSION: "9.0.x"
+  TEST_PROJECT: "src/KOTORModSync.Tests/KOTORModSync.Tests.csproj"
 
 jobs:
   build-and-test:
@@ -23,13 +24,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
-      - name: Setup MSBuild (Windows/.NET Framework 4.8)
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Setup .NET 8 SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Provision mod-builds
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "mod-builds/.git")) {
+            git clone https://github.com/th3w1zard1/mod-builds ./mod-builds
+          }
 
       - name: Authenticate NuGet source for GitHub Packages
         run: dotnet nuget update source github-th3w1zard1 --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text --configfile NuGet.config
@@ -37,26 +42,36 @@ jobs:
       - name: Restore NuGet Packages (net48)
         run: msbuild KOTORModSync.sln /t:Restore /p:TargetFramework=net48 /p:Configuration=Release
 
-      - name: Build for .NET Framework 4.8
-        run: msbuild KOTORModSync.sln /p:Configuration=Release /p:TargetFramework=net48
+      - name: Restore test project
+        run: dotnet restore "${{ env.TEST_PROJECT }}"
 
-      - name: Restore NuGet Packages (net9.0)
-        run: dotnet restore KOTORModSync.sln /p:TargetFramework=net9.0
+      - name: Build test project
+        run: dotnet build "${{ env.TEST_PROJECT }}" --configuration Debug --no-restore
 
-      - name: Build for .NET 9.0
-        run: dotnet build -c Release --framework net9.0 --no-restore
+      - name: Run shared pipeline tests
+        run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "FullyQualifiedName~InstallCoordinatorTests"
 
-      - name: Run Unit Tests
-        run: dotnet test -c Release --verbosity normal --no-build
-        continue-on-error: true
+      - name: Run CLI integration test
+        run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "FullyQualifiedName~CliInstallIntegrationTests"
+
+      - name: Run updater smoke tests
+        run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "FullyQualifiedName~AutoUpdateServiceTests"
+
+      - name: Run self-update smoke tests
+        run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "FullyQualifiedName~SelfUpdateIntegrationTests"
+
+      - name: Run telemetry smoke tests
+        run: |
+          dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "Name~ComputeSignature_SameInputs_ReturnsDeterministicLowercaseHex"
+          dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "Name~SaveThenLoad_PreservesKeyConfigurationFields"
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: test-build
           path: |
-            **/bin/Release/**/*.dll
-            **/bin/Release/**/*.exe
+            **/bin/Debug/**/*.dll
+            **/bin/Debug/**/*.exe
           retention-days: 7
 
   security-scan:
@@ -76,10 +91,10 @@ jobs:
         run: dotnet nuget update source github-th3w1zard1 --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text --configfile NuGet.config
 
       - name: Restore Dependencies
-        run: dotnet restore KOTORModSync.sln /p:TargetFramework=net9.0
+        run: dotnet restore "${{ env.TEST_PROJECT }}"
 
       - name: Run Security Audit
-        run: dotnet list package --vulnerable --include-transitive
+        run: dotnet list "${{ env.TEST_PROJECT }}" package --vulnerable --include-transitive
         continue-on-error: true
 
       - name: Check for Secrets in Code

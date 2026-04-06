@@ -18,6 +18,7 @@ namespace KOTORModSync
 {
     public class App : Application
     {
+        private AutoUpdateService _autoUpdateService;
 
         public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
@@ -101,9 +102,9 @@ namespace KOTORModSync
         {
             try
             {
-                var autoUpdateService = new AutoUpdateService();
-                autoUpdateService.Initialize();
-                autoUpdateService.StartUpdateCheckLoop();
+                _autoUpdateService = new AutoUpdateService();
+                _autoUpdateService.Initialize();
+                _autoUpdateService.StartUpdateCheckLoop();
                 Logger.Log("Auto-update service started successfully.");
             }
             catch (Exception ex)

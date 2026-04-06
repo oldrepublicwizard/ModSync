@@ -7,11 +7,6 @@ using System.Threading.Tasks;
 
 using KOTORModSync.Core;
 
-using NetSparkleUpdater;
-using NetSparkleUpdater.Enums;
-using NetSparkleUpdater.SignatureVerifiers;
-using NetSparkleUpdater.UI.Avalonia;
-
 namespace KOTORModSync.Services
 {
     /// <summary>
@@ -19,17 +14,28 @@ namespace KOTORModSync.Services
     /// </summary>
     public sealed class AutoUpdateService : IDisposable
     {
-        private SparkleUpdater _sparkle;
+        private readonly IAutoUpdateClient _client;
+        private readonly AutoUpdateSettings _settings;
         private bool _isInitialized;
         private bool _disposed;
 
-        /// <summary>
-        /// Gets the URL to the appcast file containing update information.
-        /// For GitHub releases, this should be a URL to an appcast.xml file
-        /// hosted on GitHub releases or in the repository.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded", Justification = "<Pending>")]
-        private const string AppCastUrl = "https://raw.githubusercontent.com/th3w1zard1/KOTORModSync/master/appcast.xml";
+        public AutoUpdateService()
+            : this(new NetSparkleUpdateClient(), AutoUpdateSettings.Default)
+        {
+        }
+
+        internal AutoUpdateService(IAutoUpdateClient client)
+            : this(client, AutoUpdateSettings.Default)
+        {
+        }
+
+        internal AutoUpdateService(IAutoUpdateClient client, AutoUpdateSettings settings)
+        {
+            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        }
+
+        public AutoUpdateSettings CurrentSettings => _settings;
 
         /// <summary>
         /// Initializes the AutoUpdateService and sets up NetSparkle for automatic updates.
@@ -44,19 +50,7 @@ namespace KOTORModSync.Services
 
             try
             {
-                // Create the UI factory for Avalonia
-                var uiFactory = new UIFactory();
-
-                // Initialize NetSparkle with Ed25519 signature verification
-                _sparkle = new SparkleUpdater(
-                    appcastUrl: AppCastUrl,
-                    signatureVerifier: new Ed25519Checker(SecurityMode.Strict, "jZSQV+2C1HL2Ufek3ekC7gtgOk5ctuDQzngh86OEdlA=")
-                )
-                {
-                    UIFactory = uiFactory,
-                    RelaunchAfterUpdate = true,
-                };
-
+                _client.Initialize(_settings);
                 _isInitialized = true;
                 Logger.Log("AutoUpdateService initialized successfully.");
             }
@@ -83,7 +77,7 @@ namespace KOTORModSync.Services
                 _ = Task.Run(async () =>
                 {
                     // Check for updates once per day
-                    await _sparkle.StartLoop(doInitialCheck: true, checkFrequency: TimeSpan.FromHours(24));
+                    await _client.StartLoopAsync(doInitialCheck: true, checkFrequency: TimeSpan.FromHours(24));
                     Logger.Log("Started automatic update check loop.");
                 }).ContinueWith(
                     t =>
@@ -117,15 +111,14 @@ namespace KOTORModSync.Services
             {
                 await Logger.LogAsync("Manually checking for updates...");
 
-                UpdateInfo updateInfo = await _sparkle.CheckForUpdatesQuietly();
-                if (updateInfo.Status == UpdateStatus.UpdateAvailable)
+                AutoUpdateCheckResult updateResult = await _client.CheckForUpdatesQuietlyAsync();
+                if (updateResult.UpdateAvailable)
                 {
-                    // Show update UI to user - ConfigureAwait(true) needed since this shows UI
-                    await _sparkle.CheckForUpdatesAtUserRequest();
+                    await _client.ShowUpdateUiAsync();
                     return true;
                 }
 
-                await Logger.LogAsync($"No updates available. Status: {updateInfo.Status}");
+                await Logger.LogAsync($"No updates available. Status: {updateResult.StatusMessage}");
                 return false;
             }
             catch (Exception ex)
@@ -140,11 +133,8 @@ namespace KOTORModSync.Services
         /// </summary>
         public void StopUpdateCheckLoop()
         {
-            if (_sparkle != null)
-            {
-                _sparkle.StopLoop();
-                Logger.Log("Stopped automatic update check loop.");
-            }
+            _client.StopLoop();
+            Logger.Log("Stopped automatic update check loop.");
         }
 
 
@@ -159,13 +149,8 @@ namespace KOTORModSync.Services
 
             try
             {
-                if (_sparkle != null)
-                {
-                    StopUpdateCheckLoop();
-                    _sparkle.Dispose();
-                    _sparkle = null;
-                }
-
+                StopUpdateCheckLoop();
+                _client.Dispose();
                 _disposed = true;
                 Logger.Log("AutoUpdateService disposed.");
             }
