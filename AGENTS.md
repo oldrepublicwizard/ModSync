@@ -17,6 +17,91 @@ Start with:
 - `.cursor/skills/local_desktop_gui_testing/SKILL.md`
 - `.cursor/skills/full_build_install_validation/SKILL.md`
 
+## Project layout
+
+```
+KOTORModSync.sln
+src/
+  KOTORModSync.Core/         # Core logic, VFS, instructions, serialization
+  KOTORModSync.GUI/          # Avalonia desktop app
+  KOTORModSync.Tests/        # All automated tests (single project)
+  AvRichTextBox/             # Rich text control submodule
+  RtfDomParserAvalonia/      # RTF parser submodule
+scripts/
+  agents/                    # Helper scripts for agent workflows
+docs/                        # Runbooks and documentation
+vendor/                      # Third-party binaries
+mod-builds/                  # Clone here: github.com/th3w1zard1/mod-builds
+```
+
+## Build
+
+```bash
+dotnet build KOTORModSync.sln
+```
+
+## Cursor Cloud specific instructions
+
+Cloud agents run headless (no X11 desktop). The following applies:
+
+- Run automated tests (`dotnet test`) instead of GUI desktop tests.
+- Do NOT attempt to launch the Avalonia app or use `xdotool`/`xwininfo` — there is no display.
+- GUI changes must still be manually exercised. If you have made GUI changes, request a desktop session or note that GUI validation was skipped.
+- The test project path is `src/KOTORModSync.Tests/KOTORModSync.Tests.csproj`.
+
+### Running tests (Cloud / headless)
+
+```bash
+# Run all non-long-running, non-seeding tests
+dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+  --filter "FullyQualifiedName!~LongRunning&FullyQualifiedName!~GitHubRunnerSeeding"
+```
+
+Run a single named test with a 120-second timeout to classify duration:
+
+```pwsh
+pwsh -Command '& {
+  $proj = "src/KOTORModSync.Tests/KOTORModSync.Tests.csproj"
+  $args = "test {0} --filter ""FullyQualifiedName~<TestName>"" --list-tests" -f $proj
+  $psi = New-Object System.Diagnostics.ProcessStartInfo
+  $psi.FileName = "dotnet"
+  $psi.Arguments = $args
+  $psi.RedirectStandardOutput = $true
+  $psi.RedirectStandardError = $true
+  $psi.UseShellExecute = $false
+  $process = New-Object System.Diagnostics.Process
+  $process.StartInfo = $psi
+  $null = $process.Start()
+  if (-not $process.WaitForExit(120000)) {
+    $stdout = $process.StandardOutput.ReadToEnd()
+    $stderr = $process.StandardError.ReadToEnd()
+    $process.Kill()
+    $process.WaitForExit()
+    Write-Output $stdout
+    Write-Output $stderr
+    Write-Output "--- COMMAND TIMED OUT AFTER 120s ---"
+  } else {
+    $stdout = $process.StandardOutput.ReadToEnd()
+    $stderr = $process.StandardError.ReadToEnd()
+    Write-Output $stdout
+    Write-Output $stderr
+  }
+}'
+```
+
+### Test naming conventions (CRITICAL)
+
+| Suffix | Meaning | Duration |
+|---|---|---|
+| `GitHubRunnerSeeding` | GitHub Actions ONLY — continuous seeding ops | 5-6 hours |
+| `LongRunning` | Long local tests, NOT for GitHub runners | > 2 minutes |
+| _(none)_ | Regular test | < 2 minutes |
+
+Rules:
+- NEVER use `GitHubRunnerSeeding` unless the test is exclusively for GitHub Actions runners.
+- NEVER combine `LongRunning` with "Seeding" in a test name.
+- GitHub workflow `.github/workflows/distributed-cache-tests.yml` filters on `FullyQualifiedName~GitHubRunnerSeeding`.
+
 ## Verified local desktop baseline
 
 These steps were verified in a Linux desktop VM similar to the one used during development:
@@ -155,6 +240,36 @@ Update all of the following together:
 
 - `docs/local_desktop_agent_runbook.md`
 - the relevant `.cursor/skills/*/SKILL.md`
+- `AGENTS.md` (this file) — especially the `## Cursor Cloud specific instructions` section
 - `.cursorrules` if the rule should always apply
 - `.cursor/mcp.json` or the wrapper scripts if agent tooling changed
 - `.vscode/tasks.json` / `.vscode/launch.json` if the launch flow changed
+
+## Cursor Cloud specific instructions
+
+### Overview
+
+KOTORModSync is a cross-platform multi-mod installer for Star Wars: KOTOR, built with C#/.NET 9.0 and AvaloniaUI. The solution (`KOTORModSync.sln`) contains three projects: `KOTORModSync.Core` (library), `KOTORModSync.GUI` (desktop app), and `KOTORModSync.Tests` (NUnit + xUnit tests).
+
+### Prerequisites (installed via VM snapshot)
+
+- .NET 9.0 SDK at `$HOME/.dotnet` (ensure `DOTNET_ROOT` and `PATH` include it)
+- PowerShell (`pwsh`) for running tests per `.cursorrules` conventions
+- X11 libraries for AvaloniaUI rendering (see README for list)
+- Git submodules: `src/AvRichTextBox` and `src/RtfDomParserAvalonia` are initialized; `vendor/HoloPatcher.NET` is unavailable (private/not-found repo) but not required for building or testing the main solution
+
+### Build, Test, Lint, Run
+
+- **Build**: `dotnet build KOTORModSync.sln --configuration Debug` from repo root
+- **Run GUI**: `dotnet run --project src/KOTORModSync.GUI/KOTORModSync.csproj --configuration Debug --framework net9.0` (must specify `--framework net9.0` since Debug can multi-target)
+- **Lint**: `dotnet format KOTORModSync.sln --verify-no-changes` (pre-existing formatting diffs exist)
+- **Tests**: See `.cursorrules` for the required PowerShell-based test runner pattern. Quick non-long-running test run: `dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName!~LongRunning&FullyQualifiedName!~GitHubRunnerSeeding&FullyQualifiedName!~DistributedCache" --configuration Debug`
+- **Distributed cache tests**: `dotnet test KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~DistributedCache&FullyQualifiedName!~LongRunning&FullyQualifiedName!~GitHubRunnerSeeding"` (run from `src/` dir or adjust path)
+
+### Non-obvious gotchas
+
+- The `DISPLAY=:1` environment variable must be set for the AvaloniaUI GUI to render on the VM's virtual display.
+- `CrossPlatformFileWatcherTests` fail in the cloud VM due to container filesystem inotify limitations; this is expected.
+- Some xUnit-based UI tests may fail headlessly depending on Avalonia headless support; these are pre-existing.
+- The NuGet config (`NuGet.config`) includes a GitHub Packages feed (`github-th3w1zard1`). Public packages restore without auth; if private packages are added, a GitHub PAT may be needed.
+- `vendor/HoloPatcher.NET` submodule references a repo that currently returns 404. The build succeeds without it (only used in optional PostBuild copy targets).
