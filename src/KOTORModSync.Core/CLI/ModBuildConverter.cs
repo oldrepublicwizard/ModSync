@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 
 using CommandLine;
 
+using JetBrains.Annotations;
+
 using KOTORModSync.Core.Services;
 using KOTORModSync.Core.Services.Download;
 using KOTORModSync.Core.Utility;
@@ -1386,6 +1388,60 @@ componentName: null,
             {
                 Logger.LogVerbose($"Tiers: {string.Join(", ", selectedTiers)}");
             }
+        }
+
+        /// <summary>
+        /// Without a Nexus API key, automated Nexus downloads fail. In best-effort mode, deselect any mod
+        /// whose <see cref="ModComponent.ResourceRegistry"/> includes a nexusmods.com URL so the batch does not waste time on them.
+        /// </summary>
+        private static int DeselectComponentsWithNexusUrlsWithoutApiKey([NotNull] List<ModComponent> components)
+        {
+            int deselected = 0;
+            foreach (ModComponent component in components)
+            {
+                if (!component.IsSelected)
+                {
+                    continue;
+                }
+
+                if (component.ResourceRegistry is null || component.ResourceRegistry.Count == 0)
+                {
+                    continue;
+                }
+
+                bool hasNexusUrl = false;
+                bool hasNonNexusUrl = false;
+                foreach (string url in component.ResourceRegistry.Keys)
+                {
+                    if (string.IsNullOrWhiteSpace(url))
+                    {
+                        continue;
+                    }
+
+                    if (url.IndexOf("nexusmods.com", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        hasNexusUrl = true;
+                    }
+                    else
+                    {
+                        hasNonNexusUrl = true;
+                    }
+                }
+
+                // Mods with both Nexus and DeadlyStream/Mega/etc. can still install via non-Nexus URLs.
+                if (!hasNexusUrl || hasNonNexusUrl)
+                {
+                    continue;
+                }
+
+                component.IsSelected = false;
+                deselected++;
+                Logger.LogVerbose(
+                    $"[Install] Deselected '{component.Name}' — download URLs are Nexus-only and no API key is configured."
+                );
+            }
+
+            return deselected;
         }
 
         /// <summary>
@@ -2896,6 +2952,18 @@ exception: null);
                 // Match GUI behavior: without --select, treat as "select all" (TOML often has IsSelected = false).
                 await Logger.LogAsync("Applying component selection...").ConfigureAwait(false);
                 ApplySelectionFilters(components, opts.Select);
+
+                if (opts.BestEffort && string.IsNullOrWhiteSpace(MainConfig.NexusModsApiKey))
+                {
+                    int nexusSkipped = DeselectComponentsWithNexusUrlsWithoutApiKey(components);
+                    if (nexusSkipped > 0)
+                    {
+                        await Logger.LogWarningAsync(
+                            $"No Nexus Mods API key: deselected {nexusSkipped} mod(s) that only list nexusmods.com download(s). "
+                            + "Set KOTOR_MODSYNC_NEXUS_API_KEY or use --nexus-api-key to include them."
+                        ).ConfigureAwait(false);
+                    }
+                }
 
                 if (opts.Download)
                 {
