@@ -153,6 +153,15 @@ namespace KOTORModSync.Core
             set => ContinueInstallOnMissingSources = value;
         }
 
+        /// <summary>When true, a failed mod install does not abort the whole batch (CLI).</summary>
+        public static bool ContinueInstallOnModFailure { get; private set; }
+
+        public bool continueInstallOnModFailure
+        {
+            get => ContinueInstallOnModFailure;
+            set => ContinueInstallOnModFailure = value;
+        }
+
         /// <summary>Stores the Nexus Mods API key. Mutate via <see cref="nexusModsApiKey"/>.</summary>
         public static string NexusModsApiKey { get; private set; }
         /// <summary>Instance accessor for <see cref="NexusModsApiKey"/>.</summary>

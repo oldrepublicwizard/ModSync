@@ -963,6 +963,7 @@ Exception Type: {ex.GetType().FullName}";
             int total = orderedComponents.Count;
             ModComponent.InstallExitCode exitCode = ModComponent.InstallExitCode.Success;
             bool skippedMissingSources = false;
+            bool continuedAfterModFailure = false;
 
             for (int index = 0; index < orderedComponents.Count; index++)
             {
@@ -1023,6 +1024,17 @@ Exception Type: {ex.GetType().FullName}";
                     coordinator.CheckpointManager.UpdateComponentState(component);
                     await coordinator.CheckpointManager.SaveAsync().ConfigureAwait(false);
                 }
+                else if (MainConfig.ContinueInstallOnModFailure
+                         && exitCode != ModComponent.InstallExitCode.DependencyViolation
+                         && exitCode != ModComponent.InstallExitCode.UserCancelledInstall)
+                {
+                    continuedAfterModFailure = true;
+                    await Logger.LogWarningAsync(
+                        $"Install of '{component.Name}' failed ({exitCode}); continuing with remaining mods (--continue-on-mod-failure)."
+                    ).ConfigureAwait(false);
+                    coordinator.CheckpointManager.UpdateComponentState(component);
+                    await coordinator.CheckpointManager.SaveAsync().ConfigureAwait(false);
+                }
                 else
                 {
                     await Logger.LogErrorAsync($"Install of '{component.Name}' failed with exit code {exitCode}").ConfigureAwait(false);
@@ -1036,6 +1048,11 @@ Exception Type: {ex.GetType().FullName}";
                 }
 
                 await coordinator.CheckpointManager.SaveAsync().ConfigureAwait(false);
+            }
+
+            if (continuedAfterModFailure)
+            {
+                return ModComponent.InstallExitCode.CompletedWithFailures;
             }
 
             if (skippedMissingSources &&

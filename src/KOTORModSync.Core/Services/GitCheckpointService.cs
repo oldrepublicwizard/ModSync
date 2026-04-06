@@ -107,7 +107,34 @@ namespace KOTORModSync.Core.Services
                 string commitMessage = BuildCommitMessage(component, componentIndex, totalComponents);
                 Signature signature = new Signature("KOTORModSync", "checkpoint@kotormodsync.local", DateTimeOffset.Now);
 
-                Commit commit = _repository.Commit(commitMessage, signature, signature, new CommitOptions());
+                Commit commit;
+                try
+                {
+                    commit = _repository.Commit(commitMessage, signature, signature, new CommitOptions());
+                }
+                catch (EmptyCommitException)
+                {
+                    await Logger.LogWarningAsync(
+                        $"No game-directory changes to checkpoint for '{component.Name}' (skipping empty commit)."
+                    ).ConfigureAwait(false);
+
+                    Commit head = _repository.Head?.Tip;
+                    if (head is null)
+                    {
+                        throw;
+                    }
+
+                    return new CheckpointInfo
+                    {
+                        CommitId = head.Sha,
+                        ComponentName = component.Name,
+                        ComponentGuid = component.Guid,
+                        Timestamp = DateTimeOffset.Now,
+                        ComponentIndex = componentIndex,
+                        TotalComponents = totalComponents,
+                        Message = commitMessage,
+                    };
+                }
 
                 var checkpointInfo = new CheckpointInfo
                 {

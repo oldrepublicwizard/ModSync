@@ -217,6 +217,17 @@ namespace KOTORModSync.Core.CLI
                         Logger.LogWarning($"Failed to load legacy nexusmods.config: {ex.Message}");
                     }
                 }
+
+                if (string.IsNullOrWhiteSpace(s_config.nexusModsApiKey))
+                {
+                    string envKey = Environment.GetEnvironmentVariable("KOTOR_MODSYNC_NEXUS_API_KEY")
+                        ?? Environment.GetEnvironmentVariable("NEXUS_MODS_API_KEY");
+                    if (!string.IsNullOrWhiteSpace(envKey))
+                    {
+                        s_config.nexusModsApiKey = envKey.Trim();
+                        Logger.LogVerbose("Loaded Nexus Mods API key from environment variable");
+                    }
+                }
             }
         }
 
@@ -579,6 +590,15 @@ namespace KOTORModSync.Core.CLI
 
             [Option("continue-on-missing-sources", Required = false, Default = false, HelpText = "Skip mods whose archives are missing and continue installing the rest (partial install)")]
             public bool ContinueOnMissingSources { get; set; }
+
+            [Option("continue-on-mod-failure", Required = false, Default = false, HelpText = "If a mod install fails (e.g. patcher error), log and continue with the rest instead of aborting")]
+            public bool ContinueOnModFailure { get; set; }
+
+            [Option("nexus-api-key", Required = false, HelpText = "Nexus Mods API key for automated Nexus downloads (or set KOTOR_MODSYNC_NEXUS_API_KEY / NEXUS_MODS_API_KEY)")]
+            public string NexusApiKey { get; set; }
+
+            [Option("download-timeout-hours", Required = false, Default = 48, HelpText = "Max hours for --download phase (full mod lists need a large value)")]
+            public int DownloadTimeoutHours { get; set; }
 
             [Option("ignore-errors", Required = false, Default = false, HelpText = "Ignore dependency resolution errors and attempt to load components in the best possible order")]
             public bool IgnoreErrors { get; set; }
@@ -2838,6 +2858,13 @@ exception: null);
                 }
 
                 s_config.continueInstallOnMissingSources = opts.ContinueOnMissingSources;
+                s_config.continueInstallOnModFailure = opts.ContinueOnModFailure;
+
+                if (!string.IsNullOrWhiteSpace(opts.NexusApiKey))
+                {
+                    s_config.nexusModsApiKey = opts.NexusApiKey.Trim();
+                    await Logger.LogVerboseAsync("Nexus Mods API key set from --nexus-api-key").ConfigureAwait(false);
+                }
 
                 await Logger.LogAsync($"Loading instruction file: {opts.InputPath}").ConfigureAwait(false);
 
@@ -2868,7 +2895,8 @@ exception: null);
                     }
 
                     await Logger.LogAsync("Downloading mod archives before install...").ConfigureAwait(false);
-                    using (var downloadCts = new CancellationTokenSource(TimeSpan.FromHours(6)))
+                    int hours = opts.DownloadTimeoutHours > 0 ? opts.DownloadTimeoutHours : 48;
+                    using (var downloadCts = new CancellationTokenSource(TimeSpan.FromHours(hours)))
                     {
                         _ = await DownloadAllModFilesAsync(
                             components,
@@ -2971,6 +2999,14 @@ exception: null);
                 {
                     await Logger.LogWarningAsync(
                         "Installation finished with one or more mods skipped (missing archives). Add downloads and re-run for those mods."
+                    ).ConfigureAwait(false);
+                    return 0;
+                }
+
+                if (exitCode == ModComponent.InstallExitCode.CompletedWithFailures && opts.ContinueOnModFailure)
+                {
+                    await Logger.LogWarningAsync(
+                        "Installation finished with one or more mod failures; review logs and re-run or fix failed mods."
                     ).ConfigureAwait(false);
                     return 0;
                 }
