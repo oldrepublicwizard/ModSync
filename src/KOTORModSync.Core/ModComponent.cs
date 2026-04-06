@@ -35,6 +35,8 @@ namespace KOTORModSync.Core
             UserCancelledInstall,
             [Description("An invalid operation was attempted.")]
             InvalidOperation,
+            [Description("Required mod archive or file was not found in the mod workspace (download or copy files first).")]
+            MissingSourceFiles,
             UnknownError,
         }
         public enum ComponentInstallState
@@ -832,6 +834,11 @@ namespace KOTORModSync.Core
                     InstallState = ComponentInstallState.Blocked;
                     LastCompletedUtc = DateTimeOffset.UtcNow;
                 }
+                else if (exitCode == InstallExitCode.MissingSourceFiles && MainConfig.ContinueInstallOnMissingSources)
+                {
+                    InstallState = ComponentInstallState.Skipped;
+                    LastCompletedUtc = DateTimeOffset.UtcNow;
+                }
                 else
                 {
                     InstallState = ComponentInstallState.Failed;
@@ -885,6 +892,45 @@ namespace KOTORModSync.Core
             }
             return InstallExitCode.UnknownError;
         }
+        /// <summary>
+        /// Resolves instruction source paths on disk, optionally pulling from downloaded archives first.
+        /// Returns false when sources are still missing (caller should return <see cref="Instruction.ActionExitCode.FileNotFoundPre"/>).
+        /// </summary>
+        private async Task<bool> TryResolveInstructionSourcesAsync(
+            [NotNull] Instruction instruction,
+            [NotNull] Services.FileSystem.IFileSystemProvider fileSystemProvider,
+            bool skipExistenceCheck = false,
+            bool sourceIsNotFilePath = false)
+        {
+            try
+            {
+                instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                return true;
+            }
+            catch (FileNotFoundException)
+            {
+                await Logger.LogVerboseAsync("Source files not found, attempting auto-extraction...").ConfigureAwait(false);
+                if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
+                {
+                    instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exceptions.WildcardPatternNotFoundException)
+            {
+                await Logger.LogVerboseAsync("Source pattern not found, attempting auto-extraction...").ConfigureAwait(false);
+                if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
+                {
+                    instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
         /// <summary>
         /// Attempts to find and extract files from archives if they're missing.
         /// Returns true if files were found and extracted (or don't need extraction).
@@ -1063,7 +1109,14 @@ namespace KOTORModSync.Core
             switch (instruction.Action)
             {
                 case Instruction.ActionType.Extract:
-                    instruction.SetRealPaths();
+                    if (!await TryResolveInstructionSourcesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
+                    {
+                        await Logger.LogErrorAsync(
+                            $"Missing mod archive(s) for '{Name}'; run Fetch Downloads or place files in the mod workspace."
+                        ).ConfigureAwait(false);
+                        return Instruction.ActionExitCode.FileNotFoundPre;
+                    }
+
                     exitCode = await instruction.ExtractFileAsync().ConfigureAwait(false);
                     break;
                 case Instruction.ActionType.Delete:
@@ -1076,67 +1129,25 @@ namespace KOTORModSync.Core
                     exitCode = Instruction.ActionExitCode.Success;
                     break;
                 case Instruction.ActionType.Copy:
-                    // Try auto-extraction if files are missing
-                    try
+                    if (!await TryResolveInstructionSourcesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
                     {
-                        instruction.SetRealPaths();
+                        await Logger.LogErrorAsync(
+                            $"Missing mod file(s) for '{Name}'; run Fetch Downloads or place archives in the mod workspace."
+                        ).ConfigureAwait(false);
+                        return Instruction.ActionExitCode.FileNotFoundPre;
                     }
-                    catch (FileNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source files not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
-                    catch (Exceptions.WildcardPatternNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source pattern not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
+
                     exitCode = await instruction.CopyFileAsync().ConfigureAwait(false);
                     break;
                 case Instruction.ActionType.Move:
-                    // Try auto-extraction if files are missing
-                    try
+                    if (!await TryResolveInstructionSourcesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
                     {
-                        instruction.SetRealPaths();
+                        await Logger.LogErrorAsync(
+                            $"Missing mod file(s) for '{Name}'; run Fetch Downloads or place archives in the mod workspace."
+                        ).ConfigureAwait(false);
+                        return Instruction.ActionExitCode.FileNotFoundPre;
                     }
-                    catch (FileNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source files not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
-                    catch (Exceptions.WildcardPatternNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source pattern not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
+
                     exitCode = await instruction.MoveFileAsync().ConfigureAwait(false);
                     break;
                 case Instruction.ActionType.Rename:
@@ -1144,35 +1155,14 @@ namespace KOTORModSync.Core
                     exitCode = instruction.RenameFile();
                     break;
                 case Instruction.ActionType.Patcher:
-                    // Try auto-extraction if files are missing
-                    try
+                    if (!await TryResolveInstructionSourcesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
                     {
-                        instruction.SetRealPaths();
+                        await Logger.LogErrorAsync(
+                            $"Missing patcher folder/archive for '{Name}'; run Fetch Downloads or extract mod files to the workspace."
+                        ).ConfigureAwait(false);
+                        return Instruction.ActionExitCode.FileNotFoundPre;
                     }
-                    catch (FileNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source files not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
-                    catch (Exceptions.WildcardPatternNotFoundException)
-                    {
-                        await Logger.LogVerboseAsync("Source pattern not found, attempting auto-extraction...").ConfigureAwait(false);
-                        if (await TryAutoExtractMissingFilesAsync(instruction, fileSystemProvider).ConfigureAwait(false))
-                        {
-                            instruction.SetRealPaths(); // Retry after extraction
-                        }
-                        else
-                        {
-                            throw; // Re-throw if auto-extraction failed
-                        }
-                    }
+
                     exitCode = await instruction.ExecuteTSLPatcherAsync().ConfigureAwait(false);
                     break;
                 case Instruction.ActionType.Execute:
@@ -1391,6 +1381,12 @@ namespace KOTORModSync.Core
                         if (exitCode == Instruction.ActionExitCode.OptionalInstallFailed)
                         {
                             return InstallExitCode.UserCancelledInstall;
+                        }
+
+                        if (exitCode == Instruction.ActionExitCode.FileNotFoundPre ||
+                            exitCode == Instruction.ActionExitCode.FileNotFoundPost)
+                        {
+                            return InstallExitCode.MissingSourceFiles;
                         }
 
                         return InstallExitCode.UnknownError;

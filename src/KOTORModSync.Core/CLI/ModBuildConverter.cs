@@ -120,6 +120,7 @@ namespace KOTORModSync.Core.CLI
             if (s_config is null)
             {
                 s_config = new MainConfig();
+                MainConfig.Instance = s_config;
                 Logger.LogVerbose("MainConfig initialized");
 
                 try
@@ -576,6 +577,9 @@ namespace KOTORModSync.Core.CLI
             [Option("kpatcher-path", Required = false, HelpText = "Full path to KPatcher executable when patcher-engine=KPatcher")]
             public string KPatcherPath { get; set; }
 
+            [Option("continue-on-missing-sources", Required = false, Default = false, HelpText = "Skip mods whose archives are missing and continue installing the rest (partial install)")]
+            public bool ContinueOnMissingSources { get; set; }
+
             [Option("ignore-errors", Required = false, Default = false, HelpText = "Ignore dependency resolution errors and attempt to load components in the best possible order")]
             public bool IgnoreErrors { get; set; }
         }
@@ -665,7 +669,7 @@ namespace KOTORModSync.Core.CLI
             // Disable keyring BEFORE any Python initialization to prevent pip hanging
             // This must be set at the process level before Python.Included initializes
             Environment.SetEnvironmentVariable("PYTHON_KEYRING_BACKEND", "keyring.backends.null.Keyring");
-            Environment.SetEnvironmentVariable("DISPLAY", "");  // Also disable X11 display waiting
+            // Avoid forcing an empty DISPLAY: some child tools probe X11; leave user/session DISPLAY intact.
 
             Logger.Initialize();
 
@@ -1278,12 +1282,13 @@ componentName: null,
                 }
             }
 
+            // Keys are CategoryTierDefinitions-normalized (e.g. "1 - Essential"), matching TOML Tier values.
             var tierPriorities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
             {
-                { "Essential", 1 },
-                { "Recommended", 2 },
-                { "Suggested", 3 },
-                { "Optional", 4 },
+                { "1 - Essential", 1 },
+                { "2 - Recommended", 2 },
+                { "3 - Suggested", 3 },
+                { "4 - Optional", 4 },
             };
 
             int selectedCount = 0;
@@ -1309,10 +1314,12 @@ componentName: null,
                 {
                     if (!string.IsNullOrEmpty(component.Tier))
                     {
+                        string normalizedComponentTier = CategoryTierDefinitions.NormalizeTier(component.Tier);
                         foreach (string selectedTier in selectedTiers)
                         {
-                            if (tierPriorities.TryGetValue(selectedTier, out int selectedPriority) &&
-                                tierPriorities.TryGetValue(component.Tier, out int componentPriority))
+                            string normalizedFilterTier = CategoryTierDefinitions.NormalizeTier(selectedTier);
+                            if (tierPriorities.TryGetValue(normalizedFilterTier, out int selectedPriority) &&
+                                tierPriorities.TryGetValue(normalizedComponentTier, out int componentPriority))
                             {
                                 if (componentPriority <= selectedPriority)
                                 {
@@ -1320,7 +1327,10 @@ componentName: null,
                                     break;
                                 }
                             }
-                            else if (component.Tier.Equals(selectedTier, StringComparison.OrdinalIgnoreCase))
+                            else if (string.Equals(
+                                         normalizedComponentTier,
+                                         normalizedFilterTier,
+                                         StringComparison.OrdinalIgnoreCase))
                             {
                                 includeByTier = true;
                                 break;
@@ -2827,6 +2837,8 @@ exception: null);
                     await Logger.LogVerboseAsync($"KPatcher path override: {opts.KPatcherPath.Trim()}").ConfigureAwait(false);
                 }
 
+                s_config.continueInstallOnMissingSources = opts.ContinueOnMissingSources;
+
                 await Logger.LogAsync($"Loading instruction file: {opts.InputPath}").ConfigureAwait(false);
 
                 List<ModComponent> components = await FileLoadingService.LoadFromFileAsync(opts.InputPath).ConfigureAwait(false);
@@ -2952,6 +2964,14 @@ exception: null);
                 if (exitCode == ModComponent.InstallExitCode.Success)
                 {
                     await Logger.LogAsync("Installation completed successfully!").ConfigureAwait(false);
+                    return 0;
+                }
+
+                if (exitCode == ModComponent.InstallExitCode.MissingSourceFiles && opts.ContinueOnMissingSources)
+                {
+                    await Logger.LogWarningAsync(
+                        "Installation finished with one or more mods skipped (missing archives). Add downloads and re-run for those mods."
+                    ).ConfigureAwait(false);
                     return 0;
                 }
 
