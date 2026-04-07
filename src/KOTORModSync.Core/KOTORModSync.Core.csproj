@@ -51,15 +51,9 @@
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
   </PropertyGroup>
 
-  <!-- Default to Library - this allows the project to be referenced by GUI -->
+  <!-- Console CLI host: always emit a runnable apphost + DLL so `dotnet run` / `dotnet exec` work.
+       GUI references this project and consumes KOTORModSync.Core.dll; the .exe is harmless. -->
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-  </PropertyGroup>
-
-  <!-- Only use Exe when building Core project standalone via dotnet run (not when referenced) -->
-  <!-- This allows 'dotnet run' with the Core project for CLI usage -->
-  <!-- We detect standalone by checking if we're not publishing and RuntimeIdentifier is empty (typical for dotnet run) -->
-  <PropertyGroup Condition="'$(IsPublishing)' != 'true' AND '$(RuntimeIdentifier)' == '' AND '$(RuntimeIdentifiers)' == '' AND '$(PublishProfile)' == ''">
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 

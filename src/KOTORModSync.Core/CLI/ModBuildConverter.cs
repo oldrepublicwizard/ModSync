@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 
 using CommandLine;
 
+using JetBrains.Annotations;
+
 using KOTORModSync.Core.Services;
 using KOTORModSync.Core.Services.Download;
 using KOTORModSync.Core.Utility;
@@ -120,6 +122,7 @@ namespace KOTORModSync.Core.CLI
             if (s_config is null)
             {
                 s_config = new MainConfig();
+                MainConfig.Instance = s_config;
                 Logger.LogVerbose("MainConfig initialized");
 
                 try
@@ -214,6 +217,17 @@ namespace KOTORModSync.Core.CLI
                     catch (Exception ex)
                     {
                         Logger.LogWarning($"Failed to load legacy nexusmods.config: {ex.Message}");
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(s_config.nexusModsApiKey))
+                {
+                    string envKey = Environment.GetEnvironmentVariable("KOTOR_MODSYNC_NEXUS_API_KEY")
+                        ?? Environment.GetEnvironmentVariable("NEXUS_MODS_API_KEY");
+                    if (!string.IsNullOrWhiteSpace(envKey))
+                    {
+                        s_config.nexusModsApiKey = envKey.Trim();
+                        Logger.LogVerbose("Loaded Nexus Mods API key from environment variable");
                     }
                 }
             }
@@ -564,6 +578,33 @@ namespace KOTORModSync.Core.CLI
             [Option('y', "yes", Required = false, Default = false, HelpText = "Automatically answer 'yes' to all prompts")]
             public bool AutoConfirm { get; set; }
 
+            [Option('d', "download", Required = false, Default = false, HelpText = "Download mod archives to --source-dir before installing (same as convert --download)")]
+            public bool Download { get; set; }
+
+            [Option("concurrent", Required = false, Default = false, HelpText = "Run downloads concurrently (faster; harder to debug)")]
+            public bool Concurrent { get; set; }
+
+            [Option("patcher-engine", Required = false, HelpText = "Override TSLPatcher backend: Holopatcher or KPatcher (else use settings.json default)")]
+            public string PatcherEngine { get; set; }
+
+            [Option("kpatcher-path", Required = false, HelpText = "Full path to KPatcher executable when patcher-engine=KPatcher")]
+            public string KPatcherPath { get; set; }
+
+            [Option("continue-on-missing-sources", Required = false, Default = false, HelpText = "Skip mods whose archives are missing and continue installing the rest (partial install)")]
+            public bool ContinueOnMissingSources { get; set; }
+
+            [Option("continue-on-mod-failure", Required = false, Default = false, HelpText = "If a mod install fails (e.g. patcher error), log and continue with the rest instead of aborting")]
+            public bool ContinueOnModFailure { get; set; }
+
+            [Option("best-effort", Required = false, Default = false, HelpText = "Install everything possible: same as --continue-on-missing-sources --continue-on-mod-failure -y (skips missing archives and failed mods, exits 0 with warnings)")]
+            public bool BestEffort { get; set; }
+
+            [Option("nexus-api-key", Required = false, HelpText = "Nexus Mods API key for automated Nexus downloads (or set KOTOR_MODSYNC_NEXUS_API_KEY / NEXUS_MODS_API_KEY)")]
+            public string NexusApiKey { get; set; }
+
+            [Option("download-timeout-hours", Required = false, Default = 48, HelpText = "Max hours for --download phase (full mod lists need a large value)")]
+            public int DownloadTimeoutHours { get; set; }
+
             [Option("ignore-errors", Required = false, Default = false, HelpText = "Ignore dependency resolution errors and attempt to load components in the best possible order")]
             public bool IgnoreErrors { get; set; }
         }
@@ -653,7 +694,7 @@ namespace KOTORModSync.Core.CLI
             // Disable keyring BEFORE any Python initialization to prevent pip hanging
             // This must be set at the process level before Python.Included initializes
             Environment.SetEnvironmentVariable("PYTHON_KEYRING_BACKEND", "keyring.backends.null.Keyring");
-            Environment.SetEnvironmentVariable("DISPLAY", "");  // Also disable X11 display waiting
+            // Avoid forcing an empty DISPLAY: some child tools probe X11; leave user/session DISPLAY intact.
 
             Logger.Initialize();
 
@@ -1266,12 +1307,13 @@ componentName: null,
                 }
             }
 
+            // Keys are CategoryTierDefinitions-normalized (e.g. "1 - Essential"), matching TOML Tier values.
             var tierPriorities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
             {
-                { "Essential", 1 },
-                { "Recommended", 2 },
-                { "Suggested", 3 },
-                { "Optional", 4 },
+                { "1 - Essential", 1 },
+                { "2 - Recommended", 2 },
+                { "3 - Suggested", 3 },
+                { "4 - Optional", 4 },
             };
 
             int selectedCount = 0;
@@ -1297,10 +1339,12 @@ componentName: null,
                 {
                     if (!string.IsNullOrEmpty(component.Tier))
                     {
+                        string normalizedComponentTier = CategoryTierDefinitions.NormalizeTier(component.Tier);
                         foreach (string selectedTier in selectedTiers)
                         {
-                            if (tierPriorities.TryGetValue(selectedTier, out int selectedPriority) &&
-                                tierPriorities.TryGetValue(component.Tier, out int componentPriority))
+                            string normalizedFilterTier = CategoryTierDefinitions.NormalizeTier(selectedTier);
+                            if (tierPriorities.TryGetValue(normalizedFilterTier, out int selectedPriority) &&
+                                tierPriorities.TryGetValue(normalizedComponentTier, out int componentPriority))
                             {
                                 if (componentPriority <= selectedPriority)
                                 {
@@ -1308,7 +1352,10 @@ componentName: null,
                                     break;
                                 }
                             }
-                            else if (component.Tier.Equals(selectedTier, StringComparison.OrdinalIgnoreCase))
+                            else if (string.Equals(
+                                         normalizedComponentTier,
+                                         normalizedFilterTier,
+                                         StringComparison.OrdinalIgnoreCase))
                             {
                                 includeByTier = true;
                                 break;
@@ -1341,6 +1388,60 @@ componentName: null,
             {
                 Logger.LogVerbose($"Tiers: {string.Join(", ", selectedTiers)}");
             }
+        }
+
+        /// <summary>
+        /// Without a Nexus API key, automated Nexus downloads fail. In best-effort mode, deselect any mod
+        /// whose <see cref="ModComponent.ResourceRegistry"/> includes a nexusmods.com URL so the batch does not waste time on them.
+        /// </summary>
+        private static int DeselectComponentsWithNexusUrlsWithoutApiKey([NotNull] List<ModComponent> components)
+        {
+            int deselected = 0;
+            foreach (ModComponent component in components)
+            {
+                if (!component.IsSelected)
+                {
+                    continue;
+                }
+
+                if (component.ResourceRegistry is null || component.ResourceRegistry.Count == 0)
+                {
+                    continue;
+                }
+
+                bool hasNexusUrl = false;
+                bool hasNonNexusUrl = false;
+                foreach (string url in component.ResourceRegistry.Keys)
+                {
+                    if (string.IsNullOrWhiteSpace(url))
+                    {
+                        continue;
+                    }
+
+                    if (url.IndexOf("nexusmods.com", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        hasNexusUrl = true;
+                    }
+                    else
+                    {
+                        hasNonNexusUrl = true;
+                    }
+                }
+
+                // Mods with both Nexus and DeadlyStream/Mega/etc. can still install via non-Nexus URLs.
+                if (!hasNexusUrl || hasNonNexusUrl)
+                {
+                    continue;
+                }
+
+                component.IsSelected = false;
+                deselected++;
+                Logger.LogVerbose(
+                    $"[Install] Deselected '{component.Name}' — download URLs are Nexus-only and no API key is configured."
+                );
+            }
+
+            return deselected;
         }
 
         /// <summary>
@@ -2803,6 +2904,35 @@ exception: null);
                 s_config.sourcePath = new DirectoryInfo(sourceDir);
                 s_config.destinationPath = new DirectoryInfo(opts.GameDirectory);
 
+                if (opts.BestEffort)
+                {
+                    opts.ContinueOnMissingSources = true;
+                    opts.ContinueOnModFailure = true;
+                    opts.AutoConfirm = true;
+                    await Logger.LogAsync("Best-effort mode: continuing past missing files and per-mod failures; auto-confirming prompts.").ConfigureAwait(false);
+                }
+
+                if (!string.IsNullOrWhiteSpace(opts.PatcherEngine))
+                {
+                    s_config.patcherEngine = opts.PatcherEngine.Trim();
+                    await Logger.LogAsync($"Patcher engine override: {MainConfig.PatcherEngine}").ConfigureAwait(false);
+                }
+
+                if (!string.IsNullOrWhiteSpace(opts.KPatcherPath))
+                {
+                    s_config.kpatcherExecutablePath = opts.KPatcherPath.Trim();
+                    await Logger.LogVerboseAsync($"KPatcher path override: {opts.KPatcherPath.Trim()}").ConfigureAwait(false);
+                }
+
+                s_config.continueInstallOnMissingSources = opts.ContinueOnMissingSources;
+                s_config.continueInstallOnModFailure = opts.ContinueOnModFailure;
+
+                if (!string.IsNullOrWhiteSpace(opts.NexusApiKey))
+                {
+                    s_config.nexusModsApiKey = opts.NexusApiKey.Trim();
+                    await Logger.LogVerboseAsync("Nexus Mods API key set from --nexus-api-key").ConfigureAwait(false);
+                }
+
                 await Logger.LogAsync($"Loading instruction file: {opts.InputPath}").ConfigureAwait(false);
 
                 List<ModComponent> components = await FileLoadingService.LoadFromFileAsync(opts.InputPath).ConfigureAwait(false);
@@ -2819,10 +2949,43 @@ exception: null);
                 s_config.allComponents = components;
                 await Logger.LogAsync($"Loaded {components.Count} component(s) from instruction file.").ConfigureAwait(false);
 
-                if (opts.Select != null && opts.Select.Any())
+                // Match GUI behavior: without --select, treat as "select all" (TOML often has IsSelected = false).
+                await Logger.LogAsync("Applying component selection...").ConfigureAwait(false);
+                ApplySelectionFilters(components, opts.Select);
+
+                if (opts.BestEffort && string.IsNullOrWhiteSpace(MainConfig.NexusModsApiKey))
                 {
-                    await Logger.LogAsync("Applying selection filters...").ConfigureAwait(false);
-                    ApplySelectionFilters(components, opts.Select);
+                    int nexusSkipped = DeselectComponentsWithNexusUrlsWithoutApiKey(components);
+                    if (nexusSkipped > 0)
+                    {
+                        await Logger.LogWarningAsync(
+                            $"No Nexus Mods API key: deselected {nexusSkipped} mod(s) that only list nexusmods.com download(s). "
+                            + "Set KOTOR_MODSYNC_NEXUS_API_KEY or use --nexus-api-key to include them."
+                        ).ConfigureAwait(false);
+                    }
+                }
+
+                if (opts.Download)
+                {
+                    if (string.IsNullOrWhiteSpace(opts.SourceDirectory))
+                    {
+                        await Logger.LogErrorAsync("--download requires --source-dir pointing at your mod download/workspace folder.").ConfigureAwait(false);
+                        return 1;
+                    }
+
+                    await Logger.LogAsync("Downloading mod archives before install...").ConfigureAwait(false);
+                    int hours = opts.DownloadTimeoutHours > 0 ? opts.DownloadTimeoutHours : 48;
+                    using (var downloadCts = new CancellationTokenSource(TimeSpan.FromHours(hours)))
+                    {
+                        _ = await DownloadAllModFilesAsync(
+                            components,
+                            sourceDir,
+                            opts.Verbose,
+                            sequential: !opts.Concurrent,
+                            downloadCts.Token).ConfigureAwait(false);
+                    }
+
+                    LogAllErrors(s_globalDownloadCache, forceConsoleOutput: true);
                 }
 
                 int selectedCount = components.Count(c => c.IsSelected);
@@ -2908,6 +3071,24 @@ exception: null);
                 if (exitCode == ModComponent.InstallExitCode.Success)
                 {
                     await Logger.LogAsync("Installation completed successfully!").ConfigureAwait(false);
+                    return 0;
+                }
+
+                if (exitCode == ModComponent.InstallExitCode.MissingSourceFiles &&
+                    (opts.ContinueOnMissingSources || opts.BestEffort))
+                {
+                    await Logger.LogWarningAsync(
+                        "Installation finished with one or more mods skipped (missing archives). Add downloads and re-run for those mods."
+                    ).ConfigureAwait(false);
+                    return 0;
+                }
+
+                if (exitCode == ModComponent.InstallExitCode.CompletedWithFailures &&
+                    (opts.ContinueOnModFailure || opts.BestEffort))
+                {
+                    await Logger.LogWarningAsync(
+                        "Installation finished with one or more mod failures; review logs and re-run or fix failed mods."
+                    ).ConfigureAwait(false);
                     return 0;
                 }
 

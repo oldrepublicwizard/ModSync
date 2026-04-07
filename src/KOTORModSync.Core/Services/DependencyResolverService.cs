@@ -283,7 +283,7 @@ namespace KOTORModSync.Core.Services
                 if (!visited.Contains(componentGuid))
                 {
                     IReadOnlyList<Guid> cycle = DetectCycleDFS(componentGuid, graph, visited, recursionStack);
-                    if (cycle != null)
+                    if (cycle != null && cycle.Count > 0)
                     {
                         var cycleNames = cycle.Select(guid =>
                             componentDict.TryGetValue(guid, out ModComponent comp) ? comp.Name : guid.ToString()).ToList();
@@ -303,6 +303,7 @@ namespace KOTORModSync.Core.Services
             return errors;
         }
 
+        [CanBeNull]
         private static IReadOnlyList<Guid> DetectCycleDFS(
             Guid current,
             Dictionary<Guid, HashSet<Guid>> graph,
@@ -319,7 +320,7 @@ namespace KOTORModSync.Core.Services
                     if (!visited.Contains(neighbor))
                     {
                         IReadOnlyList<Guid> cycle = DetectCycleDFS(neighbor, graph, visited, recursionStack);
-                        if (cycle != null)
+                        if (cycle != null && cycle.Count > 0)
                         {
                             return cycle;
                         }
@@ -343,7 +344,7 @@ namespace KOTORModSync.Core.Services
             }
 
             recursionStack.Remove(current);
-            return Array.Empty<Guid>();
+            return null;
         }
 
         private static IReadOnlyList<ModComponent> PerformTopologicalSort(
