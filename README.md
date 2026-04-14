@@ -79,7 +79,7 @@ I'm honestly not sure what all you need, I was able to build and run it on both 
 
 ### Vendor dependencies
 
-HoloPatcher.NET is now tracked as a git submodule under `vendor/HoloPatcher.NET`.
+KPatcher is now tracked as a git submodule under `vendor/KPatcher`.
 
 Initialize vendor dependencies after cloning:
 
@@ -87,7 +87,7 @@ Initialize vendor dependencies after cloning:
 git submodule update --init --recursive
 ```
 
-The canonical HoloPatcher.NET source now lives under `vendor/HoloPatcher.NET`. The legacy local trees under `src/HoloPatcher` and `src/HoloPatcher.UI` are being retired and should not be used as the primary upstream for new changes.
+The canonical KPatcher source now lives under `vendor/KPatcher`. The legacy local trees under `src/HoloPatcher` and `src/HoloPatcher.UI` are being retired and should not be used as the primary upstream for new changes.
 
 ### NuGet sources
 

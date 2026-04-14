@@ -168,20 +168,20 @@
 
   <PropertyGroup>
     <LegacyHoloPatcherBinDir>$(SolutionDir)vendor$(DirectorySeparatorChar)bin$(DirectorySeparatorChar)</LegacyHoloPatcherBinDir>
-    <VendorHoloPatcherProject>$(SolutionDir)vendor$(DirectorySeparatorChar)HoloPatcher.NET$(DirectorySeparatorChar)src$(DirectorySeparatorChar)HoloPatcher$(DirectorySeparatorChar)HoloPatcher.csproj</VendorHoloPatcherProject>
-    <VendorHoloPatcherAssetsFile>$(SolutionDir)vendor$(DirectorySeparatorChar)HoloPatcher.NET$(DirectorySeparatorChar)src$(DirectorySeparatorChar)HoloPatcher$(DirectorySeparatorChar)obj$(DirectorySeparatorChar)project.assets.json</VendorHoloPatcherAssetsFile>
-    <VendorHoloPatcherOutputDir>$(SolutionDir)vendor$(DirectorySeparatorChar)HoloPatcher.NET$(DirectorySeparatorChar)src$(DirectorySeparatorChar)HoloPatcher$(DirectorySeparatorChar)bin$(DirectorySeparatorChar)$(Configuration)$(DirectorySeparatorChar)$(TargetFramework)$(DirectorySeparatorChar)</VendorHoloPatcherOutputDir>
+    <VendorHoloPatcherProject>$(SolutionDir)vendor$(DirectorySeparatorChar)KPatcher$(DirectorySeparatorChar)src$(DirectorySeparatorChar)KPatcher.UI$(DirectorySeparatorChar)KPatcher.UI.csproj</VendorHoloPatcherProject>
+    <VendorHoloPatcherAssetsFile>$(SolutionDir)vendor$(DirectorySeparatorChar)KPatcher$(DirectorySeparatorChar)src$(DirectorySeparatorChar)KPatcher.UI$(DirectorySeparatorChar)obj$(DirectorySeparatorChar)project.assets.json</VendorHoloPatcherAssetsFile>
+    <VendorHoloPatcherOutputDir>$(SolutionDir)vendor$(DirectorySeparatorChar)KPatcher$(DirectorySeparatorChar)src$(DirectorySeparatorChar)KPatcher.UI$(DirectorySeparatorChar)bin$(DirectorySeparatorChar)$(Configuration)$(DirectorySeparatorChar)$(TargetFramework)$(DirectorySeparatorChar)</VendorHoloPatcherOutputDir>
     <MacLegacyHoloPatcherSource>$(LegacyHoloPatcherBinDir)HoloPatcher.app$(DirectorySeparatorChar)Contents$(DirectorySeparatorChar)MacOS$(DirectorySeparatorChar)HoloPatcher</MacLegacyHoloPatcherSource>
-    <MacVendorHoloPatcherSource>$(VendorHoloPatcherOutputDir)HoloPatcher</MacVendorHoloPatcherSource>
+    <MacVendorHoloPatcherSource>$(VendorHoloPatcherOutputDir)KPatcher</MacVendorHoloPatcherSource>
     <LinuxLegacyHoloPatcherSource>$(LegacyHoloPatcherBinDir)HoloPatcher_linux</LinuxLegacyHoloPatcherSource>
-    <LinuxVendorHoloPatcherSource>$(VendorHoloPatcherOutputDir)HoloPatcher</LinuxVendorHoloPatcherSource>
+    <LinuxVendorHoloPatcherSource>$(VendorHoloPatcherOutputDir)KPatcher</LinuxVendorHoloPatcherSource>
     <WindowsLegacyHoloPatcherSource>$(LegacyHoloPatcherBinDir)HoloPatcher.exe</WindowsLegacyHoloPatcherSource>
-    <WindowsVendorHoloPatcherSource>$(VendorHoloPatcherOutputDir)HoloPatcher.exe</WindowsVendorHoloPatcherSource>
+    <WindowsVendorHoloPatcherSource>$(VendorHoloPatcherOutputDir)KPatcher.exe</WindowsVendorHoloPatcherSource>
   </PropertyGroup>
 
   <Target Name="BuildVendorHoloPatcher" BeforeTargets="PostBuild"
     Condition="'$(DesignTimeBuild)' != 'true' AND Exists('$(VendorHoloPatcherProject)') AND Exists('$(VendorHoloPatcherAssetsFile)') AND !Exists('$(WindowsVendorHoloPatcherSource)') AND !Exists('$(MacVendorHoloPatcherSource)') AND !Exists('$(LinuxVendorHoloPatcherSource)')">
-    <Message Importance="High" Text="Building vendor HoloPatcher from $(VendorHoloPatcherProject) for $(Configuration)|$(TargetFramework)..." />
+    <Message Importance="High" Text="Building vendor KPatcher from $(VendorHoloPatcherProject) for $(Configuration)|$(TargetFramework)..." />
     <MSBuild Projects="$(VendorHoloPatcherProject)"
       Targets="Build"
       Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)"

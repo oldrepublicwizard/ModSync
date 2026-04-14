@@ -253,7 +253,7 @@ KOTORModSync is a cross-platform multi-mod installer for Star Wars: KOTOR, built
 - .NET 9.0 SDK at `$HOME/.dotnet` (ensure `DOTNET_ROOT` and `PATH` include it)
 - PowerShell (`pwsh`) for running tests per `.cursorrules` conventions
 - X11 libraries for AvaloniaUI rendering (see README for list)
-- Git submodules: `src/AvRichTextBox` and `src/RtfDomParserAvalonia` are initialized; `vendor/HoloPatcher.NET` is unavailable (private/not-found repo) but not required for building or testing the main solution
+- Git submodules: `src/AvRichTextBox` and `src/RtfDomParserAvalonia` are initialized; `vendor/KPatcher` is available and not required for building or testing the main solution
 
 ### Build, Test, Lint, Run
 
@@ -268,4 +268,4 @@ KOTORModSync is a cross-platform multi-mod installer for Star Wars: KOTOR, built
 - `CrossPlatformFileWatcherTests` fail in the cloud VM due to container filesystem inotify limitations; this is expected.
 - Some xUnit-based UI tests may fail headlessly depending on Avalonia headless support; these are pre-existing.
 - The NuGet config (`NuGet.config`) includes a GitHub Packages feed (`github-th3w1zard1`). Public packages restore without auth; if private packages are added, a GitHub PAT may be needed.
-- `vendor/HoloPatcher.NET` submodule references a repo that currently returns 404. The build succeeds without it (only used in optional PostBuild copy targets).
+- `vendor/KPatcher` contains the vendored patcher source. The build can proceed without it for most workflows, but it is used by optional PostBuild copy targets.

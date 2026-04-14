@@ -93,13 +93,13 @@ Common mock/real switch:
 - Mock auth off: run service with `REQUIRE_AUTH=false`.
 - Real auth on: provide `KOTORMODSYNC_SIGNING_SECRET` (or mounted secret file) and use signed test requests.
 
-## 4) Vendor HoloPatcher integration (`vendor/HoloPatcher.NET`)
+## 4) Vendor KPatcher integration (`vendor/KPatcher`)
 
 Use when patcher engine behavior changes or vendor sync introduces regressions.
 
 High-signal check:
 
-- `dotnet test vendor/HoloPatcher.NET/src/TSLPatcher.Tests/TSLPatcher.Tests.csproj`
+- `dotnet test vendor/KPatcher/tests/KPatcher.Tests/KPatcher.Tests.csproj`
 
 If GUI validation reports missing HoloPatcher on Linux, run:
 
