@@ -35,7 +35,7 @@ namespace KOTORModSync.Core.Services.Download
         private static Task s_sharingMonitorTask;
         private static object s_clientSettings;
 
-        private static string D(string s) => Encoding.UTF8.GetString(Convert.FromBase64String(s));
+
 
         public static async Task<DownloadResult> TryOptimizedDownload(
             string url,
@@ -179,7 +179,7 @@ namespace KOTORModSync.Core.Services.Download
 
                     try
                     {
-                        var engineSettingsType = Type.GetType(D("TW9ub1RvcnJlbnQuQ2xpZW50LkVuZ2luZVNldHRpbmdzLCBNb25vVG9ycmVudA=="));
+                        var engineSettingsType = Type.GetType("MonoTorrent.Client.EngineSettings, MonoTorrent");
                         if (engineSettingsType is null)
                         {
                             _initialized = true;
@@ -196,7 +196,7 @@ namespace KOTORModSync.Core.Services.Download
 
                         // Port configuration
                         settings.ListenPort = lp;
-                        dynamic discoveryPortProperty = settings.GetType().GetProperty(D("RGh0UG9ydA=="));
+                        dynamic discoveryPortProperty = settings.GetType().GetProperty("DhtPort");
                         discoveryPortProperty?.SetValue(settings, lp);
 
                         // Bandwidth limits (conservative defaults)
@@ -214,7 +214,7 @@ namespace KOTORModSync.Core.Services.Download
                         // Enable protocol encryption for security
                         try
                         {
-                            var encryptionTypes = Type.GetType(D("TW9ub1RvcnJlbnQuRW5jcnlwdGlvblR5cGVzLCBNb25vVG9ycmVudA=="));
+                            var encryptionTypes = Type.GetType("MonoTorrent.EncryptionTypes, MonoTorrent");
                             if (encryptionTypes != null)
                             {
                                 // Allow both encrypted and plaintext connections (max compatibility)
@@ -237,23 +237,23 @@ namespace KOTORModSync.Core.Services.Download
                         }
 
                         // Step 3: Create client engine
-                        var clientEngineType = Type.GetType(D("TW9ub1RvcnJlbnQuQ2xpZW50LkNsaWVudEVuZ2luZSwgTW9ub1RvcnJlbnQ="));
+                        var clientEngineType = Type.GetType("MonoTorrent.Client.ClientEngine, MonoTorrent");
                         _client = Activator.CreateInstance(clientEngineType, settings);
 
                         // Step 4: Initialize distributed discovery
                         try
                         {
-                            var discoveryEngineType = Type.GetType(D("TW9ub1RvcnJlbnQuRGh0LkRodEVuZ2luZSwgTW9ub1RvcnJlbnQ="));
+                            var discoveryEngineType = Type.GetType("MonoTorrent.Dht.DhtEngine, MonoTorrent");
                             if (discoveryEngineType != null)
                             {
                                 dynamic discoveryEngine = Activator.CreateInstance(discoveryEngineType);
 
-                                dynamic registerDiscoveryMethod = _client.GetType().GetMethod(D("UmVnaXN0ZXJEaHQ="));
+                                dynamic registerDiscoveryMethod = _client.GetType().GetMethod("RegisterDht");
                                 if (registerDiscoveryMethod != null)
                                 {
                                     registerDiscoveryMethod.Invoke(_client, new object[] { discoveryEngine });
 
-                                    dynamic startDiscoveryMethod = discoveryEngine.GetType().GetMethod(D("U3RhcnQ="));
+                                    dynamic startDiscoveryMethod = discoveryEngine.GetType().GetMethod("Start");
                                     if (startDiscoveryMethod != null)
                                     {
                                         startDiscoveryMethod.Invoke(discoveryEngine, null);
@@ -270,7 +270,7 @@ namespace KOTORModSync.Core.Services.Download
                         // Step 5: Enable connection exchange if available
                         try
                         {
-                            dynamic pexProperty = settings.GetType().GetProperty(D("QWxsb3dQZWVyRXhjaGFuZ2U="));
+                            dynamic pexProperty = settings.GetType().GetProperty("AllowPeerExchange");
                             if (pexProperty != null)
                             {
                                 pexProperty.SetValue(settings, true);
@@ -410,7 +410,7 @@ namespace KOTORModSync.Core.Services.Download
                 "KOTORModSync",
                 "Cache"
             );
-            return Path.Combine(cacheDir, Encoding.UTF8.GetString(Convert.FromBase64String("cDJwLXBvcnQuY2Zn")));
+            return Path.Combine(cacheDir, "p2p-port.cfg");
         }
 
         /// <summary>
@@ -542,7 +542,7 @@ namespace KOTORModSync.Core.Services.Download
 
                         // Keep sharing for minimum time (24 hours) or until ratio >= 1.0
                         // This is a simplified heuristic - adjust based on your requirements
-                        if (string.Equals(state, D("U2VlZGluZw=="), StringComparison.Ordinal))
+                        if (string.Equals(state, "Seeding", StringComparison.Ordinal))
                         {
                             // The underlying engine doesn't always expose ratio directly, so we check progress
                             double progress = manager.Progress;
@@ -611,10 +611,10 @@ namespace KOTORModSync.Core.Services.Download
 
                 await Logger.LogVerboseAsync($"[Cache] Attempting optimized download").ConfigureAwait(false);
 
-                var metadataType = Type.GetType(D("TW9ub1RvcnJlbnQuVG9ycmVudCwgTW9ub1RvcnJlbnQ="));
+                var metadataType = Type.GetType("MonoTorrent.Torrent, MonoTorrent");
                 dynamic metadata = await Task.Run(() =>
                 {
-                    System.Reflection.MethodInfo loadMethod = metadataType.GetMethod(D("TG9hZA=="), new[] { typeof(string) });
+                    System.Reflection.MethodInfo loadMethod = metadataType.GetMethod("Load", new[] { typeof(string) });
                     return loadMethod.Invoke(null, new object[] { cachePath });
                 }).ConfigureAwait(false);
 
@@ -626,7 +626,7 @@ namespace KOTORModSync.Core.Services.Download
                 string tempDirectory = Path.GetDirectoryName(tempPath);
                 _ = Directory.CreateDirectory(tempDirectory);
 
-                var managerType = Type.GetType(D("TW9ub1RvcnJlbnQuQ2xpZW50LlRvcnJlbnRNYW5hZ2VyLCBNb25vVG9ycmVudA=="));
+                var managerType = Type.GetType("MonoTorrent.Client.TorrentManager, MonoTorrent");
                 dynamic manager = Activator.CreateInstance(managerType, metadata, tempDirectory);
 
                 await _client.Register(manager);
@@ -638,7 +638,7 @@ namespace KOTORModSync.Core.Services.Download
 
                 while (!cancellationToken.IsCancellationRequested && stopwatch.Elapsed < timeout)
                 {
-                    if (string.Equals(manager.State.ToString(), D("U2VlZGluZw=="), StringComparison.Ordinal) || manager.Complete)
+                    if (string.Equals(manager.State.ToString(), "Seeding", StringComparison.Ordinal) || manager.Complete)
                     {
                         // The engine downloads to temp directory, now move to final location
                         await Logger.LogVerboseAsync($"[Cache] ✓ Optimized download complete: {fileName}").ConfigureAwait(false);
@@ -745,14 +745,14 @@ namespace KOTORModSync.Core.Services.Download
                     await CreateCacheFileAsync(filePath, metadataPath).ConfigureAwait(false);
                 }
 
-                var metadataType = Type.GetType(D("TW9ub1RvcnJlbnQuVG9ycmVudCwgTW9ub1RvcnJlbnQ="));
+                var metadataType = Type.GetType("MonoTorrent.Torrent, MonoTorrent");
                 dynamic metadata = await Task.Run(() =>
                 {
-                    System.Reflection.MethodInfo loadMethod = metadataType.GetMethod(D("TG9hZA=="), new[] { typeof(string) });
+                    System.Reflection.MethodInfo loadMethod = metadataType.GetMethod("Load", new[] { typeof(string) });
                     return loadMethod.Invoke(null, new object[] { metadataPath });
                 }).ConfigureAwait(false);
 
-                var managerType = Type.GetType(D("TW9ub1RvcnJlbnQuQ2xpZW50LlRvcnJlbnRNYW5hZ2VyLCBNb25vVG9ycmVudA=="));
+                var managerType = Type.GetType("MonoTorrent.Client.TorrentManager, MonoTorrent");
                 dynamic manager = Activator.CreateInstance(managerType, metadata, Path.GetDirectoryName(filePath));
 
                 await _client.Register(manager);
@@ -775,13 +775,13 @@ namespace KOTORModSync.Core.Services.Download
         {
             try
             {
-                var creatorType = Type.GetType(D("TW9ub1RvcnJlbnQuVG9ycmVudENyZWF0b3IsIE1vbm9Ub3JyZW50"));
+                var creatorType = Type.GetType("MonoTorrent.TorrentCreator, MonoTorrent");
                 dynamic creator = Activator.CreateInstance(creatorType);
 
                 creator.Announces.Add(new List<string>
                 {
-                    D("dWRwOi8vdHJhY2tlci5vcGVudHJhY2tyLm9yZzoxMzM3L2Fubm91bmNl"),
-                    D("dWRwOi8vb3Blbi5zdGVhbHRoLnNpOjgwL2Fubm91bmNl"),
+                    "udp://tracker.opentrackr.org:1337/announce",
+                    "udp://open.stealth.si:80/announce",
                 });
 
                 dynamic metadata = await creator.CreateAsync(filePath);
@@ -1464,7 +1464,7 @@ namespace KOTORModSync.Core.Services.Download
                         }
 
                         // Get connection count
-                        dynamic connectionsProperty = manager.GetType().GetProperty(D("UGVlcnM="));
+                        dynamic connectionsProperty = manager.GetType().GetProperty("Peers");
                         if (connectionsProperty != null)
                         {
                             dynamic connectionCollection = connectionsProperty.GetValue(manager);

@@ -21,19 +21,19 @@ namespace KOTORModSync.Core.Services.Download
     public static class RemoteCacheProtocol
     {
         private static readonly TimeSpan s_defaultRegistrationTimeout = TimeSpan.FromSeconds(45);
-        private static readonly string s_relayEndpoint = Decode64("L3RyYW5zbWlzc2lvbi9ycGM=");
-        private static readonly string s_cascadeEndpoint = Decode64("L2pzb24=");
-        private static readonly string s_transmissionAdd = Decode64("dG9ycmVudC1hZGQ=");
-        private static readonly string s_transmissionGet = Decode64("dG9ycmVudC1nZXQ=");
-        private static readonly string s_transmissionAddedKey = Decode64("dG9ycmVudC1hZGRlZA==");
-        private static readonly string s_transmissionArgumentsKey = Decode64("YXJndW1lbnRz");
-        private static readonly string s_transmissionCollectionKey = Decode64("dG9ycmVudHM=");
-        private static readonly string s_transmissionHashKey = Decode64("aGFzaFN0cmluZw==");
-        private static readonly string s_delugeAuth = Decode64("YXV0aC5sb2dpbg==");
-        private static readonly string s_delugeAdd = Decode64("d2ViLmFkZF90b3JyZW50cw==");
-        private static readonly string s_delugeUpdate = Decode64("d2ViLnVwZGF0ZV91aQ==");
-        private static readonly string s_delugeResultKey = Decode64("cmVzdWx0");
-        private static readonly string s_delugeCollectionKey = Decode64("dG9ycmVudHM=");
+        private static readonly string s_relayEndpoint = "/transmission/rpc";
+        private static readonly string s_cascadeEndpoint = "/json";
+        private static readonly string s_transmissionAdd = "torrent-add";
+        private static readonly string s_transmissionGet = "torrent-get";
+        private static readonly string s_transmissionAddedKey = "torrent-added";
+        private static readonly string s_transmissionArgumentsKey = "arguments";
+        private static readonly string s_transmissionCollectionKey = "torrents";
+        private static readonly string s_transmissionHashKey = "hashString";
+        private static readonly string s_delugeAuth = "auth.login";
+        private static readonly string s_delugeAdd = "web.add_torrents";
+        private static readonly string s_delugeUpdate = "web.update_ui";
+        private static readonly string s_delugeResultKey = "result";
+        private static readonly string s_delugeCollectionKey = "torrents";
 
         public enum GatewayFlavor
         {
@@ -477,12 +477,6 @@ namespace KOTORModSync.Core.Services.Download
             }
 
             return new Uri(baseUri, relativePath.TrimStart(new[] { '/' }));
-        }
-
-        private static string Decode64(string value)
-        {
-            byte[] bytes = Convert.FromBase64String(value);
-            return Encoding.UTF8.GetString(bytes);
         }
     }
 }
