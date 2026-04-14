@@ -437,7 +437,7 @@ namespace KOTORModSync
         {
             Dispatcher.UIThread.Post(() =>
             {
-                DownloadProgress existing = _allDownloadItems.Find(p => string.Equals(p.Url, progress.Url, StringComparison.Ordinal));
+                DownloadProgress existing = _allDownloadItems.Find(p => IsSameDownload(p, progress));
                 if (existing != null)
                 {
 
@@ -469,6 +469,22 @@ namespace KOTORModSync
             });
         }
 
+        private static bool IsSameDownload(DownloadProgress existing, DownloadProgress incoming)
+        {
+            if (existing is null || incoming is null)
+            {
+                return false;
+            }
+
+            if (existing.ComponentGuid.HasValue && incoming.ComponentGuid.HasValue)
+            {
+                return existing.ComponentGuid.Value == incoming.ComponentGuid.Value
+                    && string.Equals(existing.Url, incoming.Url, StringComparison.Ordinal);
+            }
+
+            return string.Equals(existing.Url, incoming.Url, StringComparison.Ordinal);
+        }
+
         public void MarkCompleted()
         {
             Dispatcher.UIThread.Post(() =>
@@ -485,6 +501,63 @@ namespace KOTORModSync
                 if (cancelButton != null)
                 {
                     cancelButton.IsEnabled = false;
+                }
+
+                UpdateSummary();
+            });
+        }
+
+        public bool IsSessionCompleted => _isCompleted;
+
+        public bool HasPendingOrActiveDownloads => HasActiveOrPendingDownloads();
+
+        public void ResetForNewSession()
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                _allDownloadItems.Clear();
+                _activeDownloads.Clear();
+                _pendingDownloads.Clear();
+                _completedDownloads.Clear();
+                _activeDirectDownloads.Clear();
+                _completedDirectDownloads.Clear();
+                _activeOptimizedDownloads.Clear();
+                _completedOptimizedDownloads.Clear();
+
+                _isCompleted = false;
+                _forceCloseRequested = false;
+
+                ResetCancellationToken();
+
+                Button closeButton = this.FindControl<Button>("CloseButton");
+                if (closeButton != null)
+                {
+                    closeButton.IsEnabled = false;
+                }
+
+                Button cancelButton = this.FindControl<Button>("CancelButton");
+                if (cancelButton != null)
+                {
+                    cancelButton.IsEnabled = true;
+                    cancelButton.Content = "Cancel";
+                }
+
+                TextBlock summaryText = this.FindControl<TextBlock>("SummaryText");
+                if (summaryText != null)
+                {
+                    summaryText.Text = "Initializing downloads...";
+                }
+
+                TextBlock overallProgressText = this.FindControl<TextBlock>("OverallProgressText");
+                if (overallProgressText != null)
+                {
+                    overallProgressText.Text = "Overall Progress: 0 / 0 URLs";
+                }
+
+                ProgressBar overallProgressBar = this.FindControl<ProgressBar>("OverallProgressBar");
+                if (overallProgressBar != null)
+                {
+                    overallProgressBar.Value = 0;
                 }
 
                 UpdateSummary();

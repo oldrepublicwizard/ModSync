@@ -141,6 +141,26 @@ namespace KOTORModSync.Core
         /// <summary>Instance accessor for <see cref="FilterDownloadsByResolution"/>.</summary>
         public bool filterDownloadsByResolution { get => FilterDownloadsByResolution; set => FilterDownloadsByResolution = value; }
 
+        /// <summary>
+        /// When true, batch installs skip mods whose archives are missing instead of aborting the whole run
+        /// (CLI / automation). GUI default remains false.
+        /// </summary>
+        public static bool ContinueInstallOnMissingSources { get; private set; }
+
+        public bool continueInstallOnMissingSources
+        {
+            get => ContinueInstallOnMissingSources;
+            set => ContinueInstallOnMissingSources = value;
+        }
+
+        /// <summary>When true, a failed mod install does not abort the whole batch (CLI).</summary>
+        public static bool ContinueInstallOnModFailure { get; private set; }
+
+        public bool continueInstallOnModFailure
+        {
+            get => ContinueInstallOnModFailure;
+            set => ContinueInstallOnModFailure = value;
+        }
 
         /// <summary>Stores the Nexus Mods API key. Mutate via <see cref="nexusModsApiKey"/>.</summary>
         public static string NexusModsApiKey { get; private set; }
