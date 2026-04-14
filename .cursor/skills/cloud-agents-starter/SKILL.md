@@ -80,12 +80,6 @@ dotnet build -c Release
 dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj -c Release --no-build --verbosity normal
 ```
 
-**DistributedCache tests only** (exclude long and seeding):
-```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
-  --filter "FullyQualifiedName~DistributedCache&FullyQualifiedName!~LongRunning&FullyQualifiedName!~GitHubRunnerSeeding"
-```
-
 **Single test (with timeout):**
 ```bash
 dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
@@ -102,7 +96,7 @@ TEST_FILE_PATH=test_modbuild_current.md dotnet test src/KOTORModSync.Tests/KOTOR
 
 | Suffix | Purpose |
 |--------|---------|
-| `GitHubRunnerSeeding` | 5–6 hour seeding tests, only for GitHub Actions |
+
 | `LongRunning` | >2 min, excluded from normal runs |
 | (none) | Regular tests, <2 min |
 
@@ -177,7 +171,6 @@ Omit for PRs and dev builds.
 | Run GUI | `dotnet run --project src/KOTORModSync.GUI/KOTORModSync.csproj` |
 | Run Core CLI | `dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -- <verb> [options]` |
 | Run all tests | `dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj -c Release` |
-| Run DistCache tests | `dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~DistributedCache&FullyQualifiedName!~LongRunning&FullyQualifiedName!~GitHubRunnerSeeding"` |
 | Release build (with telemetry) | `dotnet build -c Release /p:DefineConstants="OFFICIAL_BUILD"` |
 
 ---

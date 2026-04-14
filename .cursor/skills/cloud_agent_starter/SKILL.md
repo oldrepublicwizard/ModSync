@@ -77,18 +77,7 @@ Rules to preserve:
 - Instruction paths must start with `<<modDirectory>>` or `<<kotorDirectory>>`.
 - Dry-run/validation logic should use virtual file system flows, not direct real FS validation shortcuts.
 
-## 3) Distributed cache + heavier integration tests (`src/KOTORModSync.Tests/Services/DistributedCache`)
-
-For distributed-cache behavior and integration-heavy flows, use the required filtered command:
-
-- `dotnet test KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~DistributedCache&FullyQualifiedName!~LongRunning&FullyQualifiedName!~GitHubRunnerSeeding"`
-
-Naming conventions matter:
-
-- `GitHubRunnerSeeding` = GitHub Actions seeding tests only.
-- `LongRunning` = long tests not intended for GitHub seeding runners.
-
-## 4) Telemetry auth service (`telemetry-auth/`)
+## 3) Telemetry auth service (`telemetry-auth/`)
 
 Use when touching request signing, auth middleware behavior, or telemetry auth deployment scripts.
 
@@ -104,7 +93,7 @@ Common mock/real switch:
 - Mock auth off: run service with `REQUIRE_AUTH=false`.
 - Real auth on: provide `KOTORMODSYNC_SIGNING_SECRET` (or mounted secret file) and use signed test requests.
 
-## 5) Vendor HoloPatcher integration (`vendor/HoloPatcher.NET`)
+## 4) Vendor HoloPatcher integration (`vendor/HoloPatcher.NET`)
 
 Use when patcher engine behavior changes or vendor sync introduces regressions.
 

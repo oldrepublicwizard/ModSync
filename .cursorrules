@@ -36,25 +36,16 @@ Instructions MUST use relative paths with placeholders: <<modDirectory>>\filenam
 
 **CRITICAL: Test naming prefixes/suffixes have specific meanings:**
 
-1. **GitHubRunnerSeeding** - Tests intended EXCLUSIVELY for GitHub Actions runners:
-   - These tests run for 5-6 hours and are meant for continuous seeding operations
-   - Use suffix: `GitHubRunnerSeeding` (e.g., `RealMods_KOTOR1Full_GitHubRunnerSeeding`)
-   - DO NOT use this suffix for any other tests, even if they take a long time
-
-2. **LongRunning** - Tests that take longer than 2 minutes but are NOT for GitHub runners:
-   - Use suffix: `LongRunning` (e.g., `RealMods_KOTOR1_CanComputeContentIds_LongRunning`)
+1. **LongRunning** - Tests that take longer than 2 minutes:
+   - Use suffix: `LongRunning` (e.g., `RealMods_KOTOR1_CanComputeHashes_LongRunning`)
    - These are excluded from GitHub workflows and normal test runs
-   - DO NOT use "Seeding" in the name for these tests
 
-3. **Regular tests** - All other tests:
+2. **Regular tests** - All other tests:
    - No special suffix needed
    - Should complete in under 2 minutes
 
 **Rules:**
-- NEVER use `GitHubRunnerSeeding` suffix unless the test is specifically intended for GitHub Actions runners
-- NEVER use `LongRunning` suffix with "Seeding" in the name
-- Tests taking >2 minutes that are NOT for GitHub runners should use `LongRunning` suffix only
-- GitHub workflow filters: `FullyQualifiedName~GitHubRunnerSeeding` to run ONLY seeding tests
+- Tests taking >2 minutes should use `LongRunning` suffix
 
 - Always use the following command to run tests:
 

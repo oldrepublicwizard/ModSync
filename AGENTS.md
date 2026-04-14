@@ -52,9 +52,9 @@ Cloud agents run headless (no X11 desktop). The following applies:
 ### Running tests (Cloud / headless)
 
 ```bash
-# Run all non-long-running, non-seeding tests
+# Run all non-long-running tests
 dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
-  --filter "FullyQualifiedName!~LongRunning&FullyQualifiedName!~GitHubRunnerSeeding"
+  --filter "FullyQualifiedName!~LongRunning"
 ```
 
 Run a single named test with a 120-second timeout to classify duration:
@@ -93,13 +93,11 @@ pwsh -Command '& {
 
 | Suffix | Meaning | Duration |
 |---|---|---|
-| `GitHubRunnerSeeding` | GitHub Actions ONLY — continuous seeding ops | 5-6 hours |
-| `LongRunning` | Long local tests, NOT for GitHub runners | > 2 minutes |
+| `LongRunning` | Long local tests | > 2 minutes |
 | _(none)_ | Regular test | < 2 minutes |
 
 Rules:
-- NEVER use `GitHubRunnerSeeding` unless the test is exclusively for GitHub Actions runners.
-- NEVER combine `LongRunning` with "Seeding" in a test name.
+- Tests taking >2 minutes should use `LongRunning` suffix.
 
 ## Verified local desktop baseline
 
@@ -262,7 +260,7 @@ KOTORModSync is a cross-platform multi-mod installer for Star Wars: KOTOR, built
 - **Build**: `dotnet build KOTORModSync.sln --configuration Debug` from repo root
 - **Run GUI**: `dotnet run --project src/KOTORModSync.GUI/KOTORModSync.csproj --configuration Debug --framework net9.0` (must specify `--framework net9.0` since Debug can multi-target)
 - **Lint**: `dotnet format KOTORModSync.sln --verify-no-changes` (pre-existing formatting diffs exist)
-- **Tests**: See `.cursorrules` for the required PowerShell-based test runner pattern. Quick non-long-running test run: `dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName!~LongRunning&FullyQualifiedName!~GitHubRunnerSeeding" --configuration Debug`
+- **Tests**: See `.cursorrules` for the required PowerShell-based test runner pattern. Quick non-long-running test run: `dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName!~LongRunning" --configuration Debug`
 
 ### Non-obvious gotchas
 

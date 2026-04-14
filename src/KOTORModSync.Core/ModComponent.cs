@@ -2078,18 +2078,11 @@ namespace KOTORModSync.Core
 
     /// <summary>
     /// Metadata for content-addressable resource tracking.
-    /// Supports dual-key lookup (MetadataHash before download, ContentId after).
     /// </summary>
     public class ResourceMetadata
     {
-        /// <summary>Current lookup key (MetadataHash initially, ContentId after download)</summary>
+        /// <summary>Current lookup key (MetadataHash)</summary>
         public string ContentKey { get; set; }
-
-        /// <summary>SHA-1 of canonical bundle descriptor (network cache identifier) - null pre-download</summary>
-        public string ContentId { get; set; }
-
-        /// <summary>SHA-256 of file bytes - CANONICAL for integrity (null pre-download)</summary>
-        public string ContentHashSHA256 { get; set; }
 
         /// <summary>SHA-256 of canonical provider metadata</summary>
         public string MetadataHash { get; set; }
@@ -2105,20 +2098,11 @@ namespace KOTORModSync.Core
         /// <summary>File size in bytes</summary>
         public long FileSize { get; set; }
 
-        /// <summary>Bytes per piece (from DeterminePieceSize)</summary>
-        public int PieceLength { get; set; }
-
-        /// <summary>Hex-encoded concatenated SHA-1 hashes (20 bytes per piece)</summary>
-        public string PieceHashes { get; set; }
-
         /// <summary>First time this resource was observed</summary>
         public DateTime? FirstSeen { get; set; }
 
         /// <summary>Last time integrity was verified</summary>
         public DateTime? LastVerified { get; set; }
-
-        /// <summary>Trust level for mapping verification</summary>
-        public MappingTrustLevel TrustLevel { get; set; } = MappingTrustLevel.Unverified;
     }
 
 
@@ -2143,19 +2127,4 @@ namespace KOTORModSync.Core
         }
     }
 
-    /// <summary>
-    /// Trust level for MetadataHash → ContentId mappings.
-    /// Elevated through independent verification.
-    /// </summary>
-    public enum MappingTrustLevel
-    {
-        /// <summary>Initial state - not yet verified</summary>
-        Unverified = 0,
-
-        /// <summary>Seen from one source</summary>
-        ObservedOnce = 1,
-
-        /// <summary>Verified from 2+ independent sources</summary>
-        Verified = 2,
-    }
 }
