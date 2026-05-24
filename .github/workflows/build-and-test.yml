@@ -13,6 +13,7 @@ permissions:
 
 env:
   DOTNET_VERSION: "9.0.x"
+  CORE_PROJECT: "src/KOTORModSync.Core/KOTORModSync.Core.csproj"
   TEST_PROJECT: "src/KOTORModSync.Tests/KOTORModSync.Tests.csproj"
 
 jobs:
@@ -45,8 +46,16 @@ jobs:
       - name: Restore test project
         run: dotnet restore "${{ env.TEST_PROJECT }}"
 
+      - name: Restore Core release dependency surface
+        run: dotnet restore "${{ env.CORE_PROJECT }}" -p:Configuration=Release
+
       - name: Build test project
         run: dotnet build "${{ env.TEST_PROJECT }}" --configuration Debug --no-restore
+
+      - name: Build Core release dependency surface
+        run: |
+          dotnet build "${{ env.CORE_PROJECT }}" --configuration Release --framework net9.0 --no-restore
+          dotnet build "${{ env.CORE_PROJECT }}" --configuration Release --framework net48 --no-restore
 
       - name: Run shared pipeline tests
         run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "FullyQualifiedName~InstallCoordinatorTests"
@@ -60,10 +69,14 @@ jobs:
       - name: Run self-update smoke tests
         run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "FullyQualifiedName~SelfUpdateIntegrationTests"
 
-      - name: Run telemetry smoke tests
+      - name: Run telemetry regression tests
         run: |
-          dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "Name~ComputeSignature_SameInputs_ReturnsDeterministicLowercaseHex"
-          dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "Name~SaveThenLoad_PreservesKeyConfigurationFields"
+          dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "Name~TelemetryService"
+          dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "Name~TelemetryAuthenticator"
+          dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "Name~TelemetryConfiguration"
+
+      - name: Run archive regression tests
+        run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "Name~AutoExtractionAndCleanList"
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
