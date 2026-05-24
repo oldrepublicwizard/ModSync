@@ -201,6 +201,7 @@ jobs:
             src/HoloPatcher/HoloPatcher.csproj \
             src/HoloPatcher.UI/HoloPatcher.UI/HoloPatcher.UI.csproj; do
             echo "=== $project ==="
+            dotnet restore "$project" -p:Configuration=Release
             dotnet list "$project" package --vulnerable --include-transitive
           done
 
