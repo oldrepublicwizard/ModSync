@@ -1,7 +1,7 @@
 ---
 title: Fix Release Please CI failure (unsupported plist extraFile)
 type: fix
-status: active
+status: shipped
 date: 2026-05-24
 ---
 
