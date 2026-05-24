@@ -9,12 +9,31 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": "KOTORModSync.Core/MainConfig.cs",
+          "path": "src/KOTORModSync.Core/MainConfig.cs",
           "glob": false
         },
         {
-          "type": "plist",
+          "type": "xml",
           "path": "Info.plist",
+          "xpath": "//key[normalize-space(text())='CFBundleShortVersionString']/following-sibling::string[1]",
+          "glob": false
+        },
+        {
+          "type": "xml",
+          "path": "Info.plist",
+          "xpath": "//key[normalize-space(text())='CFBundleVersion']/following-sibling::string[1]",
+          "glob": false
+        },
+        {
+          "type": "xml",
+          "path": "src/KOTORModSync.GUI/Info.plist",
+          "xpath": "//key[normalize-space(text())='CFBundleShortVersionString']/following-sibling::string[1]",
+          "glob": false
+        },
+        {
+          "type": "xml",
+          "path": "src/KOTORModSync.GUI/Info.plist",
+          "xpath": "//key[normalize-space(text())='CFBundleVersion']/following-sibling::string[1]",
           "glob": false
         }
       ],
