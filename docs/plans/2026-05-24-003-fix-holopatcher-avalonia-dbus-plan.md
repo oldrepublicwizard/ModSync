@@ -1,7 +1,7 @@
 ---
 title: Remediate HoloPatcher sibling Avalonia D-Bus path
 type: fix
-status: active
+status: shipped
 date: 2026-05-24
 ---
 
