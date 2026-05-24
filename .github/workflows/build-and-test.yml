@@ -14,6 +14,7 @@ permissions:
 env:
   DOTNET_VERSION: "9.0.x"
   CORE_PROJECT: "src/KOTORModSync.Core/KOTORModSync.Core.csproj"
+  GUI_PROJECT: "src/KOTORModSync.GUI/KOTORModSync.csproj"
   TEST_PROJECT: "src/KOTORModSync.Tests/KOTORModSync.Tests.csproj"
 
 jobs:
@@ -49,6 +50,9 @@ jobs:
       - name: Restore Core release dependency surface
         run: dotnet restore "${{ env.CORE_PROJECT }}" -p:Configuration=Release
 
+      - name: Restore GUI release dependency surface
+        run: dotnet restore "${{ env.GUI_PROJECT }}" -p:Configuration=Release
+
       - name: Build test project
         run: dotnet build "${{ env.TEST_PROJECT }}" --configuration Debug --no-restore
 
@@ -57,14 +61,22 @@ jobs:
           dotnet build "${{ env.CORE_PROJECT }}" --configuration Release --framework net9.0 --no-restore
           dotnet build "${{ env.CORE_PROJECT }}" --configuration Release --framework net48 --no-restore
 
+      - name: Build GUI release dependency surface
+        run: |
+          dotnet build "${{ env.GUI_PROJECT }}" --configuration Release --framework net9.0 --no-restore
+          dotnet build "${{ env.GUI_PROJECT }}" --configuration Release --framework net48 --no-restore
+
       - name: Run shared pipeline tests
         run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "FullyQualifiedName~InstallCoordinatorTests"
 
       - name: Run CLI integration test
         run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "FullyQualifiedName~CliInstallIntegrationTests"
 
-      - name: Run updater smoke tests
+      - name: Run updater service smoke tests
         run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "FullyQualifiedName~AutoUpdateServiceTests"
+
+      - name: Run headless updater client smoke tests
+        run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "FullyQualifiedName~AutoUpdateClientHeadlessTests"
 
       - name: Run self-update smoke tests
         run: dotnet test "${{ env.TEST_PROJECT }}" --no-build --filter "FullyQualifiedName~SelfUpdateIntegrationTests"
@@ -100,12 +112,72 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore Dependencies
-        run: dotnet restore "${{ env.TEST_PROJECT }}"
+      - name: Restore security scan dependency surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p audit
+          dotnet restore "${{ env.GUI_PROJECT }}" -p:Configuration=Release -p:TargetFramework=net9.0
+          cp "${{ github.workspace }}/src/KOTORModSync.GUI/obj/project.assets.json" audit/gui-net9-project.assets.json
+          dotnet restore "${{ env.GUI_PROJECT }}" -p:Configuration=Release -p:TargetFramework=net48
+          cp "${{ github.workspace }}/src/KOTORModSync.GUI/obj/project.assets.json" audit/gui-net48-project.assets.json
+          dotnet restore "${{ env.TEST_PROJECT }}"
+          cp "${{ github.workspace }}/src/KOTORModSync.Tests/obj/project.assets.json" audit/tests-project.assets.json
 
-      - name: Run Security Audit
-        run: dotnet list "${{ env.TEST_PROJECT }}" package --vulnerable --include-transitive
-        continue-on-error: true
+      - name: Audit GUI and test dependency graphs
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet list "${{ env.GUI_PROJECT }}" package --vulnerable --include-transitive
+          dotnet list "${{ env.TEST_PROJECT }}" package --vulnerable --include-transitive
+
+      - name: Fail on vulnerable Tmds.DBus.Protocol advisory
+        shell: bash
+        run: |
+          python <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          def parse_version(version: str):
+              return tuple(int(part) for part in version.split("."))
+
+          def is_vulnerable(version: str) -> bool:
+              parsed = parse_version(version)
+              return parsed < (0, 21, 3) or (0, 22, 0) <= parsed < (0, 92, 0)
+
+          checks = [
+              ("GUI net9 release", Path("audit/gui-net9-project.assets.json"), "net9.0"),
+              ("GUI net48 release", Path("audit/gui-net48-project.assets.json"), "net48"),
+              ("Tests", Path("audit/tests-project.assets.json"), "net9.0"),
+          ]
+
+          errors = []
+
+          for label, path, expected_framework in checks:
+              data = json.loads(path.read_text())
+              restored = data["project"]["restore"].get("originalTargetFrameworks") or list(data["project"]["restore"].get("frameworks", {}).keys())
+              if expected_framework not in restored:
+                  errors.append(f"{label}: expected restored framework {expected_framework}, got {restored}")
+
+              versions = sorted(
+                  {
+                      key.split("/", 1)[1]
+                      for key in data.get("libraries", {})
+                      if key.startswith("Tmds.DBus.Protocol/")
+                  }
+              )
+
+              for version in versions:
+                  if is_vulnerable(version):
+                      errors.append(f"{label}: vulnerable Tmds.DBus.Protocol {version}")
+
+          if errors:
+              print("::error title=Vulnerable Tmds.DBus.Protocol detected::The known Avalonia FreeDesktop DBus advisory reappeared or the expected audited graph was not restored.")
+              for error in errors:
+                  print(error)
+              sys.exit(1)
+          PY
 
       - name: Check for Secrets in Code
         uses: trufflesecurity/trufflehog@v3.88.2
