@@ -9,12 +9,17 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": "KOTORModSync.Core/MainConfig.cs",
+          "path": "src/KOTORModSync.Core/MainConfig.cs",
           "glob": false
         },
         {
-          "type": "plist",
+          "type": "generic",
           "path": "Info.plist",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "src/KOTORModSync.GUI/Info.plist",
           "glob": false
         }
       ],
