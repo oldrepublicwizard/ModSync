@@ -1,7 +1,7 @@
 ---
 title: Fix Release Please PR creation permissions
 type: fix
-status: active
+status: shipped
 date: 2026-05-24
 ---
 
