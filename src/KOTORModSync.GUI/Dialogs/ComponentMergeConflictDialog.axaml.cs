@@ -8,7 +8,6 @@ using System.Linq;
 
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -35,9 +34,6 @@ namespace KOTORModSync.Dialogs
         public ComponentMergeConflictDialog()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
 
             PointerPressed += InputElement_OnPointerPressed;
             PointerMoved += InputElement_OnPointerMoved;
@@ -56,9 +52,6 @@ namespace KOTORModSync.Dialogs
             [NotNull] Func<ModComponent, ModComponent, bool> matchFunc)
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
 
             ViewModel = new ComponentMergeConflictViewModel(
                 existingComponents,
