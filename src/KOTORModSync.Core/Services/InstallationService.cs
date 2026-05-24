@@ -587,7 +587,7 @@ Exception Type: {ex.GetType().FullName}";
 
             string pathEnv = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
             char sep = Path.PathSeparator;
-            foreach (string dir in pathEnv.Split(sep, StringSplitOptions.RemoveEmptyEntries))
+            foreach (string dir in pathEnv.Split(new[] { sep }, StringSplitOptions.RemoveEmptyEntries))
             {
                 if (string.IsNullOrWhiteSpace(dir))
                 {
@@ -644,7 +644,7 @@ Exception Type: {ex.GetType().FullName}";
                     return (1, string.Empty, "KPatcher executable not found. Set the path in Settings or install KPatcher on PATH.");
                 }
 
-                string prefix = OperatingSystem.IsWindows() ? string.Empty : "--console ";
+                string prefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? string.Empty : "--console ";
                 string fullArgs = prefix + args.TrimStart();
                 await Logger.LogVerboseAsync($"[KPatcher] {kPath} {fullArgs}").ConfigureAwait(false);
                 if (fileSystemProvider != null)
@@ -700,7 +700,7 @@ Exception Type: {ex.GetType().FullName}";
                         patcherIsExecutable = false;
                     }
 
-                    string prefix = OperatingSystem.IsWindows() ? string.Empty : "--console ";
+                    string prefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? string.Empty : "--console ";
                     // --install without paths exits 2; --help exits 0 and proves the CLI runs.
                     (int, string, string) kResult = await PlatformAgnosticMethods.ExecuteProcessAsync(
                         kPath,
