@@ -1,7 +1,7 @@
 ---
 title: Ship Release Please 2.1.0 release PR
 type: chore
-status: active
+status: shipped
 date: 2026-05-24
 ---
 
