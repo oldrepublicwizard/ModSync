@@ -23,7 +23,9 @@ Agents and CI can load canonical KOTOR full builds from `mod-builds`, round-trip
 
 **Out of scope:** Unrelated GUI wizard work; full LongRunning install with all mod archives on CI.
 
-**Deferred:** Auto-instruction generation from archives in CI; full install gate with real downloads; markdown-only install without TOML merge.
+**Deferred:** Full LongRunning install with all mod archives on CI; markdown-only install without TOML merge.
+
+**Slice 3 (2026-05-29):** CLI `--auto-generate-local` on convert/merge; `validate --dry-run-only`; `FullBuildMergedDryRunTests`; agent script updates. See `docs/plans/2026-05-29-019-auto-instruction-dryrun-install-plan.md`.
 
 ## Canonical sources
 

@@ -6,7 +6,7 @@
 dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 -- <verb> [options]
 ```
 
-Wrapper: `./scripts/agents/cli_validate.sh` for validation (supports `--use-file-selection`, `--full`, `--dry-run`, `--game-dir`, `--source-dir`, repeatable `--select`).
+Wrapper: `./scripts/agents/cli_validate.sh` for validation (supports `--use-file-selection`, `--full`, `--dry-run`, `--dry-run-only`, `--game-dir`, `--source-dir`, repeatable `--select`).
 
 ## Global options
 
@@ -32,6 +32,7 @@ Validate an instruction file. Structural checks work with `-i` alone; environmen
 | `--use-file-selection` | No | Only components with `IsSelected=true` in the file; default without `--select` validates **all** components |
 | `--full` | No | Full validation including environment checks (requires game + source dirs) |
 | `--dry-run` | No | VFS dry-run via `DryRunValidator` (requires game + source dirs; runs after structural validation) |
+| `--dry-run-only` | No | VFS dry-run only; skips per-component archive existence checks (requires game + source dirs) |
 | `--errors-only` | No | Suppress warnings/info |
 | `--ignore-errors` | No | Best-effort dependency order |
 
@@ -45,9 +46,13 @@ dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 --
 dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 -- \
   validate -i ./mod-builds/TOMLs/KOTOR1_Full.toml \
   -g ./tmp/kotor_template -s ./tmp/mod_downloads --dry-run
+
+dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 -- \
+  validate -i ./mod-builds/TOMLs/KOTOR1_Full.toml \
+  -g ./tmp/kotor_template -s ./tmp/mod_downloads --dry-run-only
 ```
 
-With an empty mod workspace, structural validation reports missing archives and dry-run exits non-zero — that is expected until downloads are present.
+With an empty mod workspace, `--dry-run` runs archive checks first and often exits non-zero before VFS simulation. Use `--dry-run-only` when you want VFS structural validation without requiring archives on disk.
 
 ---
 
@@ -99,6 +104,7 @@ Convert format, autogenerate links, download, or merge (with `-m`).
 | `-e` / `--existing`, `-n` / `--incoming` | Merge inputs |
 | Merge preference flags | `--prefer-existing-*`, `--prefer-incoming-*`, `--exclude-*-only`, `--use-existing-order` |
 | `--concurrent`, `--ignore-errors`, `--spoiler-free` | As labeled in `--help` |
+| `--auto-generate-local` | Generate instructions from local archives in `--source-path` for components missing instructions |
 | `--nexus-mods-api-key` | No | Nexus key for `convert` / merge downloads (name differs from `install --nexus-api-key`) |
 
 ---
@@ -121,7 +127,7 @@ dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 --
   -f toml -o ./tmp/KOTOR1_Full_merged.toml
 ```
 
-Agent wrapper: `./scripts/agents/cli_full_build_pipeline.sh --game k1 --game-dir ./tmp/kotor_template --source-dir ./tmp/mod_downloads --dry-run`
+Agent wrapper: `./scripts/agents/cli_full_build_pipeline.sh --game k1 --game-dir ./tmp/kotor_template --source-dir ./tmp/mod_downloads --dry-run-only`
 
 `--use-existing-order` is required when existing TOML carries instructions and incoming markdown is metadata-only; otherwise `prefer-existing-instructions` cannot preserve install steps.
 
