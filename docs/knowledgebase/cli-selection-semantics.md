@@ -38,7 +38,7 @@ Without `--full`, CLI skips environment/conflict/order stages (component archive
 
 ## `install` pre-check (default)
 
-`[REPO]` When `--skip-validation` is **not** set, `install` runs `InstallationValidationPipeline` with the same preset as the wizard `ValidatePage` (`ValidationPipelineOptions.WizardFull`: environment, conflicts, order, archives, VFS dry-run). Selection semantics match `validate --use-file-selection` when `--use-file-selection` or `--select` is passed; otherwise all loaded components are validated (mirroring Select All).
+`[REPO]` When `--skip-validation` is **not** set, `install` runs `InstallationValidationPipeline` with the same preset as the wizard `ValidatePage` (`ValidationPipelineOptions.WizardFull`: environment, conflicts, order, archives, VFS dry-run). The pre-check always validates components with `IsSelected == true` only (same as wizard Mod Selection → Validate), regardless of `--use-file-selection` on the install command itself.
 
 `--skip-validation` skips the full pipeline (environment-only behavior removed). `install_best_effort.sh` always passes `--skip-validation`.
 

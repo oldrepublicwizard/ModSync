@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 using KOTORModSync.Core;
@@ -38,6 +39,38 @@ namespace KOTORModSync.Tests
                 destinationPath = new DirectoryInfo(gameDir),
                 sourcePath = new DirectoryInfo(modDir),
             };
+
+            EnsureHolopatcherInTestResources();
+        }
+
+        private static void EnsureHolopatcherInTestResources()
+        {
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string resourcesDir = Path.Combine(baseDir, "Resources");
+            Directory.CreateDirectory(resourcesDir);
+            string targetPath = Path.Combine(resourcesDir, "holopatcher");
+            if (File.Exists(targetPath))
+            {
+                return;
+            }
+
+            string vendorHolopatcher = Path.GetFullPath(Path.Combine(
+                baseDir,
+                "..", "..", "..", "..", "..",
+                "vendor", "bin", "HoloPatcher_linux"));
+            if (!File.Exists(vendorHolopatcher))
+            {
+                return;
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                File.Copy(vendorHolopatcher, targetPath, overwrite: true);
+            }
+            else
+            {
+                File.CreateSymbolicLink(targetPath, vendorHolopatcher);
+            }
         }
 
         [TearDown]

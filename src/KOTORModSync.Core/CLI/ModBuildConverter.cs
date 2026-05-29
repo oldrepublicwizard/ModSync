@@ -3102,10 +3102,9 @@ componentName: null,
                 {
                     await Logger.LogAsync("Running full installation validation (wizard-equivalent pipeline)...").ConfigureAwait(false);
 
-                    bool useFileSelectionForPipeline = hasExplicitSelect || opts.UseFileSelection;
                     var pipelineOptions = ValidationPipelineOptions.WizardFull;
                     pipelineOptions.MainConfig = s_config;
-                    pipelineOptions.UseFileSelection = useFileSelectionForPipeline;
+                    pipelineOptions.UseFileSelection = true;
                     pipelineOptions.ConfirmationCallback = BuildInstallConfirmationCallback(opts);
 
                     ValidationPipelineResult pipelineResult = await InstallationValidationPipeline.RunAsync(
