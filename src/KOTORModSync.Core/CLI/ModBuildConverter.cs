@@ -2791,6 +2791,7 @@ exception: null);
                 }
 
                 int exitCode = 0;
+                bool dryRunPassed = false;
                 if (componentsWithErrors > 0)
                 {
                     if (opts.ErrorsOnly)
@@ -2824,6 +2825,8 @@ exception: null);
                         skipDependencyCheck: false,
                         CancellationToken.None).ConfigureAwait(false);
 
+                    dryRunPassed = dryRunResult.IsValid;
+
                     string dryRunMessage = dryRunResult.GetEditorMessage();
                     if (!opts.ErrorsOnly || !dryRunResult.IsValid)
                     {
@@ -2838,6 +2841,13 @@ exception: null);
 
                 if (exitCode != 0)
                 {
+                    if (opts.DryRun && dryRunPassed && !opts.ErrorsOnly)
+                    {
+                        await Logger.LogAsync(
+                            "⚠ Exit code 1: component validation reported errors (often missing mod archives on disk). Dry-run simulation passed separately."
+                        ).ConfigureAwait(false);
+                    }
+
                     return exitCode;
                 }
 
