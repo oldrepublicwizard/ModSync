@@ -20,7 +20,7 @@ Architecture review and desktop testing confirmed GUI wizard validation uses `Va
 
 - R1. CLI `install` without `--skip-validation` runs `InstallationValidationPipeline` with wizard-equivalent options and selection semantics.
 - R2. `--skip-validation` and `install_best_effort.sh` behavior unchanged.
-- R3. Regression test: restriction conflict fails install pre-check without `--skip-validation`.
+- R3. Regression tests: missing archive fails `validate`/`install` pre-check; restriction conflict auto-deselects one mod (install with `--skip-validation -y` documents post-deselect success).
 - R4. Update `docs/knowledgebase/agent-action-parity.md` and `cli-selection-semantics.md`.
 
 ## Scope Boundaries
@@ -41,7 +41,7 @@ Architecture review and desktop testing confirmed GUI wizard validation uses `Va
 
 **Files:** `src/KOTORModSync.Tests/ValidationPipelineParityTests.cs`
 
-**Test scenarios:** Two selected mods with restriction conflict → `install` exit 1 without `--skip-validation`; same TOML with `--skip-validation -y` still succeeds when archives present.
+**Test scenarios:** Missing archive → `validate` exit 1; `install` exit 1 without `--skip-validation`. Restriction conflict with both selected → pipeline auto-deselects dependency mod; `install --skip-validation -y` succeeds for remaining mod.
 
 ### U3. KB documentation
 
