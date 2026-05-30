@@ -26,6 +26,22 @@ Validates **all loaded components**. TOML `IsSelected` is **not** used unless `-
 
 Validates only components with `IsSelected = true` in the file (matches the install wizard after Mod Selection).
 
+## Unified validation pipeline
+
+`[REPO]` GUI (`ValidatePage`, legacy validate) and CLI `validate` both call `InstallationValidationPipeline` in Core. Wizard-equivalent CLI:
+
+```bash
+./scripts/agents/cli_validate.sh --input path.toml --game-dir ... --source-dir ... --full --dry-run --use-file-selection
+```
+
+Without `--full`, CLI skips environment/conflict/order stages (component archive checks only). Without `--dry-run`, archive checks run but VFS dry-run does not.
+
+## `install` pre-check (default)
+
+`[REPO]` When `--skip-validation` is **not** set, `install` runs `InstallationValidationPipeline` with the same preset as the wizard `ValidatePage` (`ValidationPipelineOptions.WizardFull`: environment, conflicts, order, archives, VFS dry-run). The pre-check always validates components with `IsSelected == true` only (same as wizard Mod Selection → Validate), regardless of `--use-file-selection` on the install command itself.
+
+`--skip-validation` skips the full pipeline (environment-only behavior removed). `install_best_effort.sh` always passes `--skip-validation`.
+
 ## `validate` with `--select`
 
 Applies the same category/tier filters, then validates only components with `IsSelected == true` after filtering.
