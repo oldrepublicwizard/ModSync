@@ -47,7 +47,7 @@
 
 `[UI]` Full-build agents can use **Copy report** on `ValidatePage` (after Run Validation) to copy summary counts, result cards, and the full validation log to the clipboard. **LogExpander** auto-expands when the run reports errors or warnings; clean passes leave it collapsed.
 
-**Results panel** scrolls to the first `❌` result card after validation (or first `⚠️` when there are no errors).
+**Results panel** scrolls to the first `❌` result card after validation (or first `⚠️` when there are no errors) and applies a red or amber border on that card so it stands out in long lists.
 
 ## Legacy MainWindow validate
 

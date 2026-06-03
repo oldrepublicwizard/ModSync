@@ -417,6 +417,9 @@ namespace KOTORModSync.Dialogs.WizardPages
                 AddResult);
         }
 
+        private static readonly IBrush s_errorHighlightBrush = new SolidColorBrush(Color.Parse("#E53935"));
+        private static readonly IBrush s_warningHighlightBrush = new SolidColorBrush(Color.Parse("#FB8C00"));
+
         private void ScrollToFirstIssueCard()
         {
             if (_resultsPanel is null)
@@ -424,8 +427,27 @@ namespace KOTORModSync.Dialogs.WizardPages
                 return;
             }
 
-            Control target = FindFirstResultCard("❌") ?? (_warningCount > 0 ? FindFirstResultCard("⚠️") : null);
-            target?.BringIntoView();
+            string prefix = "❌";
+            Control target = FindFirstResultCard(prefix);
+            if (target == null && _warningCount > 0)
+            {
+                prefix = "⚠️";
+                target = FindFirstResultCard(prefix);
+            }
+
+            if (target is Border border)
+            {
+                HighlightIssueCard(border, prefix);
+                border.BringIntoView();
+            }
+        }
+
+        private static void HighlightIssueCard(Border border, string titlePrefix)
+        {
+            border.BorderThickness = new Avalonia.Thickness(2);
+            border.BorderBrush = titlePrefix.StartsWith("❌", StringComparison.Ordinal)
+                ? s_errorHighlightBrush
+                : s_warningHighlightBrush;
         }
 
         private Control FindFirstResultCard(string titlePrefix)
