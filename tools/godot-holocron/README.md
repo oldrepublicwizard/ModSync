@@ -45,7 +45,7 @@ HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (merged) and **P
 | Text editor (NSS, LYT, VIS, …) | Done |
 | TLK string table editor + bridge write | Phase 1 |
 | ERF/RIM/MOD/SAV container browser (read-only list) | Phase 1 |
-| SSF | Read/write via bridge; dedicated UI later |
+| SSF sound-slot editor + bridge write | Phase 1 |
 | Installation list → open `dialog.tlk` | Phase 1 |
 | MDL, WAV, TPC, DLG graph | Phase 2–3 |
 

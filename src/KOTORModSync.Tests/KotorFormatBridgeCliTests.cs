@@ -33,6 +33,12 @@ namespace KOTORModSync.Tests
                 "..", "..", "..",
                 "Fixtures", "kotor", "sample.tlk"));
 
+        private static string SampleSsfPath =>
+            Path.GetFullPath(Path.Combine(
+                TestContext.CurrentContext.TestDirectory,
+                "..", "..", "..",
+                "Fixtures", "kotor", "sample.ssf"));
+
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
@@ -119,6 +125,57 @@ namespace KOTORModSync.Tests
             Assert.That(
                 payload.GetProperty("data").GetProperty("strings").GetArrayLength(),
                 Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Read_SampleSsf_ReturnsSounds()
+        {
+            if (!File.Exists(SampleSsfPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleSsfPath}");
+            }
+
+            var result = RunBridge("read", SampleSsfPath);
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            var payload = result.GetProperty("payload");
+            Assert.That(payload.GetProperty("format").GetString(), Is.EqualTo("ssf"));
+            Assert.That(
+                payload.GetProperty("data").GetProperty("sounds").GetArrayLength(),
+                Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void Write_RoundTripsSampleSsf()
+        {
+            if (!File.Exists(SampleSsfPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleSsfPath}");
+            }
+
+            var readResult = RunBridge("read", SampleSsfPath);
+            Assert.That(readResult.GetProperty("ok").GetBoolean(), Is.True);
+            var payload = readResult.GetProperty("payload").GetRawText();
+
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_ssf_" + Guid.NewGuid() + ".ssf");
+            try
+            {
+                var writeResult = RunBridge("write", tempPath, "--payload", payload);
+                Assert.That(writeResult.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(File.Exists(tempPath), Is.True);
+
+                var reread = RunBridge("read", tempPath);
+                Assert.That(reread.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(
+                    reread.GetProperty("payload").GetProperty("data").GetProperty("sounds").GetArrayLength(),
+                    Is.GreaterThan(0));
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
         }
 
         [Test]

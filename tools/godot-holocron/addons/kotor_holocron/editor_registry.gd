@@ -7,7 +7,7 @@ const SCENES := {
 	KotorResourceTypes.EditorKind.TEXT: preload("res://addons/kotor_holocron/editors/text_editor.tscn"),
 	KotorResourceTypes.EditorKind.NCS: preload("res://addons/kotor_holocron/editors/text_editor.tscn"),
 	KotorResourceTypes.EditorKind.TLK: preload("res://addons/kotor_holocron/editors/tlk_editor.tscn"),
-	KotorResourceTypes.EditorKind.SSF: preload("res://addons/kotor_holocron/editors/gff_editor.tscn"),
+	KotorResourceTypes.EditorKind.SSF: preload("res://addons/kotor_holocron/editors/ssf_editor.tscn"),
 	KotorResourceTypes.EditorKind.ERF: preload("res://addons/kotor_holocron/editors/container_editor.tscn"),
 	KotorResourceTypes.EditorKind.BINARY: preload("res://addons/kotor_holocron/editors/text_editor.tscn"),
 }
