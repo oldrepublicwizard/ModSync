@@ -221,17 +221,11 @@ namespace KOTORModSync.Services
                         _mainConfig.allComponents,
                         pipelineOptions).ConfigureAwait(false);
 
+                ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
+
                 if (pipelineResult.DryRunResult != null)
                 {
-                    MapDryRunIssuesToDialogIssues(modIssues, pipelineResult.DryRunResult);
-                }
-
-                foreach (ValidationPipelineStageResult stage in pipelineResult.Stages)
-                {
-                    if (stage.Stage == ValidationPipelineStage.Environment && !stage.Passed)
-                    {
-                        systemIssues.Add($"⚙️ Environment\n{stage.Summary}");
-                    }
+                    ValidationPipelineDialogMapper.AddDryRunIssues(pipelineResult.DryRunResult, modIssues);
                 }
 
                 if (!UtilityHelper.IsDirectoryWritable(MainConfig.DestinationPath))
@@ -259,29 +253,5 @@ namespace KOTORModSync.Services
             }
         }
 
-        private static void MapDryRunIssuesToDialogIssues(
-            List<Dialogs.ValidationIssue> modIssues,
-            DryRunValidationResult dryRunResult)
-        {
-            foreach (Core.Services.FileSystem.ValidationIssue coreIssue in dryRunResult.Issues)
-            {
-                if (coreIssue.Severity != Core.Services.FileSystem.ValidationSeverity.Error &&
-                    coreIssue.Severity != Core.Services.FileSystem.ValidationSeverity.Critical)
-                {
-                    continue;
-                }
-
-                modIssues.Add(new Dialogs.ValidationIssue
-                {
-                    Icon = "❌",
-                    ModName = coreIssue.AffectedComponent?.Name ?? "Unknown",
-                    IssueType = coreIssue.Category ?? "Validation",
-                    Description = coreIssue.Message ?? "No description available",
-                    Solution = "Solution: Check the Output Window for details.",
-                    Component = coreIssue.AffectedComponent,
-                    VfsIssue = coreIssue,
-                });
-            }
-        }
     }
 }

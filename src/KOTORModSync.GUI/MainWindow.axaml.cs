@@ -3967,7 +3967,7 @@ namespace KOTORModSync
                 progressDialog?.UpdateStatus("Analyzing validation results...");
 
                 List<ValidationIssue> modIssues = new List<ValidationIssue>();
-                AddPipelineStageIssuesToDialog(pipelineResult, modIssues, message =>
+                Services.ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues, message =>
                 {
                     if (!token.IsCancellationRequested && !dialogClosed)
                     {
@@ -3975,39 +3975,13 @@ namespace KOTORModSync
                     }
                 });
 
-                foreach (Core.Services.FileSystem.ValidationIssue coreIssue in dryRunResult.Issues)
+                Services.ValidationPipelineDialogMapper.AddDryRunIssues(dryRunResult, modIssues, message =>
                 {
-                    string icon;
-                    if (coreIssue.Severity == Core.Services.FileSystem.ValidationSeverity.Error ||
-                        coreIssue.Severity == Core.Services.FileSystem.ValidationSeverity.Critical)
-                    {
-                        icon = "✗";
-                    }
-                    else if (coreIssue.Severity == Core.Services.FileSystem.ValidationSeverity.Warning)
-                    {
-                        icon = "⚠";
-                    }
-                    else
-                    {
-                        icon = "ℹ";
-                    }
-
-                    modIssues.Add(new ValidationIssue
-                    {
-                        Icon = icon,
-                        ModName = coreIssue.AffectedComponent?.Name ?? "Unknown",
-                        IssueType = coreIssue.Category ?? "Validation",
-                        Description = coreIssue.Message ?? "No description available",
-                        Solution = GetSolutionForIssue(coreIssue),
-                        VfsIssue = coreIssue,
-                        Component = coreIssue.AffectedComponent,
-                    });
-
                     if (!token.IsCancellationRequested && !dialogClosed)
                     {
-                        progressDialog?.AppendLog($"{icon} [{coreIssue.Category}] {coreIssue.Message}");
+                        progressDialog?.AppendLog(message);
                     }
-                }
+                });
 
                 bool validationResult = pipelineResult.IsSuccess;
                 string validationSummary = pipelineResult.DryRunResult?.GetSummaryMessage()
@@ -4105,160 +4079,6 @@ namespace KOTORModSync
                 }
             }
         }
-        private static void AddPipelineStageIssuesToDialog(
-            Core.Services.Validation.ValidationPipelineResult pipelineResult,
-            List<ValidationIssue> modIssues,
-            Action<string> appendLog)
-        {
-            foreach (Core.Services.Validation.ValidationPipelineStageResult stage in pipelineResult.Stages)
-            {
-                switch (stage.Stage)
-                {
-                    case Core.Services.Validation.ValidationPipelineStage.Environment:
-                        if (!stage.Passed)
-                        {
-                            string summary = stage.Summary ?? "Environment validation failed";
-                            modIssues.Add(new ValidationIssue
-                            {
-                                Icon = "✗",
-                                ModName = "Environment",
-                                IssueType = "Environment",
-                                Description = summary,
-                                Solution = "Verify HoloPatcher, KOTOR paths, and install directories are configured correctly.",
-                            });
-                            appendLog($"✗ [Environment] {summary}");
-                        }
-
-                        break;
-                    case Core.Services.Validation.ValidationPipelineStage.Conflicts:
-                        foreach (string message in stage.Messages)
-                        {
-                            if (message.StartsWith("ERROR:", StringComparison.Ordinal))
-                            {
-                                string detail = message.Substring(6).Trim();
-                                int colon = detail.IndexOf(':');
-                                string modName = colon > 0 ? detail.Substring(0, colon).Trim() : "Unknown";
-                                string description = colon > 0 ? detail.Substring(colon + 1).Trim() : detail;
-                                modIssues.Add(new ValidationIssue
-                                {
-                                    Icon = "✗",
-                                    ModName = modName,
-                                    IssueType = "Conflict",
-                                    Description = description,
-                                    Solution = "Resolve dependency or restriction conflicts before installing.",
-                                });
-                                appendLog($"✗ [Conflict] {detail}");
-                            }
-                            else if (message.StartsWith("WARNING:", StringComparison.Ordinal))
-                            {
-                                string detail = message.Substring(8).Trim();
-                                int colon = detail.IndexOf(':');
-                                string modName = colon > 0 ? detail.Substring(0, colon).Trim() : "Unknown";
-                                string description = colon > 0 ? detail.Substring(colon + 1).Trim() : detail;
-                                modIssues.Add(new ValidationIssue
-                                {
-                                    Icon = "⚠",
-                                    ModName = modName,
-                                    IssueType = "Conflict",
-                                    Description = description,
-                                    Solution = "Review mod restrictions; installation may still proceed with warnings.",
-                                });
-                                appendLog($"⚠ [Conflict] {detail}");
-                            }
-                        }
-
-                        break;
-                    case Core.Services.Validation.ValidationPipelineStage.InstallOrder:
-                        if (!stage.Passed)
-                        {
-                            string summary = stage.Summary ?? "Install order validation failed";
-                            modIssues.Add(new ValidationIssue
-                            {
-                                Icon = "✗",
-                                ModName = "Install Order",
-                                IssueType = "InstallOrder",
-                                Description = summary,
-                                Solution = "Fix circular dependencies or missing prerequisites in the mod list.",
-                            });
-                            appendLog($"✗ [InstallOrder] {summary}");
-                        }
-                        else if (stage.HasWarnings)
-                        {
-                            string summary = stage.Summary ?? "Mods will be automatically reordered";
-                            modIssues.Add(new ValidationIssue
-                            {
-                                Icon = "⚠",
-                                ModName = "Install Order",
-                                IssueType = "InstallOrder",
-                                Description = summary,
-                                Solution = "Review install order; the app may reorder mods automatically.",
-                            });
-                            appendLog($"⚠ [InstallOrder] {summary}");
-                        }
-
-                        break;
-                    case Core.Services.Validation.ValidationPipelineStage.ComponentValidation:
-                        foreach (string message in stage.Messages)
-                        {
-                            if (message.StartsWith("ERROR:", StringComparison.Ordinal))
-                            {
-                                string detail = message.Substring(6).Trim();
-                                int colon = detail.IndexOf(':');
-                                string modName = colon > 0 ? detail.Substring(0, colon).Trim() : "Unknown";
-                                string description = colon > 0 ? detail.Substring(colon + 1).Trim() : detail;
-                                modIssues.Add(new ValidationIssue
-                                {
-                                    Icon = "✗",
-                                    ModName = modName,
-                                    IssueType = "ArchiveValidation",
-                                    Description = description,
-                                    Solution = "Verify the archive exists and is not corrupted. Try re-downloading from the mod link.",
-                                });
-                                appendLog($"✗ [ArchiveValidation] {detail}");
-                            }
-                        }
-
-                        break;
-                }
-            }
-        }
-
-        private static string GetSolutionForIssue(Core.Services.FileSystem.ValidationIssue issue)
-        {
-            // Provide user-friendly solutions based on issue category
-            if (string.Equals(issue.Category, "ArchiveValidation", StringComparison.Ordinal) ||
-                string.Equals(issue.Category, "ExtractArchive", StringComparison.Ordinal))
-            {
-                return "Verify the archive exists and is not corrupted. Try re-downloading from the mod link.";
-            }
-
-            if ((string.Equals(issue.Category, "MoveFile", StringComparison.Ordinal) ||
-                 string.Equals(issue.Category, "CopyFile", StringComparison.Ordinal)) &&
-                issue.Message?.Contains("does not exist") == true)
-            {
-                return "The required file is missing. This may indicate an incomplete mod archive or incorrect source path.";
-            }
-
-            if ((string.Equals(issue.Category, "MoveFile", StringComparison.Ordinal) ||
-                 string.Equals(issue.Category, "CopyFile", StringComparison.Ordinal)) &&
-                issue.Message?.Contains("already exists") == true)
-            {
-                return "File conflict detected. This may be expected - ensure mod installation order is correct.";
-            }
-
-            if (string.Equals(issue.Category, "DeleteFile", StringComparison.Ordinal))
-            {
-                return "File does not exist to delete. This may indicate incorrect instruction order.";
-            }
-
-            if (string.Equals(issue.Category, "ExecuteProcess", StringComparison.Ordinal))
-            {
-                return "The required executable is missing. Verify the mod archive was extracted correctly.";
-            }
-
-            return string.Empty;
-        }
-
         [UsedImplicitly]
         [SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "<Pending>")]
         private async void AddComponentButton_Click(
