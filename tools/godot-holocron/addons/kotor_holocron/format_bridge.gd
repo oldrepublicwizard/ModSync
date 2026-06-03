@@ -63,7 +63,22 @@ static func extract_member(archive_path: String, resref: String, restype: String
 			"--output",
 			output_path,
 		]
-	)
+	 )
+
+
+static func inject_member(archive_path: String, resref: String, restype: String, source_path: String) -> Dictionary:
+	return run_command(
+		[
+			"inject",
+			archive_path,
+			"--resref",
+			resref,
+			"--restype",
+			restype,
+			"--source",
+			source_path,
+		]
+	 )
 
 
 static func write_file(path: String, payload: Dictionary) -> Dictionary:

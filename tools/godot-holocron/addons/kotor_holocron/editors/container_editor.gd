@@ -2,7 +2,7 @@
 class_name ContainerEditor
 extends KotorResourceEditorBase
 
-signal member_open_requested(path: String)
+signal member_open_requested(path: String, context: Dictionary)
 
 @onready var _table: Tree = %ResourceTree
 @onready var _status: Label = %StatusLabel
@@ -74,5 +74,12 @@ func _on_item_activated() -> void:
 		_status.text = "Extracted file missing: %s" % extracted
 		return
 
-	_status.text = "Opened member %s.%s" % [resref, restype]
-	member_open_requested.emit(extracted)
+	_status.text = "Opened member %s.%s (Save writes back to archive)" % [resref, restype]
+	member_open_requested.emit(
+		extracted,
+		{
+			"archive": resource_path,
+			"resref": resref,
+			"restype": restype,
+		}
+	)

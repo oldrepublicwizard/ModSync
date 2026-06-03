@@ -6,6 +6,7 @@ Commands (stdout is always JSON on success):
   read <path> [--game k1|k2]
   write <path> --payload <json-string|@file>
   extract <archive> --resref NAME --restype EXT --output <path>
+  inject <archive> --resref NAME --restype EXT --source <path>
   installations
   supported-types
 """
@@ -26,11 +27,11 @@ warnings.filterwarnings("ignore")
 try:
     from pykotor.common.misc import Game
     from pykotor.extract.file import ResourceIdentifier
-    from pykotor.resource.formats.erf.erf_auto import read_erf
+    from pykotor.resource.formats.erf.erf_auto import read_erf, write_erf
     from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
     from pykotor.resource.formats.gff.gff_data import GFF
     from pykotor.resource.formats.ncs.ncs_auto import read_ncs
-    from pykotor.resource.formats.rim.rim_auto import read_rim
+    from pykotor.resource.formats.rim.rim_auto import read_rim, write_rim
     from pykotor.resource.formats.ssf.ssf_auto import read_ssf, write_ssf
     from pykotor.resource.formats.ssf.ssf_data import SSF
     from pykotor.resource.formats.tlk.tlk_auto import read_tlk, write_tlk
@@ -165,6 +166,18 @@ def _open_container(path: Path):
     return read_erf(path)
 
 
+def _write_container(archive: Path, container) -> None:
+    _resname, archive_restype = _identify(archive)
+    ext = archive.suffix.lower().lstrip(".")
+    try:
+        if ext == "rim":
+            write_rim(container, archive, ResourceType.RIM)
+        else:
+            write_erf(container, archive, archive_restype)
+    except Exception as exc:
+        _fail(f"Failed to write archive {archive}: {exc}")
+
+
 def cmd_extract(archive_str: str, resref: str, restype_ext: str, output_str: str) -> None:
     archive = _resolve_path(archive_str)
     try:
@@ -196,6 +209,42 @@ def cmd_extract(archive_str: str, resref: str, restype_ext: str, output_str: str
             "resref": resref,
             "restype": restype.extension,
             "output": str(output.resolve()),
+            "bytes": len(data),
+        }
+    )
+
+
+def cmd_inject(archive_str: str, resref: str, restype_ext: str, source_str: str) -> None:
+    archive = _resolve_path(archive_str)
+    source = _resolve_path(source_str)
+    try:
+        container = _open_container(archive)
+    except Exception as exc:
+        _fail(f"Failed to open archive {archive}: {exc}")
+
+    try:
+        restype = ResourceType.from_extension(restype_ext.lower().lstrip("."))
+    except Exception as exc:
+        _fail(f"Unknown resource type '{restype_ext}': {exc}")
+
+    data = source.read_bytes()
+    if not data:
+        _fail(f"Source file is empty: {source}")
+
+    try:
+        container.set_data(resref, restype, data)
+    except Exception as exc:
+        _fail(f"Inject failed: {exc}")
+
+    _write_container(archive, container)
+
+    _emit(
+        {
+            "ok": True,
+            "archive": str(archive),
+            "resref": resref,
+            "restype": restype.extension,
+            "source": str(source.resolve()),
             "bytes": len(data),
         }
     )
@@ -406,6 +455,12 @@ def main() -> None:
     p_extract.add_argument("--restype", required=True, help="Resource extension, e.g. 2da, utc")
     p_extract.add_argument("--output", required=True)
 
+    p_inject = sub.add_parser("inject")
+    p_inject.add_argument("archive")
+    p_inject.add_argument("--resref", required=True)
+    p_inject.add_argument("--restype", required=True)
+    p_inject.add_argument("--source", required=True)
+
     sub.add_parser("installations")
     sub.add_parser("supported-types")
 
@@ -422,6 +477,8 @@ def main() -> None:
         cmd_write(args.path, payload)
     elif args.command == "extract":
         cmd_extract(args.archive, args.resref, args.restype, args.output)
+    elif args.command == "inject":
+        cmd_inject(args.archive, args.resref, args.restype, args.source)
     elif args.command == "installations":
         cmd_installations()
     elif args.command == "supported-types":

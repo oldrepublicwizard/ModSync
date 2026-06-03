@@ -239,6 +239,63 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Inject_ReplacesMemberInArchiveCopy()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            string extractPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+
+                var injectResult = RunBridge(
+                    "inject",
+                    archiveCopy,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--source",
+                    SampleTwoDaPath);
+                Assert.That(injectResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var extractResult = RunBridge(
+                    "extract",
+                    archiveCopy,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--output",
+                    extractPath);
+                Assert.That(extractResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var directRead = RunBridge("read", SampleTwoDaPath);
+                var extractedRead = RunBridge("read", extractPath);
+                Assert.That(
+                    extractedRead.GetProperty("payload").GetProperty("data").GetProperty("rows").GetArrayLength(),
+                    Is.EqualTo(
+                        directRead.GetProperty("payload").GetProperty("data").GetProperty("rows").GetArrayLength()));
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
+                }
+
+                if (File.Exists(extractPath))
+                {
+                    File.Delete(extractPath);
+                }
+            }
+        }
+
+        [Test]
         public void Write_RoundTripsSampleTlk()
         {
             if (!File.Exists(SampleTlkPath))

@@ -7,6 +7,7 @@ extends Control
 @onready var _install_list: ItemList = %InstallList
 
 var _current_editor: KotorResourceEditorBase
+var _archive_inject_context: Dictionary = {}
 
 
 func _ready() -> void:
@@ -92,6 +93,7 @@ func _open_path(path: String) -> void:
 	_current_editor.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_current_editor.load_resource(path, read_result)
 	_wire_nested_open(_current_editor)
+	_connect_editor_saved(_current_editor)
 	_status.text = "%s — %s" % [
 		KotorResourceTypes.kind_label(kind),
 		path.get_file(),
@@ -101,11 +103,43 @@ func _open_path(path: String) -> void:
 func _wire_nested_open(editor: KotorResourceEditorBase) -> void:
 	if editor is ContainerEditor:
 		var container := editor as ContainerEditor
-		if not container.member_open_requested.is_connected(_open_path):
-			container.member_open_requested.connect(_open_path)
+		if not container.member_open_requested.is_connected(_on_member_open_requested):
+			container.member_open_requested.connect(_on_member_open_requested)
+
+
+func _on_member_open_requested(member_path: String, context: Dictionary) -> void:
+	_archive_inject_context = context.duplicate(true)
+	_open_path(member_path)
+
+
+func _connect_editor_saved(editor: KotorResourceEditorBase) -> void:
+	if not editor.saved.is_connected(_on_editor_saved):
+		editor.saved.connect(_on_editor_saved)
+
+
+func _on_editor_saved(saved_path: String) -> void:
+	if _archive_inject_context.is_empty():
+		return
+
+	var archive := str(_archive_inject_context.get("archive", "")).strip_edges()
+	var resref := str(_archive_inject_context.get("resref", "")).strip_edges()
+	var restype := str(_archive_inject_context.get("restype", "")).strip_edges()
+	if archive == "" or resref == "" or restype == "":
+		_archive_inject_context = {}
+		return
+
+	var result := FormatBridge.inject_member(archive, resref, restype, saved_path)
+	if result.get("ok", false):
+		_status.text = "Saved %s.%s into %s" % [resref, restype, archive.get_file()]
+	else:
+		_status.text = "Archive inject failed: %s" % str(result.get("error", "unknown"))
+	_archive_inject_context = {}
 
 
 func _clear_editor() -> void:
+	_archive_inject_context = {}
+	if _current_editor and _current_editor.saved.is_connected(_on_editor_saved):
+		_current_editor.saved.disconnect(_on_editor_saved)
 	if _current_editor:
 		_current_editor.queue_free()
 		_current_editor = null
