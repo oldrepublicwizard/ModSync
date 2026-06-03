@@ -289,6 +289,39 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Extract_MissingMember_ReturnsError()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string outputPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                var raw = RunBridgeRaw(
+                    "extract",
+                    SampleModPath,
+                    "--resref",
+                    "not_in_archive",
+                    "--restype",
+                    "2da",
+                    "--output",
+                    outputPath);
+                Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+                Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+                Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("not found"));
+            }
+            finally
+            {
+                if (File.Exists(outputPath))
+                {
+                    File.Delete(outputPath);
+                }
+            }
+        }
+
+        [Test]
         public void Read_SampleMod_ReturnsResourceList()
         {
             if (!File.Exists(SampleModPath))
