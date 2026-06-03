@@ -66,6 +66,21 @@ namespace KOTORModSync.Tests
             Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
             Assert.That(result.GetProperty("extension").GetString(), Is.EqualTo("2da"));
             Assert.That(result.GetProperty("resource_type").GetString(), Is.EqualTo("TwoDA"));
+            Assert.That(result.GetProperty("editor_kind").GetString(), Is.EqualTo("twoda"));
+        }
+
+        [Test]
+        public void Probe_SampleMod_ReturnsArchiveEditorKind()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            var result = RunBridge("probe", SampleModPath);
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            Assert.That(result.GetProperty("extension").GetString(), Is.EqualTo("mod"));
+            Assert.That(result.GetProperty("editor_kind").GetString(), Is.EqualTo("erf"));
         }
 
         [Test]

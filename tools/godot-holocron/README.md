@@ -28,6 +28,7 @@ tools/godot-holocron/
 
 ```bash
 python3 tools/godot-holocron/bridge/kotor_format_bridge.py probe /path/to/file.2da
+# probe JSON includes editor_kind (twoda, gff, erf, …) aligned with the Godot editor registry
 python3 tools/godot-holocron/bridge/kotor_format_bridge.py read /path/to/file.utc
 python3 tools/godot-holocron/bridge/kotor_format_bridge.py installations
 python3 tools/godot-holocron/bridge/kotor_format_bridge.py supported-types

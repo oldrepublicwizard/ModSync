@@ -2,7 +2,7 @@
 """JSON CLI bridge between Godot and PyKotor for KOTOR resource I/O.
 
 Commands (stdout is always JSON on success):
-  probe <path>
+  probe <path>  # includes editor_kind for Holocron routing
   read <path> [--game k1|k2]
   write <path> --payload <json-string|@file>
   extract <archive> --resref NAME --restype EXT --output <path>
@@ -65,6 +65,55 @@ TEXT_EXTENSIONS = {
     "mdx",
 }
 
+GFF_EXTENSIONS = {
+    "gff",
+    "utc",
+    "utd",
+    "ute",
+    "uti",
+    "utm",
+    "utp",
+    "uts",
+    "utt",
+    "utw",
+    "are",
+    "dlg",
+    "fac",
+    "git",
+    "ifo",
+    "jrl",
+    "gui",
+    "pth",
+}
+
+CONTAINER_EXTENSIONS = {"erf", "mod", "sav", "rim"}
+
+TLK_EXTENSIONS = {"tlk", "fmh", "fml"}
+
+BINARY_EXTENSIONS = {"wav", "bwm", "mdl", "mdx", "tpc", "tga", "ltr", "lip"}
+
+
+def _editor_kind_for_extension(ext: str, category: str | None = None) -> str:
+    """Holocron editor routing key; mirrors addons/kotor_holocron/resource_types.gd."""
+    key = ext.lower().lstrip(".")
+    if key == "2da":
+        return "twoda"
+    if key in CONTAINER_EXTENSIONS:
+        return "erf"
+    if key in GFF_EXTENSIONS or (category or "").upper() == "GFF":
+        return "gff"
+    if key in TLK_EXTENSIONS:
+        return "tlk"
+    if key == "ssf":
+        return "ssf"
+    if key in TEXT_EXTENSIONS:
+        return "text"
+    if key == "ncs":
+        return "ncs"
+    if key in BINARY_EXTENSIONS:
+        return "binary"
+    return "unsupported"
+
 
 def _emit(payload: dict[str, Any], code: int = 0) -> None:
     print(json.dumps(payload, ensure_ascii=False), file=sys.stdout)
@@ -107,6 +156,7 @@ def cmd_probe(path_str: str) -> None:
             "extension": restype.extension,
             "category": restype.category,
             "resource_type": restype.name,
+            "editor_kind": _editor_kind_for_extension(restype.extension, restype.category),
             "size": path.stat().st_size,
         }
     )
