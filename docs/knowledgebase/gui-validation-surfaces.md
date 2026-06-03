@@ -35,7 +35,7 @@
 - Logs each stage step-by-step
 - Adds wizard result cards via `AddResult(title, message)`
 
-**Unified (PR #104+):** Conflicts, Install Order, and ComponentValidation stages use `TryParsePrefixedStageMessage` for `ERROR:` and `WARNING:` so mod titles match the dialog mapper.
+**Unified (PR #104+):** Conflicts, Install Order, ComponentValidation, and Environment failure (`ERROR:` from `RunEnvironmentStageAsync`) use `ApplyPrefixedStageMessageCards` → `TryParsePrefixedStageMessage` so wizard cards match the dialog mapper. Environment keeps the `❌ Environment Error` summary card only when no prefixed message lines were added.
 
 **Wizard stage UI:** `WizardValidationStagePresenter.ApplyStages` (`src/KOTORModSync.GUI/Services/WizardValidationStagePresenter.cs`) — log lines + `AddResult` cards for each pipeline stage. `ValidatePage` passes `AppendLog` / `AddResult` delegates.
 

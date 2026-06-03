@@ -77,6 +77,12 @@ namespace KOTORModSync.Services
             AddResultDelegate addResult)
         {
             appendLog($"Step {stepIndex}: Validating installation environment");
+            foreach (string message in stage.Messages)
+            {
+                appendLog($"  {message}");
+            }
+
+            int prefixedCards = ApplyPrefixedStageMessageCards(stage.Messages, addResult);
             if (stage.Passed)
             {
                 appendLog("  ✅ Environment validation passed");
@@ -84,8 +90,15 @@ namespace KOTORModSync.Services
             }
             else
             {
-                appendLog($"  ❌ Environment validation failed: {stage.Summary}");
-                addResult("❌ Environment Error", stage.Summary ?? "Environment validation failed");
+                if (prefixedCards == 0)
+                {
+                    appendLog($"  ❌ Environment validation failed: {stage.Summary}");
+                    addResult("❌ Environment Error", stage.Summary ?? "Environment validation failed");
+                }
+                else
+                {
+                    appendLog($"  ❌ Environment validation failed: {stage.Summary}");
+                }
             }
         }
 
@@ -100,25 +113,9 @@ namespace KOTORModSync.Services
             foreach (string message in stage.Messages)
             {
                 appendLog($"  {message}");
-                if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
-                        message,
-                        "WARNING:",
-                        out string modName,
-                        out _,
-                        out string detail))
-                {
-                    addResult($"⚠️ {modName}", detail);
-                }
-                else if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
-                             message,
-                             "ERROR:",
-                             out modName,
-                             out _,
-                             out detail))
-                {
-                    addResult($"❌ {modName}", detail);
-                }
             }
+
+            ApplyPrefixedStageMessageCards(stage.Messages, addResult);
 
             if (stage.Messages.Count == 0)
             {
@@ -136,25 +133,9 @@ namespace KOTORModSync.Services
             foreach (string message in stage.Messages)
             {
                 appendLog($"  {message}");
-                if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
-                        message,
-                        "WARNING:",
-                        out string modName,
-                        out _,
-                        out string detail))
-                {
-                    addResult($"⚠️ {modName}", detail);
-                }
-                else if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
-                             message,
-                             "ERROR:",
-                             out modName,
-                             out _,
-                             out detail))
-                {
-                    addResult($"❌ {modName}", detail);
-                }
             }
+
+            ApplyPrefixedStageMessageCards(stage.Messages, addResult);
 
             if (stage.Passed && !stage.HasWarnings)
             {
@@ -196,26 +177,12 @@ namespace KOTORModSync.Services
                 else
                 {
                     appendLog($"  {message}");
-                    if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
-                            message,
-                            "ERROR:",
-                            out string modName,
-                            out _,
-                            out string detail))
-                    {
-                        addResult($"❌ {modName}", detail);
-                    }
-                    else if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
-                                 message,
-                                 "WARNING:",
-                                 out modName,
-                                 out _,
-                                 out detail))
-                    {
-                        addResult($"⚠️ {modName}", detail);
-                    }
                 }
             }
+
+            ApplyPrefixedStageMessageCards(
+                stage.Messages.Where(m => !m.StartsWith("OK:", StringComparison.Ordinal)),
+                addResult);
 
             if (!stage.Passed)
             {
@@ -292,6 +259,38 @@ namespace KOTORModSync.Services
                     "⚠️ Instruction Execution",
                     $"Dry-run validation passed with {dryRunWarnings} warning(s).{overflow}");
             }
+        }
+
+        private static int ApplyPrefixedStageMessageCards(
+            IEnumerable<string> messages,
+            AddResultDelegate addResult)
+        {
+            int count = 0;
+            foreach (string message in messages)
+            {
+                if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
+                        message,
+                        "WARNING:",
+                        out string modName,
+                        out _,
+                        out string detail))
+                {
+                    addResult($"⚠️ {modName}", detail);
+                    count++;
+                }
+                else if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
+                             message,
+                             "ERROR:",
+                             out modName,
+                             out _,
+                             out detail))
+                {
+                    addResult($"❌ {modName}", detail);
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private static string FormatDryRunIssueTitle(ValidationIssue issue)

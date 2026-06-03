@@ -42,6 +42,31 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void ApplyStages_EnvironmentFailure_WithPrefixedMessage_AddsParsedCardOnly()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var environment = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.Environment,
+                Passed = false,
+                Summary = "HoloPatcher missing",
+            };
+            environment.Messages.Add("ERROR: HoloPatcher missing");
+            pipelineResult.Stages.Add(environment);
+
+            var results = new List<(string Title, string Message)>();
+            WizardValidationStagePresenter.ApplyStages(
+                pipelineResult,
+                selectedModCount: 1,
+                _ => { },
+                (title, message) => results.Add((title, message)));
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(results[0].Title, Is.EqualTo("❌ Unknown"));
+            Assert.That(results[0].Message, Is.EqualTo("HoloPatcher missing"));
+        }
+
+        [Test]
         public void ApplyStages_ConflictError_AddsModResultCard()
         {
             var pipelineResult = new ValidationPipelineResult();
