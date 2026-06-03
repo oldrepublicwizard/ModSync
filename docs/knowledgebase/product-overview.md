@@ -24,7 +24,7 @@ KOTOR modding often requires dozens of repetitive, order-sensitive steps per mod
 
 | Workflow | Description | Agent path |
 |----------|-------------|------------|
-| **Install wizard** | Load instruction file → select mods → download → validate → install | Desktop GUI + preload args; see [local desktop runbook](../local_desktop_agent_runbook.md) |
+| **Install wizard** | Load instruction file → select mods → download → validate → install | Desktop GUI + preload args; see [install-lifecycle.md](install-lifecycle.md) and [local desktop runbook](../local_desktop_agent_runbook.md) |
 | **Legacy Getting Started** | Top-level tab: set directories, fetch downloads, validate | Same desktop session; parallel to wizard |
 | **Headless validate** | Run unified validation pipeline on a TOML | `scripts/agents/cli_validate.sh` → Core `validate` |
 | **Headless install** | Install selected (or all) components | Core `install`; see [cli-selection-semantics.md](cli-selection-semantics.md) |
