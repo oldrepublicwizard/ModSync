@@ -25,10 +25,15 @@ text = "Remove"
 layout_mode = 2
 text = "Copy listing"
 
-[node name="StatusLabel" type="Label" parent="Toolbar"]
+[node name="FilterEdit" type="LineEdit" parent="Toolbar"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+placeholder_text = "Filter resref or type…"
+
+[node name="StatusLabel" type="Label" parent="Toolbar"]
+unique_name_in_owner = true
+layout_mode = 2
 text = "Archive contents"
 
 [node name="ResourceTree" type="Tree" parent="."]
@@ -42,3 +47,4 @@ select_mode = 0
 [connection signal="pressed" from="Toolbar/AddMemberButton" to="." method="_on_add_member_pressed"]
 [connection signal="pressed" from="Toolbar/RemoveMemberButton" to="." method="_on_remove_member_pressed"]
 [connection signal="pressed" from="Toolbar/CopyListingButton" to="." method="_on_copy_listing_pressed"]
+[connection signal="text_changed" from="Toolbar/FilterEdit" to="." method="_on_filter_changed"]

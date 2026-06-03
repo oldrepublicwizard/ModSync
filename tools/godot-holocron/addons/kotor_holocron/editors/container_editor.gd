@@ -5,10 +5,12 @@ extends KotorResourceEditorBase
 signal member_open_requested(path: String, context: Dictionary)
 
 @onready var _table: Tree = %ResourceTree
+@onready var _filter_edit: LineEdit = %FilterEdit
 @onready var _status: Label = %StatusLabel
 
 var _format: String = "erf"
 var _resources: Array = []
+var _filter_query: String = ""
 
 
 func _ready() -> void:
@@ -25,7 +27,7 @@ func _apply_bridge_data(data: Dictionary) -> void:
 	_format = str(payload.get("format", "erf"))
 	_resources = payload.get("resources", []).duplicate(true)
 	_rebuild_tree()
-	_status.text = "%s — %d resources (double-click to open)" % [_format.to_upper(), _resources.size()]
+	_update_status_line()
 
 
 func build_write_payload() -> Dictionary:
@@ -41,7 +43,34 @@ func _sorted_resources() -> Array:
 			return ref_a.nocasecmp_to(ref_b) < 0
 		return str(a.get("restype", "")).nocasecmp_to(str(b.get("restype", ""))) < 0
 	)
-	return sorted
+	if _filter_query == "":
+		return sorted
+
+	var filtered: Array = []
+	for res in sorted:
+		var resref := str(res.get("resref", "")).to_lower()
+		var restype := str(res.get("restype", "")).to_lower()
+		if _filter_query in resref or _filter_query in restype:
+			filtered.append(res)
+	return filtered
+
+
+func _update_status_line() -> void:
+	var visible := _sorted_resources().size()
+	if _filter_query != "":
+		_status.text = "%s — showing %d of %d (double-click to open)" % [
+			_format.to_upper(),
+			visible,
+			_resources.size(),
+		]
+	else:
+		_status.text = "%s — %d resources (double-click to open)" % [_format.to_upper(), _resources.size()]
+
+
+func _on_filter_changed(new_text: String) -> void:
+	_filter_query = new_text.strip_edges().to_lower()
+	_rebuild_tree()
+	_update_status_line()
 
 
 func _rebuild_tree() -> void:

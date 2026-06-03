@@ -105,6 +105,34 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Read_BinaryFile_ReturnsBase64Payload()
+        {
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_" + Guid.NewGuid() + ".mdl");
+            try
+            {
+                File.WriteAllBytes(tempPath, new byte[] { 0x41, 0x42, 0x00, 0xFF });
+
+                var probe = RunBridge("probe", tempPath);
+                Assert.That(probe.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(probe.GetProperty("editor_kind").GetString(), Is.EqualTo("binary"));
+
+                var result = RunBridge("read", tempPath);
+                Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+                var payload = result.GetProperty("payload");
+                Assert.That(payload.GetProperty("format").GetString(), Is.EqualTo("binary"));
+                Assert.That(payload.GetProperty("size").GetInt32(), Is.EqualTo(4));
+                Assert.That(payload.GetProperty("base64").GetString(), Is.Not.Empty);
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+        }
+
+        [Test]
         public void Read_SampleTwoDa_ReturnsRows()
         {
             var result = RunBridge("read", SampleTwoDaPath);
