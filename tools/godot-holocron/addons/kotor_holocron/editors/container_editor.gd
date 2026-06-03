@@ -81,6 +81,15 @@ func _on_filter_changed(new_text: String) -> void:
 	_update_status_line()
 
 
+func _on_filter_gui_input(event: InputEvent) -> void:
+	if event is InputEventKey:
+		var key := event as InputEventKey
+		if key.pressed and not key.echo and key.keycode == KEY_ESCAPE and _filter_query != "":
+			_filter_edit.text = ""
+			_on_filter_changed("")
+			get_viewport().set_input_as_handled()
+
+
 func _on_item_selected() -> void:
 	var entry := _selected_resource_entry()
 	if entry.is_empty():
