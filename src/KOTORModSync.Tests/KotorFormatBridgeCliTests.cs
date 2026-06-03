@@ -27,6 +27,12 @@ namespace KOTORModSync.Tests
                 "..", "..", "..",
                 "Fixtures", "kotor", "sample.2da"));
 
+        private static string SampleTlkPath =>
+            Path.GetFullPath(Path.Combine(
+                TestContext.CurrentContext.TestDirectory,
+                "..", "..", "..",
+                "Fixtures", "kotor", "sample.tlk"));
+
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
@@ -96,6 +102,57 @@ namespace KOTORModSync.Tests
             var result = RunBridge("supported-types");
             Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
             Assert.That(result.GetProperty("types").GetArrayLength(), Is.GreaterThan(10));
+        }
+
+        [Test]
+        public void Read_SampleTlk_ReturnsStrings()
+        {
+            if (!File.Exists(SampleTlkPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleTlkPath}");
+            }
+
+            var result = RunBridge("read", SampleTlkPath);
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            var payload = result.GetProperty("payload");
+            Assert.That(payload.GetProperty("format").GetString(), Is.EqualTo("tlk"));
+            Assert.That(
+                payload.GetProperty("data").GetProperty("strings").GetArrayLength(),
+                Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Write_RoundTripsSampleTlk()
+        {
+            if (!File.Exists(SampleTlkPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleTlkPath}");
+            }
+
+            var readResult = RunBridge("read", SampleTlkPath);
+            Assert.That(readResult.GetProperty("ok").GetBoolean(), Is.True);
+            var payload = readResult.GetProperty("payload").GetRawText();
+
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_tlk_" + Guid.NewGuid() + ".tlk");
+            try
+            {
+                var writeResult = RunBridge("write", tempPath, "--payload", payload);
+                Assert.That(writeResult.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(File.Exists(tempPath), Is.True);
+
+                var reread = RunBridge("read", tempPath);
+                Assert.That(reread.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(
+                    reread.GetProperty("payload").GetProperty("data").GetProperty("strings").GetArrayLength(),
+                    Is.EqualTo(2));
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
         }
 
         private static bool PyKotorImportWorks()
