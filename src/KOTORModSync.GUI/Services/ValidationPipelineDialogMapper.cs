@@ -184,14 +184,14 @@ namespace KOTORModSync.Services
 
             if ((string.Equals(issue.Category, "MoveFile", StringComparison.Ordinal) ||
                  string.Equals(issue.Category, "CopyFile", StringComparison.Ordinal)) &&
-                issue.Message?.Contains("does not exist", StringComparison.Ordinal) == true)
+                issue.Message?.Contains("does not exist") == true)
             {
                 return "The required file is missing. This may indicate an incomplete mod archive or incorrect source path.";
             }
 
             if ((string.Equals(issue.Category, "MoveFile", StringComparison.Ordinal) ||
                  string.Equals(issue.Category, "CopyFile", StringComparison.Ordinal)) &&
-                issue.Message?.Contains("already exists", StringComparison.Ordinal) == true)
+                issue.Message?.Contains("already exists") == true)
             {
                 return "File conflict detected. This may be expected - ensure mod installation order is correct.";
             }
