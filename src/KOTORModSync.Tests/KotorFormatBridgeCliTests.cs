@@ -333,6 +333,39 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Remove_MissingMember_ReturnsError()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+
+                var raw = RunBridgeRaw(
+                    "remove",
+                    archiveCopy,
+                    "--resref",
+                    "not_in_archive",
+                    "--restype",
+                    "2da");
+                Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+                Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+                Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("not found"));
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
+                }
+            }
+        }
+
+        [Test]
         public void Add_AppendsNewMemberToArchiveCopy()
         {
             if (!File.Exists(SampleModPath) || !File.Exists(SampleTwoDaPath))

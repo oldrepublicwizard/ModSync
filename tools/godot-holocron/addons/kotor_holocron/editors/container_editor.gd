@@ -51,6 +51,13 @@ func _refresh_listing() -> void:
 		_status.text = "Refresh failed: %s" % str(read_result.get("error", "unknown"))
 
 
+func _listing_has_member(resref: String, restype: String) -> bool:
+	for res in _resources:
+		if str(res.get("resref", "")) == resref and str(res.get("restype", "")).to_lower() == restype:
+			return true
+	return false
+
+
 func _on_add_member_pressed() -> void:
 	if resource_path == "":
 		_status.text = "No archive path loaded"
@@ -82,12 +89,16 @@ func _add_member_from_file(source_path: String) -> void:
 		_status.text = "Invalid filename for KOTOR resource"
 		return
 
+	var replacing := _listing_has_member(resref, restype)
 	var result := FormatBridge.add_member(resource_path, resref, restype, source_path)
 	if not result.get("ok", false):
 		_status.text = "Add failed: %s" % str(result.get("error", "unknown"))
 		return
 
-	_status.text = "Added %s.%s to archive" % [resref, restype]
+	if replacing:
+		_status.text = "Replaced %s.%s in archive" % [resref, restype]
+	else:
+		_status.text = "Added %s.%s to archive" % [resref, restype]
 	_refresh_listing()
 
 
@@ -111,6 +122,24 @@ func _on_remove_member_pressed() -> void:
 		_status.text = "Invalid resource row"
 		return
 
+	var confirm := ConfirmationDialog.new()
+	confirm.title = "Remove archive member"
+	confirm.dialog_text = (
+		"Remove %s.%s from %s?\nThis cannot be undone except by re-adding the file."
+		% [resref, restype, resource_path.get_file()]
+	)
+	confirm.ok_button_text = "Remove"
+	confirm.cancel_button_text = "Cancel"
+	add_child(confirm)
+	confirm.confirmed.connect(func() -> void:
+		_execute_remove_member(resref, restype)
+		confirm.queue_free()
+	)
+	confirm.canceled.connect(func() -> void: confirm.queue_free())
+	confirm.popup_centered()
+
+
+func _execute_remove_member(resref: String, restype: String) -> void:
 	var result := FormatBridge.remove_member(resource_path, resref, restype)
 	if not result.get("ok", false):
 		_status.text = "Remove failed: %s" % str(result.get("error", "unknown"))
