@@ -53,6 +53,8 @@
 
 **Go to first issue** (log header) expands the log, then re-runs log scroll + result-card highlight after a failed or warned run.
 
+A new **Run Validation** resets scroll position on both the results panel and the log (plans 039–040).
+
 ## Legacy MainWindow validate
 
 `MainWindow.ValidateButton_Click` → `RunValidationAsync` runs **`LegacyValidationRunner.RunAsync`** (`WizardFull` + mapper), then shows progress log and `ValidationDialog` with the returned issue list.

@@ -343,6 +343,11 @@ namespace KOTORModSync.Dialogs.WizardPages
             _validationStartTime = DateTime.UtcNow;
 
             ClearLog();
+            if (_logScrollViewer != null)
+            {
+                _logScrollViewer.Offset = new Vector(0, 0);
+            }
+
             AppendLog("Starting validation...");
             UpdateBadges();
 
