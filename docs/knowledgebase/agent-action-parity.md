@@ -15,10 +15,10 @@ Wizard order from `src/KOTORModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` an
 | 5 | `GameDirectoryPage` | Pick game dir | `-g` / `--kotorPath=` | Full |
 | 6 | `AspyrNoticePage` | Acknowledge (K2) | No CLI equivalent | UI |
 | 7 | `ModSelectionPage` | Select mods, filters | `install` without `--select` = select all; `install --select category:X` / `tier:X` | Full (install); Partial (subset only with `--select`) |
-| 8 | `DownloadsExplainPage` | Continue (downloads may run) | `install -d` or `convert -d` | Partial |
+| 8 | `DownloadsExplainPage` | Continue (downloads may run) | `install -d` or `convert -d` | Partial — see [download-system.md](download-system.md) |
 | 9 | `ValidatePage` | Run validation | `validate --full --dry-run --use-file-selection` (same Core `InstallationValidationPipeline` as GUI) | Full |
 | 10 | `InstallStartPage` | Confirm install | `install -y` (runs `InstallationValidationPipeline` / `WizardFull` pre-check unless `--skip-validation`) | Full |
-| 11 | `InstallingPage` | Watch progress | `install` (console progress) | Full |
+| 11 | `InstallingPage` | Watch progress | `install` (console progress) | Full — see [install-lifecycle.md](install-lifecycle.md) |
 | 12 | `BaseInstallCompletePage` | Continue | N/A | Full |
 | 13+ | Widescreen pages | `WidescreenNoticePage`, `WidescreenModSelectionPage`, `WidescreenInstallingPage`, `WidescreenCompletePage` (dynamic) | No dedicated CLI | UI |
 | 14 | `FinishedPage` | Done | N/A | Full |

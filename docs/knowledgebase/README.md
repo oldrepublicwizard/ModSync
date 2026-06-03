@@ -21,8 +21,10 @@ Use these when citing findings in plans, PRs, or audits:
 | New to the repo | [product-overview.md](product-overview.md) | `AGENTS.md` → `doc-hierarchy.md` |
 | Authoring or fixing TOML | [instruction-format.md](instruction-format.md) | [mod-component-model.md](mod-component-model.md) |
 | Debugging validation failures | [validation-pipeline.md](validation-pipeline.md) | [vfs-vs-real-fs.md](vfs-vs-real-fs.md) |
+| Install wizard or real install | [install-lifecycle.md](install-lifecycle.md) | [validation-pipeline.md](validation-pipeline.md) |
+| Missing mod archives / downloads | [download-system.md](download-system.md) | [install-lifecycle.md](install-lifecycle.md) |
 | Headless build/test/core | `.github/copilot-instructions.md` | `core-cli-reference.md` |
-| GUI / install wizard / full-build | `docs/local_desktop_agent_runbook.md` | `agent-action-parity.md` |
+| GUI / install wizard / full-build | `docs/local_desktop_agent_runbook.md` | `agent-action-parity.md` → [install-lifecycle.md](install-lifecycle.md) |
 | Release or versioning | `docs/manual-release.md` | `docs/solutions/manual-release-workflow.md` |
 | Agent capability gaps | `agent-native-audit.md` | `agent-action-parity.md` |
 | telemetry-auth sidecar | [telemetry-auth-routing.md](telemetry-auth-routing.md) → `telemetry-auth/README.md` | Do not use Avalonia runbooks |
@@ -35,6 +37,11 @@ Use these when citing findings in plans, PRs, or audits:
 - [Instruction file format](instruction-format.md) — path placeholders, action types, minimal examples
 - [Mod component model](mod-component-model.md) — component/instruction fields, selection semantics
 - [Validation pipeline](validation-pipeline.md) — five stages, fail-fast, CLI/GUI mapping
+
+### Workflows
+
+- [Install lifecycle](install-lifecycle.md) — wizard page order, `InstallationService`, checkpoints, widescreen, CLI flags
+- [Download system](download-system.md) — ResourceRegistry, handler order, `DownloadCacheService`, GUI vs CLI
 
 ### Architecture and agent parity
 
