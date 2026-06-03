@@ -67,6 +67,37 @@ static func kind_for_extension(ext: String) -> int:
 	return EditorKind.UNSUPPORTED
 
 
+static func kind_from_editor_kind(editor_kind: String) -> int:
+	match editor_kind.to_lower().strip_edges():
+		"twoda":
+			return EditorKind.TWODA
+		"gff":
+			return EditorKind.GFF
+		"tlk":
+			return EditorKind.TLK
+		"ssf":
+			return EditorKind.SSF
+		"erf":
+			return EditorKind.ERF
+		"text":
+			return EditorKind.TEXT
+		"ncs":
+			return EditorKind.NCS
+		"binary":
+			return EditorKind.BINARY
+		_:
+			return EditorKind.UNSUPPORTED
+
+
+static func resolve_editor_kind(probe: Dictionary, extension: String) -> int:
+	var key := str(probe.get("editor_kind", "")).strip_edges()
+	if key != "":
+		var from_probe := kind_from_editor_kind(key)
+		if from_probe != EditorKind.UNSUPPORTED:
+			return from_probe
+	return kind_for_extension(extension)
+
+
 static func kind_label(kind: int) -> String:
 	match kind:
 		EditorKind.TWODA:

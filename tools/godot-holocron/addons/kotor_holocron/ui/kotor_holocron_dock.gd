@@ -77,7 +77,7 @@ func _open_path(path: String) -> void:
 		_status.text = "Probe failed: %s" % str(probe.get("error", ""))
 		return
 	var ext := str(probe.get("extension", "")).to_lower()
-	var kind := KotorResourceTypes.kind_for_extension(ext)
+	var kind := KotorResourceTypes.resolve_editor_kind(probe, ext)
 	var read_result := FormatBridge.read_file(path)
 	if not read_result.get("ok", false):
 		_status.text = "Read failed: %s" % str(read_result.get("error", ""))

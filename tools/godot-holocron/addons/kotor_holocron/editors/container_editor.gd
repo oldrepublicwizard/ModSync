@@ -70,23 +70,89 @@ func _on_add_member_pressed() -> void:
 	add_child(dialog)
 	dialog.popup_centered_ratio(0.6)
 	dialog.file_selected.connect(func(source_path: String) -> void:
-		_add_member_from_file(source_path)
+		_prompt_add_member(source_path)
 		dialog.queue_free()
 	)
 	dialog.canceled.connect(func() -> void: dialog.queue_free())
 
 
-func _add_member_from_file(source_path: String) -> void:
+func _default_resref_restype(source_path: String) -> Dictionary:
 	var file_name := source_path.get_file()
 	var dot := file_name.rfind(".")
 	if dot <= 0:
-		_status.text = "Could not parse resref/restype from filename"
-		return
+		return {"resref": "", "restype": ""}
+	return {
+		"resref": file_name.substr(0, dot),
+		"restype": file_name.substr(dot + 1).to_lower(),
+	}
 
-	var resref := file_name.substr(0, dot)
-	var restype := file_name.substr(dot + 1).to_lower()
+
+func _prompt_add_member(source_path: String) -> void:
+	var defaults := _default_resref_restype(source_path)
+	var default_resref := str(defaults.get("resref", ""))
+	var default_restype := str(defaults.get("restype", ""))
+
+	var win := Window.new()
+	win.title = "Add archive member"
+	win.size = Vector2i(360, 160)
+	win.unresizable = true
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_top", 12)
+	margin.add_theme_constant_override("margin_bottom", 12)
+	win.add_child(margin)
+
+	var vbox := VBoxContainer.new()
+	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_child(vbox)
+
+	var resref_row := HBoxContainer.new()
+	resref_row.add_child(Label.new())
+	(resref_row.get_child(0) as Label).text = "resref"
+	var resref_edit := LineEdit.new()
+	resref_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	resref_edit.text = default_resref
+	resref_row.add_child(resref_edit)
+	vbox.add_child(resref_row)
+
+	var type_row := HBoxContainer.new()
+	type_row.add_child(Label.new())
+	(type_row.get_child(0) as Label).text = "type"
+	var restype_edit := LineEdit.new()
+	restype_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	restype_edit.text = default_restype
+	type_row.add_child(restype_edit)
+	vbox.add_child(type_row)
+
+	var buttons := HBoxContainer.new()
+	buttons.alignment = BoxContainer.ALIGNMENT_END
+	var cancel_btn := Button.new()
+	cancel_btn.text = "Cancel"
+	var ok_btn := Button.new()
+	ok_btn.text = "Add"
+	buttons.add_child(cancel_btn)
+	buttons.add_child(ok_btn)
+	vbox.add_child(buttons)
+
+	add_child(win)
+
+	cancel_btn.pressed.connect(func() -> void: win.queue_free())
+	ok_btn.pressed.connect(func() -> void:
+		var resref := resref_edit.text.strip_edges()
+		var restype := restype_edit.text.strip_edges().to_lower()
+		win.queue_free()
+		_add_member_with_identity(source_path, resref, restype)
+	)
+	win.close_requested.connect(func() -> void: win.queue_free())
+	win.popup_centered()
+
+
+func _add_member_with_identity(source_path: String, resref: String, restype: String) -> void:
 	if resref == "" or restype == "":
-		_status.text = "Invalid filename for KOTOR resource"
+		_status.text = "resref and type are required"
 		return
 
 	var replacing := _listing_has_member(resref, restype)
