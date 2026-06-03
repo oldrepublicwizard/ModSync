@@ -111,6 +111,58 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void ApplyStages_InstallOrderError_AddsPrefixedAndSummaryCards()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var order = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.InstallOrder,
+                Passed = false,
+                Summary = "Circular dependency: Mod A -> Mod B",
+            };
+            order.Messages.Add("ERROR: Circular dependency detected");
+            pipelineResult.Stages.Add(order);
+
+            var results = new List<(string Title, string Message)>();
+            WizardValidationStagePresenter.ApplyStages(
+                pipelineResult,
+                selectedModCount: 2,
+                _ => { },
+                (title, message) => results.Add((title, message)));
+
+            Assert.That(results, Has.Count.EqualTo(2));
+            Assert.That(results[0].Title, Is.EqualTo("❌ Unknown"));
+            Assert.That(results[0].Message, Is.EqualTo("Circular dependency detected"));
+            Assert.That(results[1].Title, Is.EqualTo("❌ Install Order"));
+        }
+
+        [Test]
+        public void ApplyStages_InstallOrderWarning_AddsPrefixedAndSummaryCards()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var order = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.InstallOrder,
+                Passed = true,
+                HasWarnings = true,
+                Summary = "Mods will be automatically reordered for installation.",
+            };
+            order.Messages.Add("WARNING: Install order will be adjusted automatically.");
+            pipelineResult.Stages.Add(order);
+
+            var results = new List<(string Title, string Message)>();
+            WizardValidationStagePresenter.ApplyStages(
+                pipelineResult,
+                selectedModCount: 2,
+                _ => { },
+                (title, message) => results.Add((title, message)));
+
+            Assert.That(results, Has.Count.EqualTo(2));
+            Assert.That(results[0].Title, Is.EqualTo("⚠️ Unknown"));
+            Assert.That(results[1].Title, Is.EqualTo("⚠️ Install Order"));
+        }
+
+        [Test]
         public void ApplyStages_ArchiveStageFailure_AddsSummaryCard()
         {
             var pipelineResult = new ValidationPipelineResult();

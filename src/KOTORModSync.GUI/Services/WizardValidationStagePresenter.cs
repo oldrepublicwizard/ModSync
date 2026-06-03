@@ -131,19 +131,49 @@ namespace KOTORModSync.Services
             AddResultDelegate addResult)
         {
             appendLog($"Step {stepIndex}: Validating mod installation order");
+            foreach (string message in stage.Messages)
+            {
+                appendLog($"  {message}");
+                if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
+                        message,
+                        "WARNING:",
+                        out string modName,
+                        out _,
+                        out string detail))
+                {
+                    addResult($"⚠️ {modName}", detail);
+                }
+                else if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
+                             message,
+                             "ERROR:",
+                             out modName,
+                             out _,
+                             out detail))
+                {
+                    addResult($"❌ {modName}", detail);
+                }
+            }
+
             if (stage.Passed && !stage.HasWarnings)
             {
-                appendLog("  ✅ Install order is correct");
+                if (stage.Messages.Count == 0)
+                {
+                    appendLog("  ✅ Install order is correct");
+                }
+
                 addResult("✅ Install Order", stage.Summary ?? "Mod installation order is correct");
             }
             else if (stage.Passed && stage.HasWarnings)
             {
-                appendLog("  ⚠️ Mods will be automatically reordered");
                 addResult("⚠️ Install Order", stage.Summary ?? "Mods will be automatically reordered");
             }
             else
             {
-                appendLog($"  ❌ {stage.Summary}");
+                if (stage.Messages.Count == 0)
+                {
+                    appendLog($"  ❌ {stage.Summary}");
+                }
+
                 addResult("❌ Install Order", stage.Summary ?? "Install order validation failed");
             }
         }
