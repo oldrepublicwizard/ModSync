@@ -78,6 +78,14 @@ func _open_path(path: String) -> void:
 		return
 	var ext := str(probe.get("extension", "")).to_lower()
 	var kind := KotorResourceTypes.resolve_editor_kind(probe, ext)
+	if kind == KotorResourceTypes.EditorKind.UNSUPPORTED:
+		_clear_editor()
+		_status.text = (
+			"No Holocron editor for .%s (%s) yet — use HolocronToolset or a later phase editor"
+			% [ext, str(probe.get("category", "unknown"))]
+		)
+		return
+
 	var read_result := FormatBridge.read_file(path)
 	if not read_result.get("ok", false):
 		_status.text = "Read failed: %s" % str(read_result.get("error", ""))

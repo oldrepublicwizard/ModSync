@@ -70,6 +70,27 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Probe_UnsupportedResource_ReturnsUnsupportedEditorKind()
+        {
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_" + Guid.NewGuid() + ".res");
+            try
+            {
+                File.WriteAllBytes(tempPath, new byte[] { 0, 1 });
+
+                var result = RunBridge("probe", tempPath);
+                Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(result.GetProperty("editor_kind").GetString(), Is.EqualTo("unsupported"));
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+        }
+
+        [Test]
         public void Probe_SampleMod_ReturnsArchiveEditorKind()
         {
             if (!File.Exists(SampleModPath))

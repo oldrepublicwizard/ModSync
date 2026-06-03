@@ -233,6 +233,10 @@ func _on_item_activated() -> void:
 		_status.text = "Invalid resource row"
 		return
 
+	if KotorResourceTypes.kind_for_extension(restype) == KotorResourceTypes.EditorKind.UNSUPPORTED:
+		_status.text = "No Holocron editor for .%s archive members yet" % restype
+		return
+
 	var safe_archive := resource_path.get_file().get_basename()
 	var output := OS.get_cache_dir().path_join(
 		"kotor_holocron_%s_%s.%s" % [safe_archive, resref, restype]
