@@ -131,8 +131,10 @@ func _on_editor_saved(saved_path: String) -> void:
 	var result := FormatBridge.inject_member(archive, resref, restype, saved_path)
 	if result.get("ok", false):
 		_status.text = "Saved %s.%s into %s" % [resref, restype, archive.get_file()]
-	else:
-		_status.text = "Archive inject failed: %s" % str(result.get("error", "unknown"))
+		_archive_inject_context = {}
+		_open_path(archive)
+		return
+	_status.text = "Archive inject failed: %s" % str(result.get("error", "unknown"))
 	_archive_inject_context = {}
 
 

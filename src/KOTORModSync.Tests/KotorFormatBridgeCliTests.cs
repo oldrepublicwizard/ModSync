@@ -296,6 +296,56 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Inject_UpdatesResourceListingSize()
+        {
+            if (!File.Exists(SampleModPath) || !File.Exists(SampleTwoDaPath))
+            {
+                Assert.Ignore("Holocron fixtures not found");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+                long expectedSize = new FileInfo(SampleTwoDaPath).Length;
+
+                var injectResult = RunBridge(
+                    "inject",
+                    archiveCopy,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--source",
+                    SampleTwoDaPath);
+                Assert.That(injectResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var readResult = RunBridge("read", archiveCopy);
+                Assert.That(readResult.GetProperty("ok").GetBoolean(), Is.True);
+                int? listingSize = null;
+                foreach (JsonElement resource in readResult.GetProperty("payload").GetProperty("resources").EnumerateArray())
+                {
+                    if (resource.GetProperty("resref").GetString() == "test2da"
+                        && resource.GetProperty("restype").GetString() == "2da")
+                    {
+                        listingSize = resource.GetProperty("size").GetInt32();
+                        break;
+                    }
+                }
+
+                Assert.That(listingSize, Is.Not.Null);
+                Assert.That(listingSize!.Value, Is.EqualTo(expectedSize));
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
+                }
+            }
+        }
+
+        [Test]
         public void Write_RoundTripsSampleTlk()
         {
             if (!File.Exists(SampleTlkPath))

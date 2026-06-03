@@ -47,6 +47,7 @@ HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phas
 | ERF/RIM/MOD/SAV container browser (read-only list) | Done (Phase 1, #109) |
 | Open nested resource from archive (extract + editor) | Done (Phase 1+, bridge `extract`) |
 | Save nested edits back into archive (`inject` on editor Save) | Done (Phase 1+, bridge `inject`) |
+| Return to archive listing after nested save (refreshed sizes) | Done (Phase 1+, dock reload) |
 | SSF sound-slot editor + bridge write | Done (Phase 1, #109) |
 | Installation list → open `dialog.tlk` | Done (Phase 1, #109) |
 | Add/remove archive members | Phase 2 |
