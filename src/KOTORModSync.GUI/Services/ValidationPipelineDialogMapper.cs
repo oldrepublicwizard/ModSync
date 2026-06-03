@@ -37,7 +37,25 @@ namespace KOTORModSync.Services
                 switch (stage.Stage)
                 {
                     case ValidationPipelineStage.Environment:
-                        if (!stage.Passed)
+                        int environmentPrefixedIssues = 0;
+                        foreach (string message in stage.Messages)
+                        {
+                            if (TryParsePrefixedStageMessage(message, "ERROR:", out string modName, out string description, out string detail))
+                            {
+                                modIssues.Add(new Dialogs.ValidationIssue
+                                {
+                                    Icon = "✗",
+                                    ModName = modName,
+                                    IssueType = "Environment",
+                                    Description = description,
+                                    Solution = "Verify HoloPatcher, KOTOR paths, and install directories are configured correctly.",
+                                });
+                                appendLog?.Invoke($"✗ [Environment] {detail}");
+                                environmentPrefixedIssues++;
+                            }
+                        }
+
+                        if (!stage.Passed && environmentPrefixedIssues == 0)
                         {
                             string summary = stage.Summary ?? "Environment validation failed";
                             modIssues.Add(new Dialogs.ValidationIssue
@@ -110,6 +128,34 @@ namespace KOTORModSync.Services
 
                         break;
                     case ValidationPipelineStage.InstallOrder:
+                        foreach (string message in stage.Messages)
+                        {
+                            if (TryParsePrefixedStageMessage(message, "ERROR:", out string modName, out string description, out string detail))
+                            {
+                                modIssues.Add(new Dialogs.ValidationIssue
+                                {
+                                    Icon = "✗",
+                                    ModName = modName,
+                                    IssueType = "InstallOrder",
+                                    Description = description,
+                                    Solution = "Fix circular dependencies or missing prerequisites in the mod list.",
+                                });
+                                appendLog?.Invoke($"✗ [InstallOrder] {detail}");
+                            }
+                            else if (TryParsePrefixedStageMessage(message, "WARNING:", out modName, out description, out detail))
+                            {
+                                modIssues.Add(new Dialogs.ValidationIssue
+                                {
+                                    Icon = "⚠",
+                                    ModName = modName,
+                                    IssueType = "InstallOrder",
+                                    Description = description,
+                                    Solution = "Review install order; the app may reorder mods automatically.",
+                                });
+                                appendLog?.Invoke($"⚠ [InstallOrder] {detail}");
+                            }
+                        }
+
                         if (!stage.Passed)
                         {
                             string summary = stage.Summary ?? "Install order validation failed";

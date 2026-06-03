@@ -53,6 +53,50 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void AddPipelineStageIssues_EnvironmentFailure_WithPrefixedMessage_AddsParsedIssueOnly()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var environment = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.Environment,
+                Passed = false,
+                Summary = "HoloPatcher missing",
+            };
+            environment.Messages.Add("ERROR: HoloPatcher missing");
+            pipelineResult.Stages.Add(environment);
+
+            var modIssues = new List<DialogValidationIssue>();
+            ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
+
+            Assert.That(modIssues, Has.Count.EqualTo(1));
+            Assert.That(modIssues[0].ModName, Is.EqualTo("Unknown"));
+            Assert.That(modIssues[0].IssueType, Is.EqualTo("Environment"));
+            Assert.That(modIssues[0].Description, Is.EqualTo("HoloPatcher missing"));
+        }
+
+        [Test]
+        public void AddPipelineStageIssues_InstallOrderFailure_AddsPrefixedAndAggregateIssues()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var order = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.InstallOrder,
+                Passed = false,
+                Summary = "Circular dependency: Mod A -> Mod B",
+            };
+            order.Messages.Add("ERROR: Circular dependency detected");
+            pipelineResult.Stages.Add(order);
+
+            var modIssues = new List<DialogValidationIssue>();
+            ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
+
+            Assert.That(modIssues, Has.Count.EqualTo(2));
+            Assert.That(modIssues[0].ModName, Is.EqualTo("Unknown"));
+            Assert.That(modIssues[0].IssueType, Is.EqualTo("InstallOrder"));
+            Assert.That(modIssues[1].ModName, Is.EqualTo("Install Order"));
+        }
+
+        [Test]
         public void AddPipelineStageIssues_ArchiveError_ParsesModName()
         {
             var pipelineResult = new ValidationPipelineResult();

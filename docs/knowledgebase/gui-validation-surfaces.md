@@ -53,6 +53,8 @@
 
 **Dialog aggregates:** Besides per-mod prefixed rows, `AddPipelineStageIssues` adds stage-level rows for failed/warned Conflicts, Install Order, and Archive Validation (mod name `Conflicts`, `Install Order`, or `Archive Validation` with `stage.Summary`)—aligned with wizard summary cards.
 
+**Dialog prefixed lines:** Environment and Install Order parse `ERROR:`/`WARNING:` messages like other stages; Environment skips the duplicate aggregate row when a prefixed `ERROR:` line was already mapped (pipeline emits `ERROR: {summary}` on failure).
+
 Prefer the **install wizard** for documented full-build flows ([install-lifecycle.md](install-lifecycle.md), `AGENTS.md`).
 
 ## Debugging order
