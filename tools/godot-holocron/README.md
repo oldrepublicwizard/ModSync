@@ -35,7 +35,7 @@ python3 tools/godot-holocron/bridge/kotor_format_bridge.py supported-types
 
 ## Parity roadmap
 
-HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (merged) and **Phase 1** (in progress):
+HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phase 1** (#109):
 
 | Area | Status |
 |------|--------|

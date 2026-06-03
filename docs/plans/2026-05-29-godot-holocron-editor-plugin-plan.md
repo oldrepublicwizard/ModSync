@@ -162,8 +162,8 @@ src/KOTORModSync.Tests/
 
 ## Phases (full program)
 
-1. **Phase 0 (this PR):** Bridge + plugin shell + 2DA + GFF + text + registry + tests
-2. **Phase 1:** TLK, SSF, ERF/RIM extract/inject, installation browser, specialized GFF templates
+1. **Phase 0 (#92):** Bridge + plugin shell + 2DA + GFF + text + registry + tests
+2. **Phase 1 (#109):** TLK/SSF editors, ERF/RIM browser (read-only), installation shortcut, bridge TLK/SSF write — extract/inject and GFF templates remain
 3. **Phase 2:** DLG graph, NSS compile, NCS decompile view, LIP/WAV
 4. **Phase 3:** MDL/BWM, ARE/GIT/IFO module tools, diff, TSLPatchData, Holocron subprocess fallback
 

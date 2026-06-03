@@ -1,6 +1,7 @@
 ---
 title: Holocron Phase 1b — SSF sound-set editor
-status: implemented
+status: shipped
+shipped_pr: 109
 date: 2026-06-03
 origin: docs/plans/2026-06-03-009-holocron-phase1-tlk-container-editors-plan.md
 prerequisite: feat/holocron-phase1-tlk-container (PR #109)
