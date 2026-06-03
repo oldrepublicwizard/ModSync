@@ -209,7 +209,7 @@ namespace KOTORModSync.Services
             return string.Empty;
         }
 
-        internal static bool TryParsePrefixedStageMessage(
+        public static bool TryParsePrefixedStageMessage(
             string message,
             string prefix,
             out string modName,

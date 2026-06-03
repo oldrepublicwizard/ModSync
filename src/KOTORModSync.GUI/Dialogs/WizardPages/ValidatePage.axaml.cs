@@ -17,6 +17,7 @@ using KOTORModSync.Core;
 using KOTORModSync.Core.Services;
 using KOTORModSync.Core.Services.FileSystem;
 using KOTORModSync.Core.Services.Validation;
+using KOTORModSync.Services;
 
 namespace KOTORModSync.Dialogs.WizardPages
 {
@@ -402,18 +403,22 @@ namespace KOTORModSync.Dialogs.WizardPages
                         foreach (string message in stage.Messages)
                         {
                             AppendLog($"  {message}");
-                            if (message.StartsWith("WARNING:", StringComparison.Ordinal))
+                            if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
+                                    message,
+                                    "WARNING:",
+                                    out string modName,
+                                    out _,
+                                    out string detail))
                             {
-                                string detail = message.Substring(8).Trim();
-                                int colon = detail.IndexOf(':');
-                                string modName = colon > 0 ? detail.Substring(0, colon).Trim() : detail;
                                 AddResult($"⚠️ {modName}", detail);
                             }
-                            else if (message.StartsWith("ERROR:", StringComparison.Ordinal))
+                            else if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
+                                         message,
+                                         "ERROR:",
+                                         out modName,
+                                         out _,
+                                         out detail))
                             {
-                                string detail = message.Substring(6).Trim();
-                                int colon = detail.IndexOf(':');
-                                string modName = colon > 0 ? detail.Substring(0, colon).Trim() : detail;
                                 AddResult($"❌ {modName}", detail);
                             }
                         }
