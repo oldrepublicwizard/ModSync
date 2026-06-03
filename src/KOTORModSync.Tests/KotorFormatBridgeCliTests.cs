@@ -322,6 +322,42 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Inject_MissingSource_ReturnsError()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            string missingSource = Path.Combine(Path.GetTempPath(), "kotor_bridge_missing_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+
+                var raw = RunBridgeRaw(
+                    "inject",
+                    archiveCopy,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--source",
+                    missingSource);
+                Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+                Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+                Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
+                }
+            }
+        }
+
+        [Test]
         public void Read_SampleMod_ReturnsResourceList()
         {
             if (!File.Exists(SampleModPath))
