@@ -59,4 +59,5 @@ size_flags_vertical = 3
 [connection signal="item_activated" from="InstallList" to="." method="_on_install_activated"]
 [connection signal="pressed" from="PathRow/BrowseButton" to="." method="_on_browse_pressed"]
 [connection signal="pressed" from="PathRow/OpenButton" to="." method="_on_open_pressed"]
+[connection signal="pressed" from="PathRow/CopyPathButton" to="." method="_on_copy_path_pressed"]
 [connection signal="pressed" from="PathRow/BackToArchiveButton" to="." method="_on_back_to_archive_pressed"]
