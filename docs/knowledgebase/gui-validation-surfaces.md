@@ -37,11 +37,12 @@
 
 **Unified (PR #104):** Conflicts stage uses `TryParsePrefixedStageMessage` for `ERROR:` and `WARNING:` so mod titles match the dialog mapper.
 
-**Still wizard-local:**
+**Wizard stage UI:** `WizardValidationStagePresenter.ApplyStages` (`src/KOTORModSync.GUI/Services/WizardValidationStagePresenter.cs`) — log lines + `AddResult` cards for each pipeline stage. `ValidatePage` passes `AppendLog` / `AddResult` delegates.
 
-- Environment / InstallOrder pass-fail copy and emoji titles (`✅` / `❌` / `⚠️`)
-- ComponentValidation `OK:` log lines only (no result card per archive)
-- DryRun summary cards (top-N error snippets, not per-issue dialog rows)
+**Not shown as dialog rows:**
+
+- ComponentValidation archive `ERROR:` lines (log only; dialog mapper still lists them in `ValidationDialog`)
+- Per-issue dry-run rows (wizard uses summary cards with top-N error snippets)
 
 `[UI]` Full-build agents should still expand **LogExpander** on `ValidatePage` and capture stage text before changing validation code.
 
