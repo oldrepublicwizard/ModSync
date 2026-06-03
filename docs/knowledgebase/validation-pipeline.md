@@ -79,8 +79,11 @@ Without `--full`, validate is lighter (archives + optional dry-run only). See [c
 | Surface | Pipeline |
 |---------|----------|
 | `ValidatePage` / **Run Validation** | `WizardFull` on wizard-selected mods |
-| Legacy **Validate** button | Often `LegacyDryRunOnly`-style dry-run |
+| Legacy **Validate** button | `WizardFull` → `ValidationPipelineDialogMapper` → `ValidationDialog` |
+| `ValidationService.AnalyzeValidationFailures` | `WizardFull` → same mapper for issue rows |
 | `install` (after validate) | Separate install orchestration; pre-check uses same pipeline as wizard |
+
+`[REPO]` Dialog issue rows and shared `ERROR:`/`WARNING:` parsing: [gui-validation-surfaces.md](gui-validation-surfaces.md). Larger GUI refactors still open: [gui-architecture-deferred.md](gui-architecture-deferred.md).
 
 Progress UI: `ValidationProgress`, `StatusText`, `LogExpander`, badge counts on `ValidatePage` (`AGENTS.md`).
 
