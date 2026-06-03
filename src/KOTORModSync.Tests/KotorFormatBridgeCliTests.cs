@@ -296,6 +296,94 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Remove_DeletesMemberFromArchiveCopy()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+
+                var removeResult = RunBridge(
+                    "remove",
+                    archiveCopy,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da");
+                Assert.That(removeResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var readResult = RunBridge("read", archiveCopy);
+                Assert.That(readResult.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(
+                    readResult.GetProperty("payload").GetProperty("resources").GetArrayLength(),
+                    Is.EqualTo(0));
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
+                }
+            }
+        }
+
+        [Test]
+        public void Add_AppendsNewMemberToArchiveCopy()
+        {
+            if (!File.Exists(SampleModPath) || !File.Exists(SampleTwoDaPath))
+            {
+                Assert.Ignore("Holocron fixtures not found");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+
+                var injectResult = RunBridge(
+                    "inject",
+                    archiveCopy,
+                    "--resref",
+                    "extra2da",
+                    "--restype",
+                    "2da",
+                    "--source",
+                    SampleTwoDaPath);
+                Assert.That(injectResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var readResult = RunBridge("read", archiveCopy);
+                Assert.That(readResult.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(
+                    readResult.GetProperty("payload").GetProperty("resources").GetArrayLength(),
+                    Is.EqualTo(2));
+
+                bool foundExtra = false;
+                foreach (JsonElement resource in readResult.GetProperty("payload").GetProperty("resources").EnumerateArray())
+                {
+                    if (resource.GetProperty("resref").GetString() == "extra2da")
+                    {
+                        foundExtra = true;
+                        break;
+                    }
+                }
+
+                Assert.That(foundExtra, Is.True);
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
+                }
+            }
+        }
+
+        [Test]
         public void Inject_UpdatesResourceListingSize()
         {
             if (!File.Exists(SampleModPath) || !File.Exists(SampleTwoDaPath))

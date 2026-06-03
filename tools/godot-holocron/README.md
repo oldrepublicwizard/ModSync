@@ -50,7 +50,7 @@ HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phas
 | Return to archive listing after nested save (refreshed sizes) | Done (Phase 1+, dock reload) |
 | SSF sound-slot editor + bridge write | Done (Phase 1, #109) |
 | Installation list → open `dialog.tlk` | Done (Phase 1, #109) |
-| Add/remove archive members | Phase 2 |
+| Add/remove archive members (`inject` add, `remove`, container toolbar) | Done (Phase 2) |
 | MDL, WAV, TPC, DLG graph | Phase 2–3 |
 
 Full Holocron parity is a **multi-phase program** tracked in `docs/plans/2026-05-29-godot-holocron-editor-plugin-plan.md`.

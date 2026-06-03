@@ -7,6 +7,7 @@ Commands (stdout is always JSON on success):
   write <path> --payload <json-string|@file>
   extract <archive> --resref NAME --restype EXT --output <path>
   inject <archive> --resref NAME --restype EXT --source <path>
+  remove <archive> --resref NAME --restype EXT
   installations
   supported-types
 """
@@ -250,6 +251,38 @@ def cmd_inject(archive_str: str, resref: str, restype_ext: str, source_str: str)
     )
 
 
+def cmd_remove(archive_str: str, resref: str, restype_ext: str) -> None:
+    archive = _resolve_path(archive_str)
+    try:
+        container = _open_container(archive)
+    except Exception as exc:
+        _fail(f"Failed to open archive {archive}: {exc}")
+
+    try:
+        restype = ResourceType.from_extension(restype_ext.lower().lstrip("."))
+    except Exception as exc:
+        _fail(f"Unknown resource type '{restype_ext}': {exc}")
+
+    if not container.has(resref, restype):
+        _fail(f"Resource '{resref}.{restype.extension}' not found in {archive.name}")
+
+    try:
+        container.remove(resref, restype)
+    except Exception as exc:
+        _fail(f"Remove failed: {exc}")
+
+    _write_container(archive, container)
+
+    _emit(
+        {
+            "ok": True,
+            "archive": str(archive),
+            "resref": resref,
+            "restype": restype.extension,
+        }
+    )
+
+
 def _read_rim(path: Path) -> dict[str, Any]:
     rim = read_rim(path)
     resources = []
@@ -461,6 +494,11 @@ def main() -> None:
     p_inject.add_argument("--restype", required=True)
     p_inject.add_argument("--source", required=True)
 
+    p_remove = sub.add_parser("remove")
+    p_remove.add_argument("archive")
+    p_remove.add_argument("--resref", required=True)
+    p_remove.add_argument("--restype", required=True)
+
     sub.add_parser("installations")
     sub.add_parser("supported-types")
 
@@ -479,6 +517,8 @@ def main() -> None:
         cmd_extract(args.archive, args.resref, args.restype, args.output)
     elif args.command == "inject":
         cmd_inject(args.archive, args.resref, args.restype, args.source)
+    elif args.command == "remove":
+        cmd_remove(args.archive, args.resref, args.restype)
     elif args.command == "installations":
         cmd_installations()
     elif args.command == "supported-types":

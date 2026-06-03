@@ -41,6 +41,85 @@ func _rebuild_tree() -> void:
 		item.set_text(2, str(res.get("size", "")))
 
 
+func _refresh_listing() -> void:
+	if resource_path == "":
+		return
+	var read_result := FormatBridge.read_file(resource_path)
+	if read_result.get("ok", false):
+		_apply_bridge_data(read_result)
+	else:
+		_status.text = "Refresh failed: %s" % str(read_result.get("error", "unknown"))
+
+
+func _on_add_member_pressed() -> void:
+	if resource_path == "":
+		_status.text = "No archive path loaded"
+		return
+
+	var dialog := EditorFileDialog.new()
+	dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
+	dialog.access = EditorFileDialog.ACCESS_FILESYSTEM
+	dialog.title = "Add archive member from file"
+	add_child(dialog)
+	dialog.popup_centered_ratio(0.6)
+	dialog.file_selected.connect(func(source_path: String) -> void:
+		_add_member_from_file(source_path)
+		dialog.queue_free()
+	)
+	dialog.canceled.connect(func() -> void: dialog.queue_free())
+
+
+func _add_member_from_file(source_path: String) -> void:
+	var file_name := source_path.get_file()
+	var dot := file_name.rfind(".")
+	if dot <= 0:
+		_status.text = "Could not parse resref/restype from filename"
+		return
+
+	var resref := file_name.substr(0, dot)
+	var restype := file_name.substr(dot + 1).to_lower()
+	if resref == "" or restype == "":
+		_status.text = "Invalid filename for KOTOR resource"
+		return
+
+	var result := FormatBridge.add_member(resource_path, resref, restype, source_path)
+	if not result.get("ok", false):
+		_status.text = "Add failed: %s" % str(result.get("error", "unknown"))
+		return
+
+	_status.text = "Added %s.%s to archive" % [resref, restype]
+	_refresh_listing()
+
+
+func _on_remove_member_pressed() -> void:
+	var selected := _table.get_selected()
+	if selected == null:
+		_status.text = "Select a resource to remove"
+		return
+	var row := selected.get_index()
+	if row < 0 or row >= _resources.size():
+		_status.text = "Invalid selection"
+		return
+	if resource_path == "":
+		_status.text = "No archive path loaded"
+		return
+
+	var entry: Dictionary = _resources[row]
+	var resref := str(entry.get("resref", "")).strip_edges()
+	var restype := str(entry.get("restype", "")).strip_edges().to_lower()
+	if resref == "" or restype == "":
+		_status.text = "Invalid resource row"
+		return
+
+	var result := FormatBridge.remove_member(resource_path, resref, restype)
+	if not result.get("ok", false):
+		_status.text = "Remove failed: %s" % str(result.get("error", "unknown"))
+		return
+
+	_status.text = "Removed %s.%s from archive" % [resref, restype]
+	_refresh_listing()
+
+
 func _on_item_activated() -> void:
 	var selected := _table.get_selected()
 	if selected == null:

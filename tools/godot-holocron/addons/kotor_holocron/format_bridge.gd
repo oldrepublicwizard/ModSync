@@ -81,6 +81,23 @@ static func inject_member(archive_path: String, resref: String, restype: String,
 	 )
 
 
+static func add_member(archive_path: String, resref: String, restype: String, source_path: String) -> Dictionary:
+	return inject_member(archive_path, resref, restype, source_path)
+
+
+static func remove_member(archive_path: String, resref: String, restype: String) -> Dictionary:
+	return run_command(
+		[
+			"remove",
+			archive_path,
+			"--resref",
+			resref,
+			"--restype",
+			restype,
+		]
+	 )
+
+
 static func write_file(path: String, payload: Dictionary) -> Dictionary:
 	var json_text := JSON.stringify(payload)
 	var tmp := OS.get_cache_dir().path_join("kotor_bridge_payload_%d.json" % Time.get_ticks_msec())
