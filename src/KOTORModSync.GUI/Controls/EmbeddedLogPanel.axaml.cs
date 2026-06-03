@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,11 +32,19 @@ namespace KOTORModSync.Controls
         {
             InitializeComponent();
             DataContext = ViewModel;
+            ViewModel.LogLines.CollectionChanged += OnLogLinesCollectionChanged;
             ApplyExpandedState();
             UpdateToggleButtonText();
-            AttachedToVisualTree += (_, __) => EnsureLoggerAttached();
+            AttachedToVisualTree += (_, __) =>
+            {
+                EnsureLoggerAttached();
+                UpdateLineCount();
+            };
             DetachedFromVisualTree += (_, __) => DetachLogger();
         }
+
+        private void OnLogLinesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) =>
+            UpdateLineCount();
 
         public bool IsExpanded
         {
@@ -97,21 +106,23 @@ namespace KOTORModSync.Controls
             Logger.Logged += OnLoggerMessage;
             Logger.ExceptionLogged += OnExceptionLogged;
 
-            try
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
             {
-                List<string> recentLogs = Logger.GetRecentLogMessages(_maxLinesShown);
-                foreach (string logMessage in recentLogs)
+                try
                 {
-                    AppendLogLine(logMessage);
+                    List<string> recentLogs = Logger.GetRecentLogMessages(_maxLinesShown);
+                    foreach (string logMessage in recentLogs)
+                    {
+                        AppendLogLineCore(logMessage);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                AppendLogLine($"[Warning] Could not load existing logs from memory: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    AppendLogLineCore($"[Warning] Could not load existing logs from memory: {ex.Message}");
+                }
 
-            UpdateLineCount();
-            _ = Dispatcher.UIThread.InvokeAsync(() => LogScrollViewer?.ScrollToEnd());
+                LogScrollViewer?.ScrollToEnd();
+            });
         }
 
         private void DetachLogger()
@@ -136,6 +147,17 @@ namespace KOTORModSync.Controls
 
         private void AppendLogLine(string message)
         {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                AppendLogLineCore(message);
+                return;
+            }
+
+            Dispatcher.UIThread.Post(() => AppendLogLineCore(message), DispatcherPriority.Normal);
+        }
+
+        private void AppendLogLineCore(string message)
+        {
             try
             {
                 lock (_logLock)
@@ -154,14 +176,10 @@ namespace KOTORModSync.Controls
                     }
                 }
 
-                _ = Dispatcher.UIThread.InvokeAsync(() =>
+                if (AutoScrollCheckBox?.IsChecked == true)
                 {
-                    UpdateLineCount();
-                    if (AutoScrollCheckBox?.IsChecked == true)
-                    {
-                        LogScrollViewer?.ScrollToEnd();
-                    }
-                });
+                    LogScrollViewer?.ScrollToEnd();
+                }
             }
             catch (Exception ex)
             {
@@ -171,11 +189,14 @@ namespace KOTORModSync.Controls
 
         private void UpdateLineCount()
         {
-            if (LineCountText != null)
+            TextBlock lineCountText = LineCountText ?? this.FindControl<TextBlock>("LineCountText");
+            if (lineCountText is null)
             {
-                int n = ViewModel.LogLines.Count;
-                LineCountText.Text = n == 1 ? "1 line" : $"{n} lines";
+                return;
             }
+
+            int n = ViewModel.LogLines.Count;
+            lineCountText.Text = n == 1 ? "1 line" : $"{n} lines";
         }
 
         private async void CopySelected_Click(object sender, RoutedEventArgs e)
@@ -240,15 +261,10 @@ namespace KOTORModSync.Controls
                     ViewModel.ClearAll();
                 }
 
-                _ = Dispatcher.UIThread.InvokeAsync(() =>
+                if (LogScrollViewer != null)
                 {
-                    if (LogScrollViewer != null)
-                    {
-                        LogScrollViewer.Offset = new Vector(0, 0);
-                    }
-
-                    UpdateLineCount();
-                });
+                    LogScrollViewer.Offset = new Vector(0, 0);
+                }
             }
             catch (Exception ex)
             {
