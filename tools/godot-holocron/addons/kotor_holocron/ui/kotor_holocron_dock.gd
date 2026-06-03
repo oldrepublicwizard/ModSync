@@ -13,6 +13,29 @@ func _ready() -> void:
 	_refresh_installations()
 
 
+func _on_install_activated(index: int) -> void:
+	var result := FormatBridge.list_installations()
+	if not result.get("ok", false):
+		return
+	var installs: Array = result.get("installations", [])
+	if index < 0 or index >= installs.size():
+		return
+	var base := str(installs[index].get("path", "")).strip_edges()
+	if base == "":
+		return
+	var candidates := [
+		base.path_join("dialog.tlk"),
+		base.path_join("dialog_f.tlk"),
+	]
+	for candidate in candidates:
+		if FileAccess.file_exists(candidate):
+			_path_edit.text = candidate
+			_open_path(candidate)
+			return
+	_path_edit.text = base
+	_status.text = "Install: %s — pick a resource file" % base.get_file()
+
+
 func _refresh_installations() -> void:
 	_install_list.clear()
 	var result := FormatBridge.list_installations()

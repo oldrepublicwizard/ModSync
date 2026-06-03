@@ -30,8 +30,10 @@ try:
     from pykotor.resource.formats.gff.gff_data import GFF
     from pykotor.resource.formats.ncs.ncs_auto import read_ncs
     from pykotor.resource.formats.rim.rim_auto import read_rim
-    from pykotor.resource.formats.ssf.ssf_auto import read_ssf
-    from pykotor.resource.formats.tlk.tlk_auto import read_tlk
+    from pykotor.resource.formats.ssf.ssf_auto import read_ssf, write_ssf
+    from pykotor.resource.formats.ssf.ssf_data import SSF
+    from pykotor.resource.formats.tlk.tlk_auto import read_tlk, write_tlk
+    from pykotor.resource.formats.tlk.tlk_data import TLK
     from pykotor.resource.formats.twoda.twoda_auto import read_2da, write_2da
     from pykotor.resource.formats.twoda.twoda_data import TwoDA
     from pykotor.resource.type import ResourceType
@@ -250,6 +252,16 @@ def _write_text(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _write_tlk(path: Path, data: dict[str, Any]) -> None:
+    tlk = TLK.from_json(data)
+    write_tlk(tlk, path, ResourceType.TLK)
+
+
+def _write_ssf(path: Path, data: dict[str, Any]) -> None:
+    ssf = SSF.from_json(data)
+    write_ssf(ssf, path, ResourceType.SSF)
+
+
 def cmd_write(path_str: str, payload_raw: str) -> None:
     path = Path(path_str).expanduser().resolve()
     if path.exists():
@@ -280,6 +292,12 @@ def cmd_write(path_str: str, payload_raw: str) -> None:
         elif fmt == "gff" or restype.category == "GFF":
             path.parent.mkdir(parents=True, exist_ok=True)
             _write_gff(path, payload.get("data", {}), restype)
+        elif fmt == "tlk" or ext in {"tlk", "fmh", "fml"}:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            _write_tlk(path, payload.get("data", {}))
+        elif fmt == "ssf" or ext == "ssf":
+            path.parent.mkdir(parents=True, exist_ok=True)
+            _write_ssf(path, payload.get("data", {}))
         elif fmt == "binary" and "base64" in payload:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(base64.b64decode(payload["base64"]))

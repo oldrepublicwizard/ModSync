@@ -46,5 +46,6 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 
+[connection signal="item_activated" from="InstallList" to="." method="_on_install_activated"]
 [connection signal="pressed" from="PathRow/BrowseButton" to="." method="_on_browse_pressed"]
 [connection signal="pressed" from="PathRow/OpenButton" to="." method="_on_open_pressed"]
