@@ -1,7 +1,7 @@
 ---
 title: Ship PR #92 Godot Holocron Phase 0
 type: feat
-status: active
+status: completed
 date: 2026-06-03
 origin: docs/knowledgebase/gui-architecture-deferred.md
 ---
