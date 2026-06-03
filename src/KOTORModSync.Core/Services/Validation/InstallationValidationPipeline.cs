@@ -266,6 +266,9 @@ namespace KOTORModSync.Core.Services.Validation
                 Passed = true,
             };
 
+            int errors = 0;
+            int warnings = 0;
+
             foreach (ModComponent component in componentsToValidate)
             {
                 Dictionary<string, List<ModComponent>> conflicts = ModComponent.GetConflictingComponents(
@@ -278,6 +281,7 @@ namespace KOTORModSync.Core.Services.Validation
                     string depNames = string.Join(", ", conflicts["Dependency"].Select(d => d.Name ?? string.Empty));
                     stage.Messages.Add($"WARNING: {component.Name}: missing dependencies: {depNames}");
                     stage.HasWarnings = true;
+                    warnings++;
                 }
 
                 if (conflicts.ContainsKey("Restriction"))
@@ -285,13 +289,15 @@ namespace KOTORModSync.Core.Services.Validation
                     string restrictionNames = string.Join(", ", conflicts["Restriction"].Select(r => r.Name ?? string.Empty));
                     stage.Messages.Add($"ERROR: {component.Name}: incompatible with: {restrictionNames}");
                     stage.Passed = false;
+                    errors++;
                 }
             }
 
-            if (stage.Messages.Count == 0)
-            {
-                stage.Summary = "No dependency or restriction conflicts.";
-            }
+            stage.Summary = errors > 0
+                ? $"{errors} restriction conflict(s)"
+                : warnings > 0
+                    ? $"{warnings} dependency warning(s)"
+                    : "No dependency or restriction conflicts.";
 
             return stage;
         }

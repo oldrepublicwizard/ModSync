@@ -70,7 +70,12 @@ namespace KOTORModSync.Tests
         public void ApplyStages_ConflictError_AddsModResultCard()
         {
             var pipelineResult = new ValidationPipelineResult();
-            var conflicts = new ValidationPipelineStageResult { Stage = ValidationPipelineStage.Conflicts, Passed = true };
+            var conflicts = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.Conflicts,
+                Passed = false,
+                Summary = "1 restriction conflict(s)",
+            };
             conflicts.Messages.Add("ERROR: Mod A: restriction conflict");
             pipelineResult.Stages.Add(conflicts);
 
@@ -81,9 +86,59 @@ namespace KOTORModSync.Tests
                 _ => { },
                 (title, message) => results.Add((title, message)));
 
-            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(results, Has.Count.EqualTo(2));
             Assert.That(results[0].Title, Is.EqualTo("❌ Mod A"));
             Assert.That(results[0].Message, Is.EqualTo("Mod A: restriction conflict"));
+            Assert.That(results[1].Title, Is.EqualTo("❌ Conflicts"));
+        }
+
+        [Test]
+        public void ApplyStages_ConflictWarning_AddsPrefixedAndSummaryCards()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var conflicts = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.Conflicts,
+                Passed = true,
+                HasWarnings = true,
+                Summary = "1 dependency warning(s)",
+            };
+            conflicts.Messages.Add("WARNING: Mod B: missing dependencies: Mod C");
+            pipelineResult.Stages.Add(conflicts);
+
+            var results = new List<(string Title, string Message)>();
+            WizardValidationStagePresenter.ApplyStages(
+                pipelineResult,
+                selectedModCount: 2,
+                _ => { },
+                (title, message) => results.Add((title, message)));
+
+            Assert.That(results, Has.Count.EqualTo(2));
+            Assert.That(results[0].Title, Is.EqualTo("⚠️ Mod B"));
+            Assert.That(results[1].Title, Is.EqualTo("⚠️ Conflicts"));
+            Assert.That(results[1].Message, Is.EqualTo("1 dependency warning(s)"));
+        }
+
+        [Test]
+        public void ApplyStages_ConflictsPass_AddsSuccessSummaryCard()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            pipelineResult.Stages.Add(new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.Conflicts,
+                Passed = true,
+                Summary = "No dependency or restriction conflicts.",
+            });
+
+            var results = new List<(string Title, string Message)>();
+            WizardValidationStagePresenter.ApplyStages(
+                pipelineResult,
+                selectedModCount: 1,
+                _ => { },
+                (title, message) => results.Add((title, message)));
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(results[0].Title, Is.EqualTo("✅ Conflicts"));
         }
 
         [Test]

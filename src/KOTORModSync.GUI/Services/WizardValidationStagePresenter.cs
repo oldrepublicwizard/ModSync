@@ -117,9 +117,27 @@ namespace KOTORModSync.Services
 
             ApplyPrefixedStageMessageCards(stage.Messages, addResult);
 
-            if (stage.Messages.Count == 0)
+            if (stage.Passed && !stage.HasWarnings)
             {
-                appendLog("  ✅ No conflicts");
+                if (stage.Messages.Count == 0)
+                {
+                    appendLog("  ✅ No conflicts");
+                }
+
+                addResult("✅ Conflicts", stage.Summary ?? "No dependency or restriction conflicts.");
+            }
+            else if (stage.Passed && stage.HasWarnings)
+            {
+                addResult("⚠️ Conflicts", stage.Summary ?? "Dependency warnings found");
+            }
+            else
+            {
+                if (stage.Messages.Count == 0)
+                {
+                    appendLog($"  ❌ {stage.Summary}");
+                }
+
+                addResult("❌ Conflicts", stage.Summary ?? "Restriction conflicts found");
             }
         }
 

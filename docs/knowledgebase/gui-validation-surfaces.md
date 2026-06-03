@@ -41,6 +41,8 @@
 
 **Unified (archive parity):** ComponentValidation `ERROR:` and `WARNING:` lines produce wizard result cards via the same `TryParsePrefixedStageMessage` rules as `ValidationDialog` archive rows. Failed or warning archive stages also add aggregate `Archive Validation` summary cards.
 
+**Conflicts on ValidatePage:** Per-mod `ERROR:`/`WARNING:` cards plus aggregate `✅`/`⚠️`/`❌ Conflicts` summary (counts from `RunConflictStage.Summary`).
+
 **Dry-run on ValidatePage:** `ApplyDryRunStage` adds up to five per-issue result cards (mod name, category, message, solution hint from `GetSolutionForIssue`) plus an aggregate `Instruction Execution` summary card.
 
 `[UI]` Full-build agents should still expand **LogExpander** on `ValidatePage` and capture stage text before changing validation code.
