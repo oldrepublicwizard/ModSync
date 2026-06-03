@@ -43,10 +43,10 @@ HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phas
 | TwoDA table editor | Done |
 | GFF / JSON tree editor (all GFF-family extensions) | Done |
 | Text editor (NSS, LYT, VIS, …) | Done |
-| TLK string table editor + bridge write | Phase 1 |
-| ERF/RIM/MOD/SAV container browser (read-only list) | Phase 1 |
-| SSF sound-slot editor + bridge write | Phase 1 |
-| Installation list → open `dialog.tlk` | Phase 1 |
+| TLK string table editor + bridge write | Done (Phase 1, #109) |
+| ERF/RIM/MOD/SAV container browser (read-only list) | Done (Phase 1, #109) |
+| SSF sound-slot editor + bridge write | Done (Phase 1, #109) |
+| Installation list → open `dialog.tlk` | Done (Phase 1, #109) |
 | MDL, WAV, TPC, DLG graph | Phase 2–3 |
 
 Full Holocron parity is a **multi-phase program** tracked in `docs/plans/2026-05-29-godot-holocron-editor-plugin-plan.md`.

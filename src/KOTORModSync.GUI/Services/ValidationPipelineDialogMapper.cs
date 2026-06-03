@@ -126,6 +126,18 @@ namespace KOTORModSync.Services
                                 });
                                 appendLog?.Invoke($"✗ [ArchiveValidation] {detail}");
                             }
+                            else if (TryParsePrefixedStageMessage(message, "WARNING:", out modName, out description, out detail))
+                            {
+                                modIssues.Add(new Dialogs.ValidationIssue
+                                {
+                                    Icon = "⚠",
+                                    ModName = modName,
+                                    IssueType = "ArchiveValidation",
+                                    Description = description,
+                                    Solution = "Review the archive warning before installing; re-download if the file may be incomplete.",
+                                });
+                                appendLog?.Invoke($"⚠ [ArchiveValidation] {detail}");
+                            }
                         }
 
                         break;

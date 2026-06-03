@@ -24,5 +24,5 @@ PR #109 implements Phase 1 editors (TLK, SSF, archive browser, bridge writes, te
 
 ## Success criteria
 
-- [ ] PR #109 merged to `master`
-- [ ] Plan docs reflect shipped state
+- [x] PR #109 merged to `master`
+- [x] Plan docs reflect shipped state

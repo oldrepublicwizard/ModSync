@@ -53,6 +53,49 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void AddPipelineStageIssues_ArchiveError_ParsesModName()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var archives = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.ComponentValidation,
+                Passed = false,
+            };
+            archives.Messages.Add("ERROR: Test Mod: missing archive");
+            pipelineResult.Stages.Add(archives);
+
+            var modIssues = new List<DialogValidationIssue>();
+            ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
+
+            Assert.That(modIssues, Has.Count.EqualTo(1));
+            Assert.That(modIssues[0].ModName, Is.EqualTo("Test Mod"));
+            Assert.That(modIssues[0].Icon, Is.EqualTo("✗"));
+            Assert.That(modIssues[0].IssueType, Is.EqualTo("ArchiveValidation"));
+        }
+
+        [Test]
+        public void AddPipelineStageIssues_ArchiveWarning_ParsesModName()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var archives = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.ComponentValidation,
+                Passed = true,
+                HasWarnings = true,
+            };
+            archives.Messages.Add("WARNING: Mod B: stale archive");
+            pipelineResult.Stages.Add(archives);
+
+            var modIssues = new List<DialogValidationIssue>();
+            ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
+
+            Assert.That(modIssues, Has.Count.EqualTo(1));
+            Assert.That(modIssues[0].ModName, Is.EqualTo("Mod B"));
+            Assert.That(modIssues[0].Icon, Is.EqualTo("⚠"));
+            Assert.That(modIssues[0].IssueType, Is.EqualTo("ArchiveValidation"));
+        }
+
+        [Test]
         public void AddPipelineStageIssues_ConflictWarning_ParsesModName()
         {
             var pipelineResult = new ValidationPipelineResult();

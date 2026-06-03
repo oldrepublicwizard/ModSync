@@ -59,7 +59,7 @@ namespace KOTORModSync.Services
                         ApplyInstallOrderStage(stage, stepIndex, appendLog, addResult);
                         break;
                     case ValidationPipelineStage.ComponentValidation:
-                        ApplyComponentValidationStage(stage, stepIndex, appendLog);
+                        ApplyComponentValidationStage(stage, stepIndex, appendLog, addResult);
                         break;
                     case ValidationPipelineStage.DryRun:
                         ApplyDryRunStage(pipelineResult, stepIndex, appendLog, addResult);
@@ -151,7 +151,8 @@ namespace KOTORModSync.Services
         private static void ApplyComponentValidationStage(
             ValidationPipelineStageResult stage,
             int stepIndex,
-            AppendLogDelegate appendLog)
+            AppendLogDelegate appendLog,
+            AddResultDelegate addResult)
         {
             appendLog($"Step {stepIndex}: Validating mod archives");
             foreach (string message in stage.Messages)
@@ -163,7 +164,34 @@ namespace KOTORModSync.Services
                 else
                 {
                     appendLog($"  {message}");
+                    if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
+                            message,
+                            "ERROR:",
+                            out string modName,
+                            out _,
+                            out string detail))
+                    {
+                        addResult($"❌ {modName}", detail);
+                    }
+                    else if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
+                                 message,
+                                 "WARNING:",
+                                 out modName,
+                                 out _,
+                                 out detail))
+                    {
+                        addResult($"⚠️ {modName}", detail);
+                    }
                 }
+            }
+
+            if (!stage.Passed)
+            {
+                addResult("❌ Archive Validation", stage.Summary ?? "Archive validation failed");
+            }
+            else if (stage.HasWarnings)
+            {
+                addResult("⚠️ Archive Validation", stage.Summary ?? "Archive validation passed with warnings");
             }
         }
 

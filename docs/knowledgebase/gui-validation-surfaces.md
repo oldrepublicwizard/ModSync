@@ -39,9 +39,10 @@
 
 **Wizard stage UI:** `WizardValidationStagePresenter.ApplyStages` (`src/KOTORModSync.GUI/Services/WizardValidationStagePresenter.cs`) — log lines + `AddResult` cards for each pipeline stage. `ValidatePage` passes `AppendLog` / `AddResult` delegates.
 
-**Not shown as dialog rows:**
+**Unified (archive parity):** ComponentValidation `ERROR:` and `WARNING:` lines produce wizard result cards via the same `TryParsePrefixedStageMessage` rules as `ValidationDialog` archive rows. Failed or warning archive stages also add aggregate `Archive Validation` summary cards.
 
-- ComponentValidation archive `ERROR:` lines (log only; dialog mapper still lists them in `ValidationDialog`)
+**Not shown as per-mod dialog rows on ValidatePage:**
+
 - Per-issue dry-run rows (wizard uses summary cards with top-N error snippets)
 
 `[UI]` Full-build agents should still expand **LogExpander** on `ValidatePage` and capture stage text before changing validation code.

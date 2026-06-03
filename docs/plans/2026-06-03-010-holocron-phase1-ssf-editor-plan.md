@@ -28,5 +28,5 @@ PR #109 adds TLK and archive browsers; SSF still routes to the generic JSON edit
 
 ## Success criteria
 
-- [ ] `.ssf` uses dedicated editor in registry (not `gff_editor`).
-- [ ] Bridge round-trip test passes when PyKotor is available.
+- [x] `.ssf` uses dedicated editor in registry (not `gff_editor`).
+- [x] Bridge round-trip test passes when PyKotor is available.

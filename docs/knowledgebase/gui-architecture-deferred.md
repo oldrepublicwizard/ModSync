@@ -41,7 +41,7 @@ Both register similar page sequences. Consolidation requires UX decisions (modal
 | Widescreen install batch API | Dynamic pages after base install; GUI-only progress surfaces `[UI]` |
 | Download status depth | Some status UI is GUI-only; headless tests use cache/orchestration APIs — [download-system.md](download-system.md) |
 | `EmbeddedLogPanel` | Line-count fix landed (#99); further output UX is cosmetic |
-| Archive `ERROR:` wizard result cards | Dialog mapper lists archive errors; wizard logs only — optional UX parity |
+| Archive `ERROR:` wizard result cards | Done — `WizardValidationStagePresenter` parses ComponentValidation `ERROR:` like dialog mapper |
 
 ## Deferred — separate product track
 
