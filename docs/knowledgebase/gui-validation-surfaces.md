@@ -51,6 +51,8 @@
 
 **Validation log** scrolls to the first `ERROR:` / `❌` log line (or first `WARNING:` / `⚠` when there are no errors) when the log expander is open.
 
+**Go to first issue** (log header) re-runs log scroll + result-card highlight after a failed or warned run.
+
 ## Legacy MainWindow validate
 
 `MainWindow.ValidateButton_Click` → `RunValidationAsync` runs **`LegacyValidationRunner.RunAsync`** (`WizardFull` + mapper), then shows progress log and `ValidationDialog` with the returned issue list.

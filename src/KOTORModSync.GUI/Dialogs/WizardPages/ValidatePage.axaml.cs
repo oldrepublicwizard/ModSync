@@ -42,6 +42,7 @@ namespace KOTORModSync.Dialogs.WizardPages
         private TextBlock _logText;
         private TextBlock _logProgressText;
         private Button _copyReportButton;
+        private Button _goToFirstIssueButton;
         private readonly List<(string Title, string Message)> _resultEntries = new List<(string Title, string Message)>();
         private bool _hasValidated;
         private bool _hasCriticalErrors;
@@ -144,6 +145,7 @@ namespace KOTORModSync.Dialogs.WizardPages
             _logText = this.FindControl<TextBlock>("LogText");
             _logProgressText = this.FindControl<TextBlock>("LogProgressText");
             _copyReportButton = this.FindControl<Button>("CopyReportButton");
+            _goToFirstIssueButton = this.FindControl<Button>("GoToFirstIssueButton");
         }
 
         private void HookEvents()
@@ -156,6 +158,11 @@ namespace KOTORModSync.Dialogs.WizardPages
             if (_copyReportButton != null)
             {
                 _copyReportButton.Click += CopyReportButton_Click;
+            }
+
+            if (_goToFirstIssueButton != null)
+            {
+                _goToFirstIssueButton.Click += (_, __) => FocusFirstValidationIssue();
             }
         }
 
@@ -317,6 +324,11 @@ namespace KOTORModSync.Dialogs.WizardPages
                 _copyReportButton.IsVisible = false;
             }
 
+            if (_goToFirstIssueButton != null)
+            {
+                _goToFirstIssueButton.IsVisible = false;
+            }
+
             _hasCriticalErrors = false;
             _errorCount = 0;
             _warningCount = 0;
@@ -395,6 +407,11 @@ namespace KOTORModSync.Dialogs.WizardPages
                 if (_copyReportButton != null && _hasValidated)
                 {
                     _copyReportButton.IsVisible = true;
+                }
+
+                if (_goToFirstIssueButton != null)
+                {
+                    _goToFirstIssueButton.IsVisible = _errorCount > 0 || _warningCount > 0;
                 }
 
                 _currentOperation = string.Empty;
