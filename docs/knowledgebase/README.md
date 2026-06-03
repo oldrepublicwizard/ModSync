@@ -20,7 +20,7 @@ Use these when citing findings in plans, PRs, or audits:
 |-------------|------------|------|
 | New to the repo | [product-overview.md](product-overview.md) | `AGENTS.md` → `doc-hierarchy.md` |
 | Authoring or fixing TOML | [instruction-format.md](instruction-format.md) | [mod-component-model.md](mod-component-model.md) |
-| Debugging validation failures | [validation-pipeline.md](validation-pipeline.md) | [vfs-vs-real-fs.md](vfs-vs-real-fs.md) |
+| Debugging validation failures | [validation-pipeline.md](validation-pipeline.md) | [gui-validation-surfaces.md](gui-validation-surfaces.md) → [vfs-vs-real-fs.md](vfs-vs-real-fs.md) |
 | Install wizard or real install | [install-lifecycle.md](install-lifecycle.md) | [validation-pipeline.md](validation-pipeline.md) |
 | Missing mod archives / downloads | [download-system.md](download-system.md) | [install-lifecycle.md](install-lifecycle.md) |
 | Headless build/test/core | `.github/copilot-instructions.md` | `core-cli-reference.md` |
@@ -37,6 +37,8 @@ Use these when citing findings in plans, PRs, or audits:
 - [Instruction file format](instruction-format.md) — path placeholders, action types, minimal examples
 - [Mod component model](mod-component-model.md) — component/instruction fields, selection semantics
 - [Validation pipeline](validation-pipeline.md) — five stages, fail-fast, CLI/GUI mapping
+- [GUI validation surfaces](gui-validation-surfaces.md) — `ValidationPipelineDialogMapper`, wizard vs dialog UI
+- [GUI architecture (deferred)](gui-architecture-deferred.md) — MainWindow split, wizard hosts, scope guidance
 
 ### Workflows
 

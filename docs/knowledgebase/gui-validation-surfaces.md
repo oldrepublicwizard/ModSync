@@ -1,0 +1,68 @@
+# GUI validation surfaces
+
+`[REPO]` How the Avalonia app presents `InstallationValidationPipeline` results after PRs #103–#104. Core pipeline behavior is in [validation-pipeline.md](validation-pipeline.md).
+
+## Shared mapper
+
+**Type:** `KOTORModSync.Services.ValidationPipelineDialogMapper`  
+**Source:** `src/KOTORModSync.GUI/Services/ValidationPipelineDialogMapper.cs`  
+**Tests:** `ValidationPipelineDialogMapperTests` in `KOTORModSync.Tests`
+
+| API | Purpose |
+|-----|---------|
+| `AddPipelineStageIssues` | Environment, Conflicts (`ERROR:`/`WARNING:`), InstallOrder, ComponentValidation (`ERROR:`) → `Dialogs.ValidationIssue` list |
+| `AddDryRunIssues` | All VFS dry-run severities (✗/⚠/ℹ) with category-based solutions |
+| `GetSolutionForIssue` | User-facing fix hints from `Core.Services.FileSystem.ValidationIssue` category/message |
+| `TryParsePrefixedStageMessage` | Parse `ERROR:` / `WARNING:` stage lines into mod name + detail (shared with wizard) |
+| `ParseModNameAndDescription` | Colon-split after prefix strip (`Mod Name: description`) |
+
+## Surfaces (who calls the pipeline)
+
+| Surface | Entry | Pipeline preset | Result UI |
+|---------|--------|-----------------|-----------|
+| Install wizard **ValidatePage** | `ValidateAsync` / **Run Validation** | `WizardFull` | In-page log, progress, summary badges; `ApplyPipelineResultToWizardUi` |
+| Legacy **Getting Started → Validate** | `MainWindow.ValidateButton_Click` | `WizardFull` | Progress dialog log + `ValidationDialog` mod issue list |
+| **ValidationService.AnalyzeValidationFailures** | Async helper (pre-check / failure analysis) | `WizardFull` | Populates `Dialogs.ValidationIssue` + optional `systemIssues` strings |
+| Core CLI **validate** / **install** pre-check | `ModBuildConverter` | `WizardFull` (install) | stdout / exit code — no GUI mapper |
+
+`[REPO]` All GUI paths above that run the full pipeline should use the same Core stages; presentation differs per surface.
+
+## ValidatePage vs dialog mapping
+
+`ValidatePage` (`src/KOTORModSync.GUI/Dialogs/WizardPages/ValidatePage.axaml.cs`) does **not** build `ValidationDialog` rows. It:
+
+- Copies aggregate counts from `ValidationPipelineResult` (`ErrorCount`, `WarningCount`, …)
+- Logs each stage step-by-step
+- Adds wizard result cards via `AddResult(title, message)`
+
+**Unified (PR #104):** Conflicts stage uses `TryParsePrefixedStageMessage` for `ERROR:` and `WARNING:` so mod titles match the dialog mapper.
+
+**Still wizard-local:**
+
+- Environment / InstallOrder pass-fail copy and emoji titles (`✅` / `❌` / `⚠️`)
+- ComponentValidation `OK:` log lines only (no result card per archive)
+- DryRun summary cards (top-N error snippets, not per-issue dialog rows)
+
+`[UI]` Full-build agents should still expand **LogExpander** on `ValidatePage` and capture stage text before changing validation code.
+
+## Legacy MainWindow validate
+
+`MainWindow.ValidateButton_Click` runs `WizardFull`, then:
+
+1. `ValidationPipelineDialogMapper.AddPipelineStageIssues` + `AddDryRunIssues` with progress-dialog logging
+2. `ValidationDialog.ShowValidationDialog` with the combined issue list
+
+Prefer the **install wizard** for documented full-build flows ([install-lifecycle.md](install-lifecycle.md), `AGENTS.md`).
+
+## Debugging order
+
+1. Confirm which surface the user used (wizard vs Getting Started).
+2. Read Core pipeline output in logs — stage order is fixed in [validation-pipeline.md](validation-pipeline.md).
+3. For missing or inconsistent **dialog** rows, inspect mapper callers (`MainWindow`, `ValidationService`).
+4. For wizard **summary cards** only, inspect `ApplyPipelineResultToWizardUi` (not the mapper).
+
+## Related
+
+- [validation-pipeline.md](validation-pipeline.md) — stages and CLI flags
+- [gui-architecture-deferred.md](gui-architecture-deferred.md) — larger GUI refactors not done here
+- [agent-action-parity.md](agent-action-parity.md) — CLI vs GUI capabilities
