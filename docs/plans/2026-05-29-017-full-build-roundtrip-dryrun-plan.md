@@ -1,7 +1,7 @@
 ---
 title: Full-build serialization round-trip and CLI dry-run parity
 type: docs
-status: active
+status: completed
 date: 2026-05-29
 ---
 
