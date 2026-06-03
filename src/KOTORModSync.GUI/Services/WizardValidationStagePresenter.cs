@@ -18,6 +18,8 @@ namespace KOTORModSync.Services
     /// </summary>
     public static class WizardValidationStagePresenter
     {
+        private const int MaxDisplayedDryRunIssues = 5;
+
         public delegate void AppendLogDelegate([NotNull] string message);
 
         public delegate void AddResultDelegate([NotNull] string title, [NotNull] string message);
@@ -256,24 +258,55 @@ namespace KOTORModSync.Services
             {
                 List<ValidationIssue> errorIssues = dryRunResult.Issues
                     .Where(i => i.Severity == ValidationSeverity.Error || i.Severity == ValidationSeverity.Critical)
-                    .Take(5)
+                    .Take(MaxDisplayedDryRunIssues)
                     .ToList();
                 foreach (ValidationIssue issue in errorIssues)
                 {
                     appendLog($"    ❌ [{issue.Category}] {issue.Message}");
+                    addResult(FormatDryRunIssueTitle(issue), FormatDryRunIssueMessage(issue));
                 }
 
-                string errorSummary = string.Join("; ", errorIssues.Select(i => $"{i.Category}: {i.Message}"));
+                string overflow = dryRunErrors > errorIssues.Count
+                    ? $" Showing first {errorIssues.Count} of {dryRunErrors}."
+                    : string.Empty;
                 addResult(
                     "❌ Instruction Execution",
-                    $"Dry-run validation failed with {dryRunErrors} error(s). {errorSummary}");
+                    $"Dry-run validation failed with {dryRunErrors} error(s).{overflow}");
             }
             else if (dryRunWarnings > 0)
             {
+                List<ValidationIssue> warningIssues = dryRunResult.Issues
+                    .Where(i => i.Severity == ValidationSeverity.Warning)
+                    .Take(MaxDisplayedDryRunIssues)
+                    .ToList();
+                foreach (ValidationIssue issue in warningIssues)
+                {
+                    appendLog($"    ⚠️ [{issue.Category}] {issue.Message}");
+                    addResult(FormatDryRunIssueTitle(issue), FormatDryRunIssueMessage(issue));
+                }
+
+                string overflow = dryRunWarnings > warningIssues.Count
+                    ? $" Showing first {warningIssues.Count} of {dryRunWarnings}."
+                    : string.Empty;
                 addResult(
                     "⚠️ Instruction Execution",
-                    $"Dry-run validation passed with {dryRunWarnings} warning(s).");
+                    $"Dry-run validation passed with {dryRunWarnings} warning(s).{overflow}");
             }
+        }
+
+        private static string FormatDryRunIssueTitle(ValidationIssue issue)
+        {
+            string modName = issue.AffectedComponent?.Name ?? "Unknown";
+            string category = issue.Category ?? "Validation";
+            string prefix = issue.Severity == ValidationSeverity.Warning ? "⚠️" : "❌";
+            return $"{prefix} {modName} ({category})";
+        }
+
+        private static string FormatDryRunIssueMessage(ValidationIssue issue)
+        {
+            string message = issue.Message ?? "No description available";
+            string solution = ValidationPipelineDialogMapper.GetSolutionForIssue(issue);
+            return string.IsNullOrEmpty(solution) ? message : $"{message} — {solution}";
         }
     }
 }

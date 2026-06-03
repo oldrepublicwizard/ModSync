@@ -4,10 +4,14 @@
 
 using System.Collections.Generic;
 
+using KOTORModSync.Core;
+using KOTORModSync.Core.Services.FileSystem;
 using KOTORModSync.Core.Services.Validation;
 using KOTORModSync.Services;
 
 using NUnit.Framework;
+
+using CoreValidationIssue = KOTORModSync.Core.Services.FileSystem.ValidationIssue;
 
 namespace KOTORModSync.Tests
 {
@@ -160,6 +164,69 @@ namespace KOTORModSync.Tests
             Assert.That(results, Has.Count.EqualTo(2));
             Assert.That(results[0].Title, Is.EqualTo("⚠️ Unknown"));
             Assert.That(results[1].Title, Is.EqualTo("⚠️ Install Order"));
+        }
+
+        [Test]
+        public void ApplyStages_DryRunError_AddsPerIssueAndSummaryCards()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            pipelineResult.Stages.Add(new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.DryRun,
+                Passed = true,
+            });
+            var dryRun = new DryRunValidationResult();
+            dryRun.Issues.Add(new CoreValidationIssue
+            {
+                Severity = ValidationSeverity.Error,
+                Category = "MoveFile",
+                Message = "Source file does not exist",
+                AffectedComponent = new ModComponent { Name = "Test Mod" },
+            });
+            pipelineResult.DryRunResult = dryRun;
+
+            var results = new List<(string Title, string Message)>();
+            WizardValidationStagePresenter.ApplyStages(
+                pipelineResult,
+                selectedModCount: 1,
+                _ => { },
+                (title, message) => results.Add((title, message)));
+
+            Assert.That(results, Has.Count.EqualTo(2));
+            Assert.That(results[0].Title, Is.EqualTo("❌ Test Mod (MoveFile)"));
+            Assert.That(results[0].Message, Does.Contain("Source file does not exist"));
+            Assert.That(results[1].Title, Is.EqualTo("❌ Instruction Execution"));
+        }
+
+        [Test]
+        public void ApplyStages_DryRunWarningOnly_AddsPerIssueAndSummaryCards()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            pipelineResult.Stages.Add(new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.DryRun,
+                Passed = true,
+            });
+            var dryRun = new DryRunValidationResult();
+            dryRun.Issues.Add(new CoreValidationIssue
+            {
+                Severity = ValidationSeverity.Warning,
+                Category = "MoveFile",
+                Message = "target already exists",
+                AffectedComponent = new ModComponent { Name = "Warn Mod" },
+            });
+            pipelineResult.DryRunResult = dryRun;
+
+            var results = new List<(string Title, string Message)>();
+            WizardValidationStagePresenter.ApplyStages(
+                pipelineResult,
+                selectedModCount: 1,
+                _ => { },
+                (title, message) => results.Add((title, message)));
+
+            Assert.That(results, Has.Count.EqualTo(2));
+            Assert.That(results[0].Title, Is.EqualTo("⚠️ Warn Mod (MoveFile)"));
+            Assert.That(results[1].Title, Is.EqualTo("⚠️ Instruction Execution"));
         }
 
         [Test]
