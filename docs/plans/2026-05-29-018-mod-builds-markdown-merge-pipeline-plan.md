@@ -1,7 +1,7 @@
 ---
 title: Mod-builds markdown merge and full pipeline
 type: docs
-status: active
+status: completed
 date: 2026-05-29
 ---
 
