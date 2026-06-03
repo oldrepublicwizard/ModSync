@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using JetBrains.Annotations;
@@ -38,6 +39,8 @@ namespace KOTORModSync.Dialogs.WizardPages
         private ScrollViewer _logScrollViewer;
         private TextBlock _logText;
         private TextBlock _logProgressText;
+        private Button _copyReportButton;
+        private readonly List<(string Title, string Message)> _resultEntries = new List<(string Title, string Message)>();
         private bool _hasValidated;
         private bool _hasCriticalErrors;
         private int _errorCount;
@@ -137,6 +140,7 @@ namespace KOTORModSync.Dialogs.WizardPages
             _logScrollViewer = this.FindControl<ScrollViewer>("LogScrollViewer");
             _logText = this.FindControl<TextBlock>("LogText");
             _logProgressText = this.FindControl<TextBlock>("LogProgressText");
+            _copyReportButton = this.FindControl<Button>("CopyReportButton");
         }
 
         private void HookEvents()
@@ -144,6 +148,11 @@ namespace KOTORModSync.Dialogs.WizardPages
             if (_validateButton != null)
             {
                 _validateButton.Click += async (_, __) => await RunValidation();
+            }
+
+            if (_copyReportButton != null)
+            {
+                _copyReportButton.Click += CopyReportButton_Click;
             }
         }
 
@@ -299,6 +308,12 @@ namespace KOTORModSync.Dialogs.WizardPages
             }
 
             _resultsPanel?.Children.Clear();
+            _resultEntries.Clear();
+            if (_copyReportButton != null)
+            {
+                _copyReportButton.IsVisible = false;
+            }
+
             _hasCriticalErrors = false;
             _errorCount = 0;
             _warningCount = 0;
@@ -364,6 +379,11 @@ namespace KOTORModSync.Dialogs.WizardPages
                     _validateButton.IsEnabled = true;
                 }
 
+                if (_copyReportButton != null && _hasValidated)
+                {
+                    _copyReportButton.IsVisible = true;
+                }
+
                 _currentOperation = string.Empty;
                 UpdateLogHeader();
             }
@@ -387,6 +407,8 @@ namespace KOTORModSync.Dialogs.WizardPages
 
         private void AddResult(string title, string message)
         {
+            _resultEntries.Add((title, message));
+
             if (_resultsPanel is null)
             {
                 return;
@@ -472,6 +494,76 @@ namespace KOTORModSync.Dialogs.WizardPages
                     ? "Validation failed"
                     : "Validation complete";
             }
+        }
+
+        private async void CopyReportButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                FlushLogQueue();
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.Clipboard is null)
+                {
+                    return;
+                }
+
+                await topLevel.Clipboard.SetTextAsync(BuildValidationReportText());
+                if (_copyReportButton != null)
+                {
+                    string original = _copyReportButton.Content?.ToString() ?? "Copy report";
+                    _copyReportButton.Content = "Copied!";
+                    await Task.Delay(1500);
+                    _copyReportButton.Content = original;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"Failed to copy validation report: {ex.Message}");
+            }
+        }
+
+        private string BuildValidationReportText()
+        {
+            var report = new StringBuilder();
+            report.AppendLine("KOTORModSync — Validation Report");
+            report.AppendLine($"Generated (UTC): {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}");
+            report.AppendLine();
+
+            if (_summaryText != null)
+            {
+                report.AppendLine(_summaryText.Text);
+            }
+
+            if (_summaryDetails != null && !string.IsNullOrWhiteSpace(_summaryDetails.Text))
+            {
+                report.AppendLine(_summaryDetails.Text);
+            }
+
+            report.AppendLine();
+            report.AppendLine($"Errors: {_errorCount}  Warnings: {_warningCount}  Passed checks: {_passedCount}");
+
+            if (_resultEntries.Count > 0)
+            {
+                report.AppendLine();
+                report.AppendLine("--- Results ---");
+                foreach ((string title, string message) in _resultEntries)
+                {
+                    report.AppendLine(title);
+                    report.AppendLine(message);
+                    report.AppendLine();
+                }
+            }
+
+            lock (_logLock)
+            {
+                if (_logBuilder.Length > 0)
+                {
+                    report.AppendLine("--- Log ---");
+                    report.Append(_logBuilder.ToString());
+                }
+            }
+
+            return report.ToString().TrimEnd();
         }
     }
 }

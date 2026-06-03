@@ -55,7 +55,7 @@
                 IsVisible="False"
                 Padding="12">
                 <Expander.Header>
-                    <Grid ColumnDefinitions="*,Auto">
+                    <Grid ColumnDefinitions="*,Auto,Auto">
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
                             <TextBlock
                                 x:Name="LogHeaderText"
@@ -68,8 +68,16 @@
                                 Opacity="0.7"
                                 Text="" />
                         </StackPanel>
-                        <TextBlock
+                        <Button
+                            x:Name="CopyReportButton"
                             Grid.Column="1"
+                            Margin="0,0,8,0"
+                            Padding="10,4"
+                            Content="Copy report"
+                            IsVisible="False"
+                            ToolTip.Tip="Copy validation results and log to the clipboard" />
+                        <TextBlock
+                            Grid.Column="2"
                             FontSize="11"
                             Opacity="0.6"
                             Text="Click to expand" />
