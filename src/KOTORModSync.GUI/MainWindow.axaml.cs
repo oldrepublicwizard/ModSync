@@ -3941,23 +3941,22 @@ namespace KOTORModSync
                 progressDialog?.AppendLog("Starting dry-run validation process...");
                 progressDialog?.AppendLog("This will simulate the installation to check for errors.");
 
-                ComponentValidationService.ClearValidationCache();
-                await Logger.LogVerboseAsync("[MainWindow] Cleared validation cache before validation");
-
                 progressDialog?.UpdateStatus("Running validation pipeline...");
 
-                var pipelineOptions = Core.Services.Validation.ValidationPipelineOptions.WizardFull;
-                pipelineOptions.MainConfig = MainConfigInstance;
-                pipelineOptions.CancellationToken = token;
-
-                Core.Services.Validation.ValidationPipelineResult pipelineResult = await Task.Run(
-                    () => Core.Services.Validation.InstallationValidationPipeline.RunAsync(
-                        MainConfig.AllComponents,
-                        pipelineOptions),
+                Services.LegacyValidationRunner.RunResult validationRun = await Task.Run(
+                    () => Services.LegacyValidationRunner.RunAsync(
+                        MainConfigInstance,
+                        token,
+                        message =>
+                        {
+                            if (!token.IsCancellationRequested && !dialogClosed)
+                            {
+                                progressDialog?.AppendLog(message);
+                            }
+                        }),
                     token).ConfigureAwait(true);
 
-                Core.Services.Validation.DryRunValidationResult dryRunResult = pipelineResult.DryRunResult
-                    ?? new Core.Services.Validation.DryRunValidationResult();
+                await Logger.LogVerboseAsync("[MainWindow] Legacy validation pipeline finished");
 
                 if (token.IsCancellationRequested || dialogClosed)
                 {
@@ -3966,33 +3965,14 @@ namespace KOTORModSync
 
                 progressDialog?.UpdateStatus("Analyzing validation results...");
 
-                List<ValidationIssue> modIssues = new List<ValidationIssue>();
-                Services.ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues, message =>
-                {
-                    if (!token.IsCancellationRequested && !dialogClosed)
-                    {
-                        progressDialog?.AppendLog(message);
-                    }
-                });
-
-                Services.ValidationPipelineDialogMapper.AddDryRunIssues(dryRunResult, modIssues, message =>
-                {
-                    if (!token.IsCancellationRequested && !dialogClosed)
-                    {
-                        progressDialog?.AppendLog(message);
-                    }
-                });
-
-                bool validationResult = pipelineResult.IsSuccess;
-                string validationSummary = pipelineResult.DryRunResult?.GetSummaryMessage()
-                    ?? (validationResult
-                        ? "Validation passed."
-                        : $"{pipelineResult.ErrorCount} validation error(s). Check logs for details.");
+                List<ValidationIssue> modIssues = validationRun.ModIssues;
+                bool validationResult = validationRun.IsSuccess;
+                string validationSummary = validationRun.SummaryMessage;
 
                 if (!dialogClosed)
                 {
                     progressDialog?.AppendLog(
-                        $"Validation complete. Found {modIssues.Count} issue(s) in dialog ({pipelineResult.ErrorCount} error(s) total).");
+                        $"Validation complete. Found {modIssues.Count} issue(s) in dialog ({validationRun.ErrorCount} error(s) total).");
                     if (validationResult)
                     {
                         progressDialog?.Complete(true, validationSummary);

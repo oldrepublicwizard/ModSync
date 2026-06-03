@@ -47,10 +47,7 @@
 
 ## Legacy MainWindow validate
 
-`MainWindow.ValidateButton_Click` runs `WizardFull`, then:
-
-1. `ValidationPipelineDialogMapper.AddPipelineStageIssues` + `AddDryRunIssues` with progress-dialog logging
-2. `ValidationDialog.ShowValidationDialog` with the combined issue list
+`MainWindow.ValidateButton_Click` → `RunValidationAsync` runs **`LegacyValidationRunner.RunAsync`** (`WizardFull` + mapper), then shows progress log and `ValidationDialog` with the returned issue list.
 
 Prefer the **install wizard** for documented full-build flows ([install-lifecycle.md](install-lifecycle.md), `AGENTS.md`).
 
