@@ -42,7 +42,7 @@ text = "Copy member"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "Filter resref or type…"
+placeholder_text = "Filter resref or type… (Esc to clear)"
 
 [node name="StatusLabel" type="Label" parent="Toolbar"]
 unique_name_in_owner = true

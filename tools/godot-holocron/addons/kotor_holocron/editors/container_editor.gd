@@ -27,6 +27,7 @@ func _ready() -> void:
 	f5.keycode = KEY_F5
 	refresh_shortcut.events = [f5]
 	_refresh_button.shortcut = refresh_shortcut
+	_filter_edit.gui_input.connect(_on_filter_gui_input)
 
 
 func _apply_bridge_data(data: Dictionary) -> void:

@@ -53,7 +53,7 @@ HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phas
 | Copy archive member listing (TSV) | Done (container toolbar) |
 | Copy selected member (`resref.restype`) | Done (container toolbar) |
 | Sorted archive listing (resref, type) | Done |
-| Filter archive members (resref / type) | Done |
+| Filter archive members (resref / type; Esc clears) | Done |
 | Binary member hex preview (read-only) | Done (via shared text editor) |
 | Refresh listing / extract member to disk | Done (container toolbar; **F5** refresh) |
 | SSF sound-slot editor + bridge write | Done (Phase 1, #109) |
