@@ -10,7 +10,7 @@
 
 | API | Purpose |
 |-----|---------|
-| `AddPipelineStageIssues` | Environment, Conflicts (`ERROR:`/`WARNING:`), InstallOrder, ComponentValidation (`ERROR:`) → `Dialogs.ValidationIssue` list |
+| `AddPipelineStageIssues` | Environment; per-mod + aggregate Conflicts / Install Order / Archive Validation rows → `Dialogs.ValidationIssue` list |
 | `AddDryRunIssues` | All VFS dry-run severities (✗/⚠/ℹ) with category-based solutions |
 | `GetSolutionForIssue` | User-facing fix hints from `Core.Services.FileSystem.ValidationIssue` category/message |
 | `TryParsePrefixedStageMessage` | Parse `ERROR:` / `WARNING:` stage lines into mod name + detail (shared with wizard) |
@@ -50,6 +50,8 @@
 ## Legacy MainWindow validate
 
 `MainWindow.ValidateButton_Click` → `RunValidationAsync` runs **`LegacyValidationRunner.RunAsync`** (`WizardFull` + mapper), then shows progress log and `ValidationDialog` with the returned issue list.
+
+**Dialog aggregates:** Besides per-mod prefixed rows, `AddPipelineStageIssues` adds stage-level rows for failed/warned Conflicts, Install Order, and Archive Validation (mod name `Conflicts`, `Install Order`, or `Archive Validation` with `stage.Summary`)—aligned with wizard summary cards.
 
 Prefer the **install wizard** for documented full-build flows ([install-lifecycle.md](install-lifecycle.md), `AGENTS.md`).
 

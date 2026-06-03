@@ -81,6 +81,33 @@ namespace KOTORModSync.Services
                             }
                         }
 
+                        if (!stage.Passed)
+                        {
+                            string summary = stage.Summary ?? "Restriction conflicts found";
+                            modIssues.Add(new Dialogs.ValidationIssue
+                            {
+                                Icon = "✗",
+                                ModName = "Conflicts",
+                                IssueType = "Conflict",
+                                Description = summary,
+                                Solution = "Resolve dependency or restriction conflicts before installing.",
+                            });
+                            appendLog?.Invoke($"✗ [Conflict] {summary}");
+                        }
+                        else if (stage.HasWarnings)
+                        {
+                            string summary = stage.Summary ?? "Dependency warnings found";
+                            modIssues.Add(new Dialogs.ValidationIssue
+                            {
+                                Icon = "⚠",
+                                ModName = "Conflicts",
+                                IssueType = "Conflict",
+                                Description = summary,
+                                Solution = "Review mod restrictions; installation may still proceed with warnings.",
+                            });
+                            appendLog?.Invoke($"⚠ [Conflict] {summary}");
+                        }
+
                         break;
                     case ValidationPipelineStage.InstallOrder:
                         if (!stage.Passed)
@@ -138,6 +165,33 @@ namespace KOTORModSync.Services
                                 });
                                 appendLog?.Invoke($"⚠ [ArchiveValidation] {detail}");
                             }
+                        }
+
+                        if (!stage.Passed)
+                        {
+                            string summary = stage.Summary ?? "Archive validation failed";
+                            modIssues.Add(new Dialogs.ValidationIssue
+                            {
+                                Icon = "✗",
+                                ModName = "Archive Validation",
+                                IssueType = "ArchiveValidation",
+                                Description = summary,
+                                Solution = "Verify archives exist and are not corrupted. Try re-downloading affected mods.",
+                            });
+                            appendLog?.Invoke($"✗ [ArchiveValidation] {summary}");
+                        }
+                        else if (stage.HasWarnings)
+                        {
+                            string summary = stage.Summary ?? "Archive validation passed with warnings";
+                            modIssues.Add(new Dialogs.ValidationIssue
+                            {
+                                Icon = "⚠",
+                                ModName = "Archive Validation",
+                                IssueType = "ArchiveValidation",
+                                Description = summary,
+                                Solution = "Review archive warnings before installing; re-download if files may be incomplete.",
+                            });
+                            appendLog?.Invoke($"⚠ [ArchiveValidation] {summary}");
                         }
 
                         break;
