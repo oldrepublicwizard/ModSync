@@ -22,7 +22,7 @@ tools/godot-holocron/
 1. Install PyKotor (or point `PYTHONPATH` at a PyKotor checkout).
 2. Open `tools/godot-holocron/project.godot` in Godot.
 3. Enable **Project → Project Settings → Plugins → KOTOR Holocron** if not already on.
-4. Use the **KOTOR Holocron** dock (left panel): browse or paste a path, click **Open**.
+4. Use the **KOTOR Holocron** dock (left panel): browse or paste a path, click **Open** (path field stays in sync; **Copy path** for handoff).
 
 ## Bridge CLI
 

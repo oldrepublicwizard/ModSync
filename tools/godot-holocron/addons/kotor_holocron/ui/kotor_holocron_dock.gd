@@ -72,7 +72,17 @@ func _on_open_pressed() -> void:
 	_open_path(path)
 
 
+func _on_copy_path_pressed() -> void:
+	var path := _path_edit.text.strip_edges()
+	if path == "":
+		_status.text = "No path to copy"
+		return
+	DisplayServer.clipboard_set(path)
+	_status.text = "Copied path to clipboard"
+
+
 func _open_path(path: String) -> void:
+	_path_edit.text = path
 	var probe := FormatBridge.probe(path)
 	if not probe.get("ok", false):
 		_status.text = "Probe failed: %s" % str(probe.get("error", ""))
