@@ -27,6 +27,7 @@ namespace KOTORModSync.Dialogs.WizardPages
         private readonly List<ModComponent> _allComponents;
         private readonly MainConfig _mainConfig;
         private StackPanel _resultsPanel;
+        private ScrollViewer _resultsScrollViewer;
         private ProgressBar _validationProgress;
         private TextBlock _statusText;
         private TextBlock _summaryText;
@@ -128,6 +129,7 @@ namespace KOTORModSync.Dialogs.WizardPages
         private void CacheControls()
         {
             _resultsPanel = this.FindControl<StackPanel>("ResultsPanel");
+            _resultsScrollViewer = this.FindControl<ScrollViewer>("ResultsScrollViewer");
             _validationProgress = this.FindControl<ProgressBar>("ValidationProgress");
             _statusText = this.FindControl<TextBlock>("StatusText");
             _summaryText = this.FindControl<TextBlock>("SummaryText");
@@ -370,6 +372,11 @@ namespace KOTORModSync.Dialogs.WizardPages
                     _logExpander.IsExpanded = _hasCriticalErrors || _warningCount > 0;
                 }
 
+                if (_errorCount > 0 || _warningCount > 0)
+                {
+                    Dispatcher.UIThread.Post(ScrollToFirstIssueCard, DispatcherPriority.Loaded);
+                }
+
                 _hasValidated = true;
             }
             finally
@@ -408,6 +415,43 @@ namespace KOTORModSync.Dialogs.WizardPages
                 selectedMods.Count,
                 AppendLog,
                 AddResult);
+        }
+
+        private void ScrollToFirstIssueCard()
+        {
+            if (_resultsPanel is null)
+            {
+                return;
+            }
+
+            Control target = FindFirstResultCard("❌") ?? (_warningCount > 0 ? FindFirstResultCard("⚠️") : null);
+            target?.BringIntoView();
+        }
+
+        private Control FindFirstResultCard(string titlePrefix)
+        {
+            if (_resultsPanel is null)
+            {
+                return null;
+            }
+
+            foreach (Control child in _resultsPanel.Children)
+            {
+                if (!(child is Border border)
+                    || !(border.Child is StackPanel panel)
+                    || panel.Children.Count == 0)
+                {
+                    continue;
+                }
+
+                if (panel.Children[0] is TextBlock titleBlock
+                    && titleBlock.Text?.StartsWith(titlePrefix, StringComparison.Ordinal) == true)
+                {
+                    return border;
+                }
+            }
+
+            return null;
         }
 
         private void AddResult(string title, string message)

@@ -47,6 +47,8 @@
 
 `[UI]` Full-build agents can use **Copy report** on `ValidatePage` (after Run Validation) to copy summary counts, result cards, and the full validation log to the clipboard. **LogExpander** auto-expands when the run reports errors or warnings; clean passes leave it collapsed.
 
+**Results panel** scrolls to the first `❌` result card after validation (or first `⚠️` when there are no errors).
+
 ## Legacy MainWindow validate
 
 `MainWindow.ValidateButton_Click` → `RunValidationAsync` runs **`LegacyValidationRunner.RunAsync`** (`WizardFull` + mapper), then shows progress log and `ValidationDialog` with the returned issue list.

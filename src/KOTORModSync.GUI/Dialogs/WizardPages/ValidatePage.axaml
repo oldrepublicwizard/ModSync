@@ -106,7 +106,10 @@
 
         <!--  Results Area  -->
         <Border Grid.Row="2" Padding="12" CornerRadius="8">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer
+                x:Name="ResultsScrollViewer"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Disabled">
                 <StackPanel x:Name="ResultsPanel" Spacing="10" />
             </ScrollViewer>
         </Border>
