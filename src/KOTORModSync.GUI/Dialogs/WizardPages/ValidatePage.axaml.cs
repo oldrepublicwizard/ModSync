@@ -319,6 +319,10 @@ namespace KOTORModSync.Dialogs.WizardPages
 
             _resultsPanel?.Children.Clear();
             _resultEntries.Clear();
+            if (_resultsScrollViewer != null)
+            {
+                _resultsScrollViewer.Offset = new Vector(0, 0);
+            }
             if (_copyReportButton != null)
             {
                 _copyReportButton.IsVisible = false;
