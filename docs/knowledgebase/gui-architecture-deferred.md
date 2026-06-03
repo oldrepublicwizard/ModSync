@@ -28,8 +28,9 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Auto-expand validation log on errors/warnings | Done | plan `029` |
 | Scroll + highlight first issue result card | Done | plans `033`, `035` |
 | Scroll validation log to first issue line | Done | plan `036` |
+| Go to first issue button + expand log on focus | Done | plans `037`, `038` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`, `035`, `036`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md). **PR #110** is merge-ready for the validation parity arc; Holocron remains **PR #111**.
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`038`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md). **PR #110** is merge-ready for the validation parity arc; Holocron archive track is **PR #111** (not the install wizard).
 
 ## Deferred — high impact
 
@@ -64,7 +65,7 @@ Both register similar page sequences. Consolidation requires UX decisions (modal
 
 | Topic | Notes |
 |-------|--------|
-| Godot Holocron editor plugin | Open PR #92 (`feat/godot-holocron-editor-plugin`); not part of KOTORModSync install wizard work |
+| Godot Holocron editor plugin | Open PR #111 (`feat/holocron-erf-nested-open`); separate from KOTORModSync install wizard work |
 
 ## Suggested PR sizing
 

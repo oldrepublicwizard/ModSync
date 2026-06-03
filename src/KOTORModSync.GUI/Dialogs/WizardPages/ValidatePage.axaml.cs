@@ -440,6 +440,11 @@ namespace KOTORModSync.Dialogs.WizardPages
 
         private void FocusFirstValidationIssue()
         {
+            if (_logExpander != null)
+            {
+                _logExpander.IsExpanded = true;
+            }
+
             ScrollLogToFirstIssueLine();
             ScrollToFirstIssueCard();
         }
