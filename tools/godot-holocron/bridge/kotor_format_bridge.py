@@ -5,6 +5,7 @@ Commands (stdout is always JSON on success):
   probe <path>
   read <path> [--game k1|k2]
   write <path> --payload <json-string|@file>
+  extract <archive> --resref NAME --restype EXT --output <path>
   installations
   supported-types
 """
@@ -155,6 +156,49 @@ def _read_erf(path: Path) -> dict[str, Any]:
             }
         )
     return {"format": "erf", "resources": resources}
+
+
+def _open_container(path: Path):
+    ext = path.suffix.lower().lstrip(".")
+    if ext == "rim":
+        return read_rim(path)
+    return read_erf(path)
+
+
+def cmd_extract(archive_str: str, resref: str, restype_ext: str, output_str: str) -> None:
+    archive = _resolve_path(archive_str)
+    try:
+        container = _open_container(archive)
+    except Exception as exc:
+        _fail(f"Failed to open archive {archive}: {exc}")
+
+    try:
+        restype = ResourceType.from_extension(restype_ext.lower().lstrip("."))
+    except Exception as exc:
+        _fail(f"Unknown resource type '{restype_ext}': {exc}")
+
+    try:
+        data = container.get_data(resref, restype)
+    except Exception as exc:
+        _fail(f"Extract failed: {exc}")
+
+    if not data:
+        _fail(f"Resource '{resref}.{restype.extension}' not found in {archive.name}")
+
+    output = Path(output_str).expanduser()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_bytes(data)
+
+    _emit(
+        {
+            "ok": True,
+            "archive": str(archive),
+            "resref": resref,
+            "restype": restype.extension,
+            "output": str(output.resolve()),
+            "bytes": len(data),
+        }
+    )
 
 
 def _read_rim(path: Path) -> dict[str, Any]:
@@ -356,6 +400,12 @@ def main() -> None:
     p_write.add_argument("path")
     p_write.add_argument("--payload", required=True, help="JSON string or @file.json")
 
+    p_extract = sub.add_parser("extract")
+    p_extract.add_argument("archive")
+    p_extract.add_argument("--resref", required=True)
+    p_extract.add_argument("--restype", required=True, help="Resource extension, e.g. 2da, utc")
+    p_extract.add_argument("--output", required=True)
+
     sub.add_parser("installations")
     sub.add_parser("supported-types")
 
@@ -370,6 +420,8 @@ def main() -> None:
         if payload.startswith("@"):
             payload = Path(payload[1:]).read_text(encoding="utf-8")
         cmd_write(args.path, payload)
+    elif args.command == "extract":
+        cmd_extract(args.archive, args.resref, args.restype, args.output)
     elif args.command == "installations":
         cmd_installations()
     elif args.command == "supported-types":

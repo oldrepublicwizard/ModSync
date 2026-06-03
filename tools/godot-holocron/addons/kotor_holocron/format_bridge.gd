@@ -51,6 +51,21 @@ static func read_file(path: String, game: String = "") -> Dictionary:
 	return run_command(args)
 
 
+static func extract_member(archive_path: String, resref: String, restype: String, output_path: String) -> Dictionary:
+	return run_command(
+		[
+			"extract",
+			archive_path,
+			"--resref",
+			resref,
+			"--restype",
+			restype,
+			"--output",
+			output_path,
+		]
+	)
+
+
 static func write_file(path: String, payload: Dictionary) -> Dictionary:
 	var json_text := JSON.stringify(payload)
 	var tmp := OS.get_cache_dir().path_join("kotor_bridge_payload_%d.json" % Time.get_ticks_msec())

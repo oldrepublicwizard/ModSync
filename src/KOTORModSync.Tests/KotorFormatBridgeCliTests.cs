@@ -39,6 +39,12 @@ namespace KOTORModSync.Tests
                 "..", "..", "..",
                 "Fixtures", "kotor", "sample.ssf"));
 
+        private static string SampleModPath =>
+            Path.GetFullPath(Path.Combine(
+                TestContext.CurrentContext.TestDirectory,
+                "..", "..", "..",
+                "Fixtures", "kotor", "sample.mod"));
+
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
@@ -176,6 +182,60 @@ namespace KOTORModSync.Tests
                     File.Delete(tempPath);
                 }
             }
+        }
+
+        [Test]
+        public void Extract_SampleMod_EmbeddedTwoDa_MatchesDirectRead()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                var extractResult = RunBridge(
+                    "extract",
+                    SampleModPath,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--output",
+                    tempPath);
+                Assert.That(extractResult.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(File.Exists(tempPath), Is.True);
+
+                var directRead = RunBridge("read", SampleTwoDaPath);
+                var extractedRead = RunBridge("read", tempPath);
+                Assert.That(extractedRead.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(
+                    extractedRead.GetProperty("payload").GetProperty("data").GetProperty("rows").GetArrayLength(),
+                    Is.EqualTo(
+                        directRead.GetProperty("payload").GetProperty("data").GetProperty("rows").GetArrayLength()));
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+        }
+
+        [Test]
+        public void Read_SampleMod_ReturnsResourceList()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            var result = RunBridge("read", SampleModPath);
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            var resources = result.GetProperty("payload").GetProperty("resources");
+            Assert.That(resources.GetArrayLength(), Is.GreaterThan(0));
         }
 
         [Test]

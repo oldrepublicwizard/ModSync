@@ -91,10 +91,18 @@ func _open_path(path: String) -> void:
 	_current_editor.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_current_editor.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_current_editor.load_resource(path, read_result)
+	_wire_nested_open(_current_editor)
 	_status.text = "%s — %s" % [
 		KotorResourceTypes.kind_label(kind),
 		path.get_file(),
 	]
+
+
+func _wire_nested_open(editor: KotorResourceEditorBase) -> void:
+	if editor is ContainerEditor:
+		var container := editor as ContainerEditor
+		if not container.member_open_requested.is_connected(_open_path):
+			container.member_open_requested.connect(_open_path)
 
 
 func _clear_editor() -> void:

@@ -21,3 +21,4 @@ layout_mode = 2
 size_flags_vertical = 3
 hide_root = true
 column_titles_visible = true
+select_mode = 0
