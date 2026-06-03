@@ -100,6 +100,57 @@ func _listing_has_member(resref: String, restype: String) -> bool:
 	return false
 
 
+func _on_refresh_pressed() -> void:
+	if resource_path == "":
+		_status.text = "No archive path loaded"
+		return
+	_refresh_listing()
+
+
+func _on_extract_to_file_pressed() -> void:
+	var entry := _selected_resource_entry()
+	if entry.is_empty():
+		_status.text = "Select a resource to extract"
+		return
+	if resource_path == "":
+		_status.text = "No archive path loaded"
+		return
+
+	var resref := str(entry.get("resref", "")).strip_edges()
+	var restype := str(entry.get("restype", "")).strip_edges().to_lower()
+	if resref == "" or restype == "":
+		_status.text = "Invalid resource row"
+		return
+
+	var dialog := EditorFileDialog.new()
+	dialog.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
+	dialog.access = EditorFileDialog.ACCESS_FILESYSTEM
+	dialog.title = "Extract archive member to file"
+	dialog.current_file = "%s.%s" % [resref, restype]
+	add_child(dialog)
+	dialog.popup_centered_ratio(0.6)
+	dialog.file_selected.connect(func(output_path: String) -> void:
+		if _extract_member_to_path(resref, restype, output_path):
+			_status.text = "Extracted %s.%s to %s" % [resref, restype, output_path.get_file()]
+		dialog.queue_free()
+	)
+	dialog.canceled.connect(func() -> void: dialog.queue_free())
+
+
+func _extract_member_to_path(resref: String, restype: String, output_path: String) -> bool:
+	var result := FormatBridge.extract_member(resource_path, resref, restype, output_path)
+	if not result.get("ok", false):
+		_status.text = "Extract failed: %s" % str(result.get("error", "unknown"))
+		return false
+
+	var extracted := str(result.get("output", output_path))
+	if not FileAccess.file_exists(extracted):
+		_status.text = "Extracted file missing: %s" % extracted
+		return false
+
+	return true
+
+
 func _on_add_member_pressed() -> void:
 	if resource_path == "":
 		_status.text = "No archive path loaded"
@@ -300,14 +351,7 @@ func _on_item_activated() -> void:
 		"kotor_holocron_%s_%s.%s" % [safe_archive, resref, restype]
 	)
 
-	var result := FormatBridge.extract_member(resource_path, resref, restype, output)
-	if not result.get("ok", false):
-		_status.text = "Extract failed: %s" % str(result.get("error", "unknown"))
-		return
-
-	var extracted := str(result.get("output", output))
-	if not FileAccess.file_exists(extracted):
-		_status.text = "Extracted file missing: %s" % extracted
+	if not _extract_member_to_path(resref, restype, output):
 		return
 
 	_status.text = "Opened member %s.%s (Save writes back to archive)" % [resref, restype]
