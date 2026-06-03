@@ -51,6 +51,7 @@ HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phas
 | Return to archive listing after nested save (refreshed sizes) | Done (Phase 1+, dock reload) |
 | **Back to archive** without saving nested member | Done (dock button while nested) |
 | Copy archive member listing (TSV) | Done (container toolbar) |
+| Copy selected member (`resref.restype`) | Done (container toolbar) |
 | Sorted archive listing (resref, type) | Done |
 | Filter archive members (resref / type) | Done |
 | Binary member hex preview (read-only) | Done (via shared text editor) |

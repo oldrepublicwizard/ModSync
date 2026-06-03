@@ -33,6 +33,10 @@ text = "Remove"
 layout_mode = 2
 text = "Copy listing"
 
+[node name="CopyMemberButton" type="Button" parent="Toolbar"]
+layout_mode = 2
+text = "Copy member"
+
 [node name="FilterEdit" type="LineEdit" parent="Toolbar"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -57,4 +61,5 @@ select_mode = 0
 [connection signal="pressed" from="Toolbar/ExtractButton" to="." method="_on_extract_to_file_pressed"]
 [connection signal="pressed" from="Toolbar/RemoveMemberButton" to="." method="_on_remove_member_pressed"]
 [connection signal="pressed" from="Toolbar/CopyListingButton" to="." method="_on_copy_listing_pressed"]
+[connection signal="pressed" from="Toolbar/CopyMemberButton" to="." method="_on_copy_member_pressed"]
 [connection signal="text_changed" from="Toolbar/FilterEdit" to="." method="_on_filter_changed"]

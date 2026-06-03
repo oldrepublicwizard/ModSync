@@ -278,6 +278,21 @@ func _on_copy_listing_pressed() -> void:
 	_status.text = "Copied %d resource(s) to clipboard" % _resources.size()
 
 
+func _on_copy_member_pressed() -> void:
+	var entry := _selected_resource_entry()
+	if entry.is_empty():
+		_status.text = "Select a resource to copy"
+		return
+	var resref := str(entry.get("resref", "")).strip_edges()
+	var restype := str(entry.get("restype", "")).strip_edges().to_lower()
+	if resref == "" or restype == "":
+		_status.text = "Invalid resource row"
+		return
+	var identity := "%s.%s" % [resref, restype]
+	DisplayServer.clipboard_set(identity)
+	_status.text = "Copied %s to clipboard" % identity
+
+
 func _selected_resource_entry() -> Dictionary:
 	var selected := _table.get_selected()
 	if selected == null:
