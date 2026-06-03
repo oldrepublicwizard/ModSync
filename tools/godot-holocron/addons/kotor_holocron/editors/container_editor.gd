@@ -356,7 +356,7 @@ func _on_item_activated() -> void:
 
 	_status.text = "Opened member %s.%s (Save writes back to archive)" % [resref, restype]
 	member_open_requested.emit(
-		extracted,
+		output,
 		{
 			"archive": resource_path,
 			"resref": resref,
