@@ -55,7 +55,7 @@ HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phas
 | Sorted archive listing (resref, type) | Done |
 | Filter archive members (resref / type) | Done |
 | Binary member hex preview (read-only) | Done (via shared text editor) |
-| Refresh listing / extract member to disk | Done (container toolbar) |
+| Refresh listing / extract member to disk | Done (container toolbar; **F5** refresh) |
 | SSF sound-slot editor + bridge write | Done (Phase 1, #109) |
 | Installation list → open `dialog.tlk` | Done (Phase 1, #109) |
 | Add/remove archive members (`inject` add, `remove`, container toolbar) | Done (Phase 2; remove confirms; resref override on add) |

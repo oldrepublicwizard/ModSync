@@ -6,6 +6,7 @@ signal member_open_requested(path: String, context: Dictionary)
 
 @onready var _table: Tree = %ResourceTree
 @onready var _filter_edit: LineEdit = %FilterEdit
+@onready var _refresh_button: Button = %RefreshButton
 @onready var _status: Label = %StatusLabel
 
 var _format: String = "erf"
@@ -20,6 +21,12 @@ func _ready() -> void:
 	_table.set_column_title(1, "type")
 	_table.set_column_title(2, "size")
 	_table.item_activated.connect(_on_item_activated)
+	_table.item_selected.connect(_on_item_selected)
+	var refresh_shortcut := Shortcut.new()
+	var f5 := InputEventKey.new()
+	f5.keycode = KEY_F5
+	refresh_shortcut.events = [f5]
+	_refresh_button.shortcut = refresh_shortcut
 
 
 func _apply_bridge_data(data: Dictionary) -> void:
@@ -71,6 +78,20 @@ func _on_filter_changed(new_text: String) -> void:
 	_filter_query = new_text.strip_edges().to_lower()
 	_rebuild_tree()
 	_update_status_line()
+
+
+func _on_item_selected() -> void:
+	var entry := _selected_resource_entry()
+	if entry.is_empty():
+		_update_status_line()
+		return
+	var resref := str(entry.get("resref", "")).strip_edges()
+	var restype := str(entry.get("restype", "")).strip_edges().to_lower()
+	var size := str(entry.get("size", ""))
+	if resref == "" or restype == "":
+		_update_status_line()
+		return
+	_status.text = "%s.%s (%s bytes) — double-click to open" % [resref, restype, size]
 
 
 func _rebuild_tree() -> void:
