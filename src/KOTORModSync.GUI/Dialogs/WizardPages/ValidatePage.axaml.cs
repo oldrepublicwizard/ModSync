@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Interactivity;
@@ -374,7 +375,7 @@ namespace KOTORModSync.Dialogs.WizardPages
 
                 if (_errorCount > 0 || _warningCount > 0)
                 {
-                    Dispatcher.UIThread.Post(ScrollToFirstIssueCard, DispatcherPriority.Loaded);
+                    Dispatcher.UIThread.Post(FocusFirstValidationIssue, DispatcherPriority.Loaded);
                 }
 
                 _hasValidated = true;
@@ -419,6 +420,60 @@ namespace KOTORModSync.Dialogs.WizardPages
 
         private static readonly IBrush s_errorHighlightBrush = new SolidColorBrush(Color.Parse("#E53935"));
         private static readonly IBrush s_warningHighlightBrush = new SolidColorBrush(Color.Parse("#FB8C00"));
+
+        private void FocusFirstValidationIssue()
+        {
+            ScrollLogToFirstIssueLine();
+            ScrollToFirstIssueCard();
+        }
+
+        private void ScrollLogToFirstIssueLine()
+        {
+            if (_logScrollViewer == null || _logBuilder.Length == 0)
+            {
+                return;
+            }
+
+            string[] lines = _logBuilder.ToString().Split('\n');
+            int lineIndex = FindFirstLogLineIndex(lines, preferErrors: true);
+            if (lineIndex < 0 && _warningCount > 0)
+            {
+                lineIndex = FindFirstLogLineIndex(lines, preferErrors: false);
+            }
+
+            if (lineIndex < 0)
+            {
+                return;
+            }
+
+            const double lineHeight = 15;
+            double offset = Math.Max(0, (lineIndex * lineHeight) - 30);
+            double maxOffset = Math.Max(0, _logScrollViewer.Extent.Height - _logScrollViewer.Viewport.Height);
+            _logScrollViewer.Offset = new Vector(0, Math.Min(offset, maxOffset));
+        }
+
+        private static int FindFirstLogLineIndex(string[] lines, bool preferErrors)
+        {
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i];
+                if (preferErrors)
+                {
+                    if (line.IndexOf("ERROR:", StringComparison.Ordinal) >= 0
+                        || line.IndexOf('❌') >= 0)
+                    {
+                        return i;
+                    }
+                }
+                else if (line.IndexOf("WARNING:", StringComparison.Ordinal) >= 0
+                    || line.IndexOf('⚠') >= 0)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
 
         private void ScrollToFirstIssueCard()
         {

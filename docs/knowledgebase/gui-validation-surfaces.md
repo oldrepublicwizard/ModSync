@@ -49,6 +49,8 @@
 
 **Results panel** scrolls to the first `❌` result card after validation (or first `⚠️` when there are no errors) and applies a red or amber border on that card so it stands out in long lists.
 
+**Validation log** scrolls to the first `ERROR:` / `❌` log line (or first `WARNING:` / `⚠` when there are no errors) when the log expander is open.
+
 ## Legacy MainWindow validate
 
 `MainWindow.ValidateButton_Click` → `RunValidationAsync` runs **`LegacyValidationRunner.RunAsync`** (`WizardFull` + mapper), then shows progress log and `ValidationDialog` with the returned issue list.
