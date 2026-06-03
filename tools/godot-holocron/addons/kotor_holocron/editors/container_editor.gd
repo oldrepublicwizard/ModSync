@@ -32,10 +32,23 @@ func build_write_payload() -> Dictionary:
 	return {}
 
 
+func _sorted_resources() -> Array:
+	var sorted: Array = _resources.duplicate(true)
+	sorted.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var ref_a := str(a.get("resref", ""))
+		var ref_b := str(b.get("resref", ""))
+		if ref_a != ref_b:
+			return ref_a.nocasecmp_to(ref_b) < 0
+		return str(a.get("restype", "")).nocasecmp_to(str(b.get("restype", ""))) < 0
+	)
+	return sorted
+
+
 func _rebuild_tree() -> void:
 	_table.clear()
-	for res in _resources:
+	for res in _sorted_resources():
 		var item := _table.create_item()
+		item.set_metadata(0, res)
 		item.set_text(0, str(res.get("resref", "")))
 		item.set_text(1, str(res.get("restype", "")))
 		item.set_text(2, str(res.get("size", "")))
@@ -168,20 +181,41 @@ func _add_member_with_identity(source_path: String, resref: String, restype: Str
 	_refresh_listing()
 
 
-func _on_remove_member_pressed() -> void:
+func _on_copy_listing_pressed() -> void:
+	if _resources.is_empty():
+		_status.text = "No resources to copy"
+		return
+
+	var lines: PackedStringArray = PackedStringArray(["resref\trestype\tsize"])
+	for res in _sorted_resources():
+		lines.append(
+			"%s\t%s\t%s"
+			% [str(res.get("resref", "")), str(res.get("restype", "")), str(res.get("size", ""))]
+		)
+
+	var text := "\n".join(lines)
+	DisplayServer.clipboard_set(text)
+	_status.text = "Copied %d resource(s) to clipboard" % _resources.size()
+
+
+func _selected_resource_entry() -> Dictionary:
 	var selected := _table.get_selected()
 	if selected == null:
+		return {}
+	var entry = selected.get_metadata(0)
+	if typeof(entry) != TYPE_DICTIONARY:
+		return {}
+	return entry
+
+
+func _on_remove_member_pressed() -> void:
+	var entry := _selected_resource_entry()
+	if entry.is_empty():
 		_status.text = "Select a resource to remove"
-		return
-	var row := selected.get_index()
-	if row < 0 or row >= _resources.size():
-		_status.text = "Invalid selection"
 		return
 	if resource_path == "":
 		_status.text = "No archive path loaded"
 		return
-
-	var entry: Dictionary = _resources[row]
 	var resref := str(entry.get("resref", "")).strip_edges()
 	var restype := str(entry.get("restype", "")).strip_edges().to_lower()
 	if resref == "" or restype == "":
@@ -216,17 +250,12 @@ func _execute_remove_member(resref: String, restype: String) -> void:
 
 
 func _on_item_activated() -> void:
-	var selected := _table.get_selected()
-	if selected == null:
-		return
-	var row := selected.get_index()
-	if row < 0 or row >= _resources.size():
+	var entry := _selected_resource_entry()
+	if entry.is_empty():
 		return
 	if resource_path == "":
 		_status.text = "No archive path loaded"
 		return
-
-	var entry: Dictionary = _resources[row]
 	var resref := str(entry.get("resref", "")).strip_edges()
 	var restype := str(entry.get("restype", "")).strip_edges().to_lower()
 	if resref == "" or restype == "":

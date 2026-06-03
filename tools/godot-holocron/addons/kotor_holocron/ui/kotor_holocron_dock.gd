@@ -2,6 +2,7 @@
 extends Control
 
 @onready var _path_edit: LineEdit = %PathEdit
+@onready var _back_to_archive: Button = %BackToArchiveButton
 @onready var _status: Label = %StatusLabel
 @onready var _editor_host: Control = %EditorHost
 @onready var _install_list: ItemList = %InstallList
@@ -117,7 +118,27 @@ func _wire_nested_open(editor: KotorResourceEditorBase) -> void:
 
 func _on_member_open_requested(member_path: String, context: Dictionary) -> void:
 	_archive_inject_context = context.duplicate(true)
+	_update_back_to_archive_button()
 	_open_path(member_path)
+
+
+func _on_back_to_archive_pressed() -> void:
+	var archive := str(_archive_inject_context.get("archive", "")).strip_edges()
+	if archive == "":
+		_update_back_to_archive_button()
+		return
+	_archive_inject_context = {}
+	_update_back_to_archive_button()
+	_path_edit.text = archive
+	_open_path(archive)
+
+
+func _update_back_to_archive_button() -> void:
+	if _back_to_archive == null:
+		return
+	var archive := str(_archive_inject_context.get("archive", "")).strip_edges()
+	_back_to_archive.visible = archive != ""
+	_back_to_archive.disabled = archive == ""
 
 
 func _connect_editor_saved(editor: KotorResourceEditorBase) -> void:
@@ -140,14 +161,17 @@ func _on_editor_saved(saved_path: String) -> void:
 	if result.get("ok", false):
 		_status.text = "Saved %s.%s into %s" % [resref, restype, archive.get_file()]
 		_archive_inject_context = {}
+		_update_back_to_archive_button()
 		_open_path(archive)
 		return
 	_status.text = "Archive inject failed: %s" % str(result.get("error", "unknown"))
 	_archive_inject_context = {}
+	_update_back_to_archive_button()
 
 
 func _clear_editor() -> void:
 	_archive_inject_context = {}
+	_update_back_to_archive_button()
 	if _current_editor and _current_editor.saved.is_connected(_on_editor_saved):
 		_current_editor.saved.disconnect(_on_editor_saved)
 	if _current_editor:

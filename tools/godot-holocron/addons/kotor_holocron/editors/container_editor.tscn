@@ -21,6 +21,10 @@ text = "Add Member"
 layout_mode = 2
 text = "Remove"
 
+[node name="CopyListingButton" type="Button" parent="Toolbar"]
+layout_mode = 2
+text = "Copy listing"
+
 [node name="StatusLabel" type="Label" parent="Toolbar"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -37,3 +41,4 @@ select_mode = 0
 
 [connection signal="pressed" from="Toolbar/AddMemberButton" to="." method="_on_add_member_pressed"]
 [connection signal="pressed" from="Toolbar/RemoveMemberButton" to="." method="_on_remove_member_pressed"]
+[connection signal="pressed" from="Toolbar/CopyListingButton" to="." method="_on_copy_listing_pressed"]
