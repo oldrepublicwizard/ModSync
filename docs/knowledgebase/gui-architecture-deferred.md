@@ -15,6 +15,20 @@
 
 Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 KB closure).
 
+### PR #110 extension (wizard + dialog parity, same branch)
+
+| Item | Status | Reference |
+|------|--------|-----------|
+| Archive / Install Order / Dry-run wizard result cards | Done | plans `021`–`022` |
+| Shared `ApplyPrefixedStageMessageCards` | Done | plan `023` |
+| Conflicts wizard summaries + pipeline counts | Done | plan `024` |
+| Dialog mapper stage aggregates (Conflicts, archives) | Done | plan `025` |
+| Environment / Install Order prefixed dialog rows | Done | plan `026` |
+| ValidatePage **Copy report** | Done | plan `027` |
+| Auto-expand validation log on errors/warnings | Done | plan `029` |
+
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+
 ## Deferred — high impact
 
 ### MainWindow god object
@@ -41,7 +55,8 @@ Both register similar page sequences. Consolidation requires UX decisions (modal
 | Widescreen install batch API | Dynamic pages after base install; GUI-only progress surfaces `[UI]` |
 | Download status depth | Some status UI is GUI-only; headless tests use cache/orchestration APIs — [download-system.md](download-system.md) |
 | `EmbeddedLogPanel` | Line-count fix landed (#99); further output UX is cosmetic |
-| Archive `ERROR:` wizard result cards | Done — `WizardValidationStagePresenter` parses ComponentValidation `ERROR:` like dialog mapper |
+| Archive `ERROR:` wizard result cards | Done (PR #110) — wizard + `ValidationPipelineDialogMapper` parity |
+| ValidatePage copy report / log UX | Done (PR #110) — see [gui-validation-surfaces.md](gui-validation-surfaces.md) |
 
 ## Deferred — separate product track
 

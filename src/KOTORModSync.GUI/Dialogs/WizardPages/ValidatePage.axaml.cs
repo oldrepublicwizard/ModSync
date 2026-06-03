@@ -365,6 +365,11 @@ namespace KOTORModSync.Dialogs.WizardPages
                 UpdateBadges();
                 UpdateSummary();
 
+                if (_logExpander != null)
+                {
+                    _logExpander.IsExpanded = _hasCriticalErrors || _warningCount > 0;
+                }
+
                 _hasValidated = true;
             }
             finally

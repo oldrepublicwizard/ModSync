@@ -45,7 +45,7 @@
 
 **Dry-run on ValidatePage:** `ApplyDryRunStage` adds up to five per-issue result cards (mod name, category, message, solution hint from `GetSolutionForIssue`) plus an aggregate `Instruction Execution` summary card.
 
-`[UI]` Full-build agents can use **Copy report** on `ValidatePage` (after Run Validation) to copy summary counts, result cards, and the full validation log to the clipboard. Expanding **LogExpander** is optional when a pasted report is enough.
+`[UI]` Full-build agents can use **Copy report** on `ValidatePage` (after Run Validation) to copy summary counts, result cards, and the full validation log to the clipboard. **LogExpander** auto-expands when the run reports errors or warnings; clean passes leave it collapsed.
 
 ## Legacy MainWindow validate
 
