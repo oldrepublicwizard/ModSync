@@ -15,6 +15,15 @@ For broad repo tasks, start with `.github/copilot-instructions.md` for the short
 
 **Knowledgebase (canonical index):** [docs/knowledgebase/README.md](docs/knowledgebase/README.md) — agent-native audit, CLI reference, action parity, and links to runbooks/scripts.
 
+### Parallel open PRs (do not bundle)
+
+| Track | Branch | PR | Tests |
+|-------|--------|-----|-------|
+| Install wizard validation parity | `feat/wizard-archive-validation-parity` | [#110](https://github.com/th3w1zard1/ModSync/pull/110) | `FullyQualifiedName~WizardValidationStagePresenter` or `ValidationPipelineDialogMapper` |
+| Godot Holocron Phase 1 | `feat/holocron-erf-nested-open` | [#111](https://github.com/th3w1zard1/ModSync/pull/111) | `FullyQualifiedName~KotorFormatBridgeCliTests` |
+
+Merge and review each PR independently. Godot work is under `tools/godot-holocron/` — see [docs/knowledgebase/godot-holocron-editor.md](docs/knowledgebase/godot-holocron-editor.md). Wizard validation UX is in [docs/knowledgebase/gui-validation-surfaces.md](docs/knowledgebase/gui-validation-surfaces.md).
+
 Start with:
 
 - `docs/knowledgebase/README.md`
