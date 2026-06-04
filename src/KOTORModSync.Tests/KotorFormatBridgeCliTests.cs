@@ -338,6 +338,42 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Probe_ExtractedTwoDa_ReturnsTwodaEditorKind()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                var extractResult = RunBridge(
+                    "extract",
+                    SampleModPath,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--output",
+                    tempPath);
+                Assert.That(extractResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var probe = RunBridge("probe", tempPath);
+                Assert.That(probe.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(probe.GetProperty("extension").GetString(), Is.EqualTo("2da"));
+                Assert.That(probe.GetProperty("editor_kind").GetString(), Is.EqualTo("twoda"));
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+        }
+
+        [Test]
         public void Extract_MissingArchive_ReturnsError()
         {
             string missingArchive = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
