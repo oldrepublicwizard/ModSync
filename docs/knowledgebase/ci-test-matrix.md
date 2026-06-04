@@ -42,6 +42,18 @@ Runs the **full** test project (minus `LongRunning` suffix if any exist). Longer
 | `run_headless_tests.sh` matches CI | **No** — local is wider |
 | Green CI + green local script = strong signal | **Yes** — run both before large merges |
 
+## PR-targeted local filters (merge-ready open PRs)
+
+`[REPO]` CI does not run these filters as a dedicated job; run locally before merging the matching PR.
+
+| PR | Branch | Filter |
+|----|--------|--------|
+| [#110](https://github.com/th3w1zard1/ModSync/pull/110) | `feat/wizard-archive-validation-parity` | `FullyQualifiedName~WizardValidationStagePresenter` |
+| [#110](https://github.com/th3w1zard1/ModSync/pull/110) | same | `FullyQualifiedName~ValidationPipelineDialogMapper` |
+| [#111](https://github.com/th3w1zard1/ModSync/pull/111) | `feat/holocron-erf-nested-open` | `FullyQualifiedName~KotorFormatBridgeCliTests` |
+
+Holocron tests skip when PyKotor is not importable. See [agent-action-parity.md](agent-action-parity.md).
+
 ## Related
 
 - [removed-features.md](removed-features.md) — no `DistributedCache` CI job
