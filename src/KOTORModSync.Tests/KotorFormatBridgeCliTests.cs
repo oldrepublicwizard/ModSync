@@ -222,6 +222,14 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Installations_ReturnsOk()
+        {
+            var result = RunBridge("installations");
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            Assert.That(result.GetProperty("installations").ValueKind, Is.EqualTo(JsonValueKind.Array));
+        }
+
+        [Test]
         public void Read_SampleTlk_ReturnsStrings()
         {
             if (!File.Exists(SampleTlkPath))
@@ -327,6 +335,25 @@ namespace KOTORModSync.Tests
                     File.Delete(tempPath);
                 }
             }
+        }
+
+        [Test]
+        public void Extract_MissingArchive_ReturnsError()
+        {
+            string missingArchive = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            string outputPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            var raw = RunBridgeRaw(
+                "extract",
+                missingArchive,
+                "--resref",
+                "test2da",
+                "--restype",
+                "2da",
+                "--output",
+                outputPath);
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
         }
 
         [Test]
