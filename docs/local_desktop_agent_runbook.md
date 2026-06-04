@@ -4,6 +4,17 @@ This runbook is for local LLM agents running outside Cursor Cloud in a real desk
 
 It captures the workflow that was actually exercised against this repo's Avalonia GUI on Linux.
 
+## Open PR scope (2026-06-03)
+
+`[REPO]` Do not mix work across these merge-ready branches:
+
+| PR | Scope | This runbook applies? |
+|----|--------|----------------------|
+| [#110](https://github.com/th3w1zard1/ModSync/pull/110) | Install wizard **ValidatePage** / validation UI | **Yes** — desktop wizard flows below |
+| [#111](https://github.com/th3w1zard1/ModSync/pull/111) | Godot Holocron (`tools/godot-holocron/`) | **No** — use [godot-holocron-editor.md](knowledgebase/godot-holocron-editor.md) |
+
+Headless filters before merge: [ci-test-matrix.md](knowledgebase/ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs). Routing table: `AGENTS.md` § Parallel open PRs.
+
 ## Goal
 
 Make it easy for a local desktop-capable agent to:
