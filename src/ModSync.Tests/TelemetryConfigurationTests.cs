@@ -29,12 +29,14 @@ namespace ModSync.Tests
             _configDirectory = _appDataRoot;
             _configFilePath = Path.Combine(_configDirectory, "telemetry_config.json");
             _keyFilePath = Path.Combine(_configDirectory, "telemetry.key");
-            _originalSigningSecret = Environment.GetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET");
+            _originalSigningSecret = Environment.GetEnvironmentVariable("MODSYNC_SIGNING_SECRET")
+                ?? Environment.GetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET");
         }
 
         [TearDown]
         public void TearDown()
         {
+            Environment.SetEnvironmentVariable("MODSYNC_SIGNING_SECRET", null);
             Environment.SetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET", _originalSigningSecret);
 
             try
@@ -92,6 +94,17 @@ namespace ModSync.Tests
             TelemetryConfiguration loaded = TelemetryConfiguration.Load();
 
             Assert.That(loaded.SigningSecret, Is.EqualTo("env-secret-value"));
+        }
+
+        [Test]
+        public void Load_PrefersModSyncSigningSecretOverLegacyName()
+        {
+            Environment.SetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET", "legacy-secret");
+            Environment.SetEnvironmentVariable("MODSYNC_SIGNING_SECRET", "modsync-secret");
+
+            TelemetryConfiguration loaded = TelemetryConfiguration.Load();
+
+            Assert.That(loaded.SigningSecret, Is.EqualTo("modsync-secret"));
         }
 
         [Test]

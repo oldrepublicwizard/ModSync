@@ -12,7 +12,7 @@ This is why I created ModSync - an installer creator in C# to automate and simpl
 Mod creators work really hard on their mods. It's the least we can do to install them and use them, right? However, who wants to reinstall to vanilla and spend several hours reinstalling mods, just to add 1 or 2 extra mods on top of it?
 Other mod managers I've tried were either too difficult to configure, require significant changes to a hard-to-understand configuration file, or only provided limited functionality for defining new mods. KOTOR mods definitely can have complex dependency relationships with each other in regard to compatibility, due to the nature of TSLPatcher and KOTOR itself.
 
-### Enter KOTORMODSync
+### Enter ModSync
 
 ![image](https://github.com/th3w1zard1/ModSync/assets/2219836/1d3afdbb-24cf-428b-93e1-37b61f48aa20)
 
@@ -41,7 +41,7 @@ See <https://pastebin.com/7gML3zCJ> for a quick explanation of those fields. See
 ## FAQ
 
 - Q: This app is saying 'failed to validate some components'...
-- A: Check the logs/output window/console window, find the archive it's complaining about (it's highlighted bold in red). Either download the archive so kotormodsync can find it, or deselect the mod in the app so it won't be considered for install.
+- A: Check the logs/output window/console window, find the archive it's complaining about (it's highlighted bold in red). Either download the archive so ModSync can find it, or deselect the mod in the app so it won't be considered for install.
 - Q: I get an error saying the holopatcher binary failed to execute. how to fix?
 - A: The most common reason is your AV is blocking it, but check your log file for more information.
 - Q: I've created my own mod, will you add it to the ModSync project?

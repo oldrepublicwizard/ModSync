@@ -92,20 +92,20 @@ namespace ModSync.Core.Services
 
                 _meter = new Meter("ModSync", "1.0.0");
 
-                _eventCounter = _meter.CreateCounter<long>("kotormodsync.events", "events", "Number of events recorded");
-                _errorCounter = _meter.CreateCounter<long>("kotormodsync.errors", "errors", "Number of errors recorded");
-                _operationDuration = _meter.CreateHistogram<double>("kotormodsync.operation.duration", "ms", "Duration of operations");
-                _modInstallCounter = _meter.CreateCounter<long>("kotormodsync.mods.installed", "mods", "Number of mods installed");
-                _modValidationCounter = _meter.CreateCounter<long>("kotormodsync.mods.validated", "mods", "Number of mods validated");
-                _downloadCounter = _meter.CreateCounter<long>("kotormodsync.downloads", "downloads", "Number of downloads");
-                _downloadSize = _meter.CreateHistogram<long>("kotormodsync.download.size", "bytes", "Size of downloads");
+                _eventCounter = _meter.CreateCounter<long>("modsync.events", "events", "Number of events recorded");
+                _errorCounter = _meter.CreateCounter<long>("modsync.errors", "errors", "Number of errors recorded");
+                _operationDuration = _meter.CreateHistogram<double>("modsync.operation.duration", "ms", "Duration of operations");
+                _modInstallCounter = _meter.CreateCounter<long>("modsync.mods.installed", "mods", "Number of mods installed");
+                _modValidationCounter = _meter.CreateCounter<long>("modsync.mods.validated", "mods", "Number of mods validated");
+                _downloadCounter = _meter.CreateCounter<long>("modsync.downloads", "downloads", "Number of downloads");
+                _downloadSize = _meter.CreateHistogram<long>("modsync.download.size", "bytes", "Size of downloads");
 
                 // Initialize cache telemetry metrics
-                _cacheHitCounter = _meter.CreateCounter<long>("kotormodsync.cache.hits", "hits", "Number of cache hits");
-                _cacheMissCounter = _meter.CreateCounter<long>("kotormodsync.cache.misses", "misses", "Number of cache misses");
-                _cacheSizeCounter = _meter.CreateCounter<long>("kotormodsync.cache.size", "bytes", "Total cache size in bytes");
-                _integrityVerificationCounter = _meter.CreateCounter<long>("kotormodsync.cache.integrity.verified", "verifications", "Number of integrity verifications");
-                _cacheOperationDuration = _meter.CreateHistogram<double>("kotormodsync.cache.operation.duration", "ms", "Duration of cache operations");
+                _cacheHitCounter = _meter.CreateCounter<long>("modsync.cache.hits", "hits", "Number of cache hits");
+                _cacheMissCounter = _meter.CreateCounter<long>("modsync.cache.misses", "misses", "Number of cache misses");
+                _cacheSizeCounter = _meter.CreateCounter<long>("modsync.cache.size", "bytes", "Total cache size in bytes");
+                _integrityVerificationCounter = _meter.CreateCounter<long>("modsync.cache.integrity.verified", "verifications", "Number of integrity verifications");
+                _cacheOperationDuration = _meter.CreateHistogram<double>("modsync.cache.operation.duration", "ms", "Duration of cache operations");
 
                 TracerProviderBuilder tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
                     .SetResourceBuilder(resourceBuilder)

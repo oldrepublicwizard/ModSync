@@ -4542,9 +4542,13 @@ namespace ModSync.Core.Services
         {
             JToken modComponentsToken = null;
 
-            if (root.TryGetValue("ModSync", out JToken kotorModSyncToken) && kotorModSyncToken is JObject kotorModSyncObject)
+            if (root.TryGetValue("ModSync", out JToken modSyncToken) && modSyncToken is JObject modSyncObject)
             {
-                modComponentsToken = kotorModSyncObject["ModComponents"];
+                modComponentsToken = modSyncObject["ModComponents"];
+            }
+            else if (root.TryGetValue("KOTORModSync", out JToken legacyModSyncToken) && legacyModSyncToken is JObject legacyModSyncObject)
+            {
+                modComponentsToken = legacyModSyncObject["ModComponents"];
             }
             else if (root.TryGetValue("ModComponents", out JToken directModComponentsToken))
             {

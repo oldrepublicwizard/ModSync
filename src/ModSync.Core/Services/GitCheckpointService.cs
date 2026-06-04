@@ -105,7 +105,7 @@ namespace ModSync.Core.Services
 
                 // Create commit
                 string commitMessage = BuildCommitMessage(component, componentIndex, totalComponents);
-                Signature signature = new Signature("ModSync", "checkpoint@kotormodsync.local", DateTimeOffset.Now);
+                Signature signature = new Signature("ModSync", "checkpoint@modsync.local", DateTimeOffset.Now);
 
                 Commit commit;
                 try
@@ -344,7 +344,7 @@ namespace ModSync.Core.Services
 
             // Configure user for commits
             _repository.Config.Set("user.name", "ModSync");
-            _repository.Config.Set("user.email", "checkpoint@kotormodsync.local");
+            _repository.Config.Set("user.email", "checkpoint@modsync.local");
         }
 
         private async Task<string> CreateBaselineIfNeededAsync(CancellationToken cancellationToken)
@@ -362,7 +362,7 @@ namespace ModSync.Core.Services
             await StageGameDirectoryChangesAsync(cancellationToken).ConfigureAwait(false);
 
             // Create initial commit
-            Signature signature = new Signature("ModSync", "checkpoint@kotormodsync.local", DateTimeOffset.Now);
+            Signature signature = new Signature("ModSync", "checkpoint@modsync.local", DateTimeOffset.Now);
             Commit initialCommit = _repository.Commit(InitialCommitMessage, signature, signature, new CommitOptions());
 
             return initialCommit.Sha;

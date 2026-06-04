@@ -2,7 +2,7 @@
 
 ## Required GitHub Secret
 
-**Name:** `KOTORMODSYNC_SIGNING_SECRET`
+**Name:** `KOTORMODSYNC_SIGNING_SECRET` (GitHub Actions secret; client also accepts `MODSYNC_SIGNING_SECRET`)
 
 **Purpose:** HMAC-SHA256 signing key for authenticating telemetry requests to bolabaden.org. Prevents unauthorized/fake telemetry from being sent.
 

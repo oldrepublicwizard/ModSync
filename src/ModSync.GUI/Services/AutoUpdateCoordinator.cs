@@ -55,7 +55,7 @@ namespace ModSync.Services
             string targetDirectory = Path.GetDirectoryName(currentProcessPath)
                 ?? throw new InvalidOperationException("Unable to determine current application directory.");
 
-            string scriptDirectory = Path.Combine(Path.GetTempPath(), "kotormodsync_update_scripts");
+            string scriptDirectory = Path.Combine(Path.GetTempPath(), "modsync_update_scripts");
             Directory.CreateDirectory(scriptDirectory);
 
             int processId = CurrentProcessId;
@@ -101,7 +101,7 @@ namespace ModSync.Services
 
             string extractionRoot = Path.Combine(
                 Path.GetTempPath(),
-                "kotormodsync_update",
+                "modsync_update",
                 Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
 
             Directory.CreateDirectory(extractionRoot);

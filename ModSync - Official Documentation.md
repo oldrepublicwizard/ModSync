@@ -4,7 +4,7 @@
 
 - [Introduction](#introduction)
   - [The Problem](#the-problem)
-  - [ModSync's Solution](#kotormodsyncs-solution)
+  - [ModSync's Solution](#modsyncs-solution)
 - [Install Process](#install-process)
 - [Config File Structure](#config-file-structure)
   - [GUIDs](#guids)

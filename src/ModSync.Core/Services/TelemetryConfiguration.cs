@@ -114,9 +114,20 @@ namespace ModSync.Core.Services
         {
             try
             {
-                if (File.Exists(ConfigFilePath))
+                string configPath = ConfigFilePath;
+                string legacyConfigPath = Path.Combine(
+                    System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData),
+                    "KOTORModSync",
+                    "telemetry_config.json"
+                );
+                if (!File.Exists(configPath) && File.Exists(legacyConfigPath))
                 {
-                    string json = File.ReadAllText(ConfigFilePath);
+                    configPath = legacyConfigPath;
+                }
+
+                if (File.Exists(configPath))
+                {
+                    string json = File.ReadAllText(configPath);
                     TelemetryConfiguration config = JsonSerializer.Deserialize<TelemetryConfiguration>(json);
 
                     config.SessionId = Guid.NewGuid().ToString();
@@ -150,7 +161,8 @@ namespace ModSync.Core.Services
 
         private static string LoadSigningSecret()
         {
-            string secret = System.Environment.GetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET");
+            string secret = System.Environment.GetEnvironmentVariable("MODSYNC_SIGNING_SECRET")
+                ?? System.Environment.GetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET");
             if (!string.IsNullOrEmpty(secret))
             {
                 Logger.LogVerbose("[Telemetry] Signing secret loaded from environment variable");
@@ -162,6 +174,16 @@ namespace ModSync.Core.Services
                 "ModSync",
                 "telemetry.key"
             );
+            string legacyConfigPath = Path.Combine(
+                System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData),
+                "KOTORModSync",
+                "telemetry.key"
+            );
+
+            if (!File.Exists(configPath) && File.Exists(legacyConfigPath))
+            {
+                configPath = legacyConfigPath;
+            }
 
             if (File.Exists(configPath))
             {

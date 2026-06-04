@@ -116,6 +116,35 @@ namespace ModSync.Tests
         }
 
         [Test]
+        public void SetRealPaths_WithGameDirectoryPlaceholder_ResolvesCorrectly()
+        {
+            var component = new ModComponent { Name = "Test", Guid = Guid.NewGuid() };
+            var instruction = new Instruction
+            {
+                Action = Instruction.ActionType.Move,
+                Source = new List<string> { "<<gameDirectory>>/file.txt" },
+                Destination = "<<gameDirectory>>/Override"
+            };
+
+            var fileSystemProvider = new RealFileSystemProvider();
+            instruction.SetFileSystemProvider(fileSystemProvider);
+            instruction.SetParentComponent(component);
+            _config.sourcePath = new DirectoryInfo(_modDirectory);
+            _config.destinationPath = new DirectoryInfo(_kotorDirectory);
+            instruction.SetRealPaths(skipExistenceCheck: true);
+
+            var realSourcePathsProperty = typeof(Instruction).GetProperty("RealSourcePaths", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var realSourcePaths = (List<string>)realSourcePathsProperty?.GetValue(instruction);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(realSourcePaths, Is.Not.Null, "RealSourcePaths should not be null");
+                Assert.That(realSourcePaths[0], Does.Contain(_kotorDirectory), "Should resolve to game directory");
+                Assert.That(realSourcePaths[0], Does.Not.Contain("<<gameDirectory>>"), "Placeholder should be replaced");
+            });
+        }
+
+        [Test]
         public void SetRealPaths_WithMixedPlaceholders_ResolvesCorrectly()
         {
             var component = new ModComponent { Name = "Test", Guid = Guid.NewGuid() };

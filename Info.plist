@@ -5,7 +5,7 @@
         <key>CFBundleDisplayName</key>
         <string>KOTOR Mod Sync</string>
         <key>CFBundleIdentifier</key>
-        <string>com.th3w1zard1.kotormodsync</string>
+        <string>com.th3w1zard1.modsync</string>
         <key>CFBundleShortVersionString</key>
         <string>2.0.0a1</string>
         <key>CFBundleVersion</key>

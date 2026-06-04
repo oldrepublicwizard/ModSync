@@ -246,13 +246,25 @@ namespace ModSync.Models
             {
                 Logger.LogVerbose($"[SettingsManager.LoadSettings] Loading settings from: '{SettingsFilePath}'");
 
-                if (!File.Exists(SettingsFilePath))
+                string settingsPath = SettingsFilePath;
+                string legacySettingsPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "KOTORModSync",
+                    "settings.json"
+                );
+                if (!File.Exists(settingsPath) && File.Exists(legacySettingsPath))
+                {
+                    Logger.LogVerbose($"[SettingsManager.LoadSettings] Migrating settings from legacy path: '{legacySettingsPath}'");
+                    settingsPath = legacySettingsPath;
+                }
+
+                if (!File.Exists(settingsPath))
                 {
                     Logger.LogVerbose($"[SettingsManager.LoadSettings] No settings file found, using defaults");
                     return new AppSettings();
                 }
 
-                string json = File.ReadAllText(SettingsFilePath);
+                string json = File.ReadAllText(settingsPath);
                 Logger.LogVerbose($"[SettingsManager.LoadSettings] Read settings JSON: {json}");
 
                 AppSettings settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);

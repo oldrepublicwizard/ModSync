@@ -14,7 +14,7 @@ namespace ModSync.Core
 {
     public static class Logger
     {
-        public const string LogFileName = "kotormodsync_";
+        public const string LogFileName = "modsync_";
         private static bool s_isInitialized;
         private static readonly object s_initializationLock = new object();
         private static readonly NLog.Logger s_logger = LogManager.GetCurrentClassLogger();

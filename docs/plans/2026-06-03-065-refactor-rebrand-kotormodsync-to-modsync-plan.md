@@ -109,6 +109,16 @@ rg -n 'KOTORModSync' --glob '!docs/plans/*'  # expect zero
 | Broken ProjectReference paths | U1 before U2; full solution build |
 | User config path change | Document one-time migration in README (optional read legacy folder) |
 
+## Gap-fill pass (2026-06-04)
+
+- README branding, log prefix `modsync_`, updater temp dirs, telemetry metric names
+- `MODSYNC_SIGNING_SECRET` + legacy env/config migration from `%AppData%/KOTORModSync`
+- JSON/XML root key `KOTORModSync` read compatibility in serialization
+- macOS bundle ID `com.th3w1zard1.modsync`
+- `<<gameDirectory>>` test coverage
+
+**Intentionally unchanged:** HoloPatcher `KOTORModSync.*` namespaces; `telemetry.kotormodsync.com` DNS; GitHub secret name `KOTORMODSYNC_SIGNING_SECRET`; DeadlyStream permalink slug.
+
 ## Out of scope
 
 - Renaming `HoloPatcher`, `HolocronToolset`, or game-specific fixture paths under `Fixtures/kotor/`
