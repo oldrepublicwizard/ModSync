@@ -1,13 +1,13 @@
-# KOTORModSync Secure Telemetry Setup Guide
+# ModSync Secure Telemetry Setup Guide
 
 ## Overview
 
-This guide explains how KOTORModSync implements secure telemetry using HMAC-SHA256 signing to prevent unauthorized metric submissions while keeping the source code public.
+This guide explains how ModSync implements secure telemetry using HMAC-SHA256 signing to prevent unauthorized metric submissions while keeping the source code public.
 
 ## Security Architecture
 
 ```
-KOTORModSync Client (your machine)
+ModSync Client (your machine)
     |
     | 1. Compute HMAC-SHA256 signature
     | 2. Add signature to OTLP request headers
@@ -40,19 +40,19 @@ OpenTelemetry Collector → Prometheus
 
 ### 1. Secret Loading (Priority Order)
 
-KOTORModSync loads the signing secret from three sources:
+ModSync loads the signing secret from three sources:
 
 1. **Environment Variable** (highest priority)
    - Variable: `KOTORMODSYNC_SIGNING_SECRET`
    - Use case: CI/CD pipelines, developer testing
 
 2. **Local Config File**
-   - Windows: `%AppData%\KOTORModSync\telemetry.key`
+   - Windows: `%AppData%\ModSync\telemetry.key`
    - Linux/Mac: `~/.config/kotormodsync/telemetry.key`
    - Use case: Developer local testing
 
 3. **Embedded Secret** (only in official builds)
-   - File: `KOTORModSync.Core/Services/EmbeddedSecrets.cs`
+   - File: `ModSync.Core/Services/EmbeddedSecrets.cs`
    - Generated during GitHub Actions builds
    - Use case: Official releases distributed to users
 
@@ -78,17 +78,17 @@ The following headers are added to every OTLP request:
 - `X-KMS-Signature` - HMAC-SHA256 signature (hex-encoded)
 - `X-KMS-Timestamp` - Unix timestamp in seconds
 - `X-KMS-Session-ID` - Unique session ID (changes per app run)
-- `X-KMS-Client-Version` - KOTORModSync version
+- `X-KMS-Client-Version` - ModSync version
 
 ## Setup Instructions
 
 ### For Users (No Setup Required)
 
-Official releases of KOTORModSync have the signing secret embedded automatically. Users don't need to do anything.
+Official releases of ModSync have the signing secret embedded automatically. Users don't need to do anything.
 
 ### For Developers (Local Development)
 
-Developers can build and run KOTORModSync **without any telemetry setup**. The app will:
+Developers can build and run ModSync **without any telemetry setup**. The app will:
 
 - Build successfully without errors
 - Run normally with all features working
@@ -113,8 +113,8 @@ export KOTORMODSYNC_SIGNING_SECRET="dev-secret-key-here"
 
 **Windows:**
 ```powershell
-mkdir "$env:APPDATA\KOTORModSync"
-echo "dev-secret-key-here" > "$env:APPDATA\KOTORModSync\telemetry.key"
+mkdir "$env:APPDATA\ModSync"
+echo "dev-secret-key-here" > "$env:APPDATA\ModSync\telemetry.key"
 ```
 
 **Linux/Mac:**
@@ -145,7 +145,7 @@ The signing secret from bolabaden.org is:
 Create or update `.github/workflows/build.yml`:
 
 ```yaml
-name: Build KOTORModSync
+name: Build ModSync
 
 on:
   push:
@@ -178,16 +178,16 @@ jobs:
           TELEMETRY_SECRET: ${{ secrets.KOTORMODSYNC_SIGNING_SECRET }}
         shell: pwsh
         run: |
-          $secretFile = "KOTORModSync.Core/Services/EmbeddedSecrets.cs"
+          $secretFile = "ModSync.Core/Services/EmbeddedSecrets.cs"
           $content = @"
-          // Copyright 2021-2025 KOTORModSync
+          // Copyright 2021-2025 ModSync
           // Licensed under the Business Source License 1.1 (BSL 1.1).
           // See LICENSE.txt file in the project root for full license information.
           
           // AUTO-GENERATED FILE - DO NOT COMMIT
           // This file is generated during GitHub Actions builds only.
           
-          namespace KOTORModSync.Core.Services
+          namespace ModSync.Core.Services
           {
               internal static class EmbeddedSecrets
               {
@@ -219,7 +219,7 @@ jobs:
         if: github.event_name == 'release'
         uses: actions/upload-artifact@v4
         with:
-          name: KOTORModSync-Release
+          name: ModSync-Release
           path: ./publish
 ```
 
@@ -236,12 +236,12 @@ jobs:
 
 ```bash
 # Clone and build
-git clone https://github.com/your-username/KOTORModSync.git
-cd KOTORModSync
+git clone https://github.com/your-username/ModSync.git
+cd ModSync
 dotnet build
 
 # Run - should see warning but work fine
-dotnet run --project KOTORModSync.GUI
+dotnet run --project ModSync.GUI
 ```
 
 Expected log output:
@@ -254,7 +254,7 @@ Expected log output:
 **Windows:**
 ```powershell
 $env:KOTORMODSYNC_SIGNING_SECRET = "6ea4413f4db73407b07c3faccac817031f5210f80bde02e94b61c512de6b9d90"
-dotnet run --project KOTORModSync.GUI
+dotnet run --project ModSync.GUI
 ```
 
 Expected log output:
@@ -398,24 +398,24 @@ To support both old and new secrets temporarily:
 
 ### Files Created
 
-1. **`KOTORModSync.Core/Services/TelemetryAuthenticator.cs`**
+1. **`ModSync.Core/Services/TelemetryAuthenticator.cs`**
    - HMAC-SHA256 signing implementation
    - Timestamp generation
    - Signature validation
 
-2. **`KOTORModSync.Core/Services/EmbeddedSecrets.cs.example`**
+2. **`ModSync.Core/Services/EmbeddedSecrets.cs.example`**
    - Template file (committed to git)
    - Shows structure of auto-generated file
    - Contains usage instructions
 
 ### Files Modified
 
-1. **`KOTORModSync.Core/Services/TelemetryConfiguration.cs`**
+1. **`ModSync.Core/Services/TelemetryConfiguration.cs`**
    - Added `LoadSigningSecret()` method
    - Loads from env var, config file, or embedded secret
    - Added `SigningSecret` property
 
-2. **`KOTORModSync.Core/Services/TelemetryService.cs`**
+2. **`ModSync.Core/Services/TelemetryService.cs`**
    - Added `TelemetryAuthenticator` field
    - Added `GetAuthHeaders()` method
    - Modified OTLP exporter to include auth headers
@@ -437,11 +437,11 @@ To support both old and new secrets temporarily:
 ## Questions?
 
 - **Server setup:** See `BOLABADEN_TELEMETRY_SETUP.md`
-- **Client integration:** See `KOTORModSync_Client_Integration_Guide.md`
+- **Client integration:** See `ModSync_Client_Integration_Guide.md`
 - **Quick start:** See OTLP setup guide
 - **Auth service logs:** `docker compose logs -f kotormodsync-auth`
 
 ## License
 
-This telemetry implementation is part of KOTORModSync and is licensed under the Business Source License 1.1 (BSL 1.1).
+This telemetry implementation is part of ModSync and is licensed under the Business Source License 1.1 (BSL 1.1).
 

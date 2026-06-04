@@ -6,9 +6,9 @@ How the Avalonia app presents `InstallationValidationPipeline` results after PRs
 
 ## Shared mapper
 
-**Type:** `KOTORModSync.Services.ValidationPipelineDialogMapper`  
-**Source:** `src/KOTORModSync.GUI/Services/ValidationPipelineDialogMapper.cs`  
-**Tests:** `ValidationPipelineDialogMapperTests` in `KOTORModSync.Tests`
+**Type:** `ModSync.Services.ValidationPipelineDialogMapper`  
+**Source:** `src/ModSync.GUI/Services/ValidationPipelineDialogMapper.cs`  
+**Tests:** `ValidationPipelineDialogMapperTests` in `ModSync.Tests`
 
 | API | Purpose |
 |-----|---------|
@@ -31,7 +31,7 @@ How the Avalonia app presents `InstallationValidationPipeline` results after PRs
 
 ## ValidatePage vs dialog mapping
 
-`ValidatePage` (`src/KOTORModSync.GUI/Dialogs/WizardPages/ValidatePage.axaml.cs`) does **not** build `ValidationDialog` rows. It:
+`ValidatePage` (`src/ModSync.GUI/Dialogs/WizardPages/ValidatePage.axaml.cs`) does **not** build `ValidationDialog` rows. It:
 
 - Copies aggregate counts from `ValidationPipelineResult` (`ErrorCount`, `WarningCount`, …)
 - Logs each stage step-by-step
@@ -39,7 +39,7 @@ How the Avalonia app presents `InstallationValidationPipeline` results after PRs
 
 **Unified (PR #104+):** Conflicts, Install Order, ComponentValidation, and Environment failure (`ERROR:` from `RunEnvironmentStageAsync`) use `ApplyPrefixedStageMessageCards` → `TryParsePrefixedStageMessage` so wizard cards match the dialog mapper. Environment keeps the `❌ Environment Error` summary card only when no prefixed message lines were added.
 
-**Wizard stage UI:** `WizardValidationStagePresenter.ApplyStages` (`src/KOTORModSync.GUI/Services/WizardValidationStagePresenter.cs`) — log lines + `AddResult` cards for each pipeline stage. `ValidatePage` passes `AppendLog` / `AddResult` delegates. Headless coverage: `WizardValidationStagePresenterTests` in `KOTORModSync.Tests`.
+**Wizard stage UI:** `WizardValidationStagePresenter.ApplyStages` (`src/ModSync.GUI/Services/WizardValidationStagePresenter.cs`) — log lines + `AddResult` cards for each pipeline stage. `ValidatePage` passes `AppendLog` / `AddResult` delegates. Headless coverage: `WizardValidationStagePresenterTests` in `ModSync.Tests`.
 
 **Unified (archive parity):** ComponentValidation `ERROR:` and `WARNING:` lines produce wizard result cards via the same `TryParsePrefixedStageMessage` rules as `ValidationDialog` archive rows. Failed or warning archive stages also add aggregate `Archive Validation` summary cards.
 
@@ -74,8 +74,8 @@ Prefer the **install wizard** for documented full-build flows ([install-lifecycl
 ```bash
 ./scripts/agents/test_pr110_validation.sh
 # or:
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~WizardValidationStagePresenter"
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~ValidationPipelineDialogMapper"
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~WizardValidationStagePresenter"
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~ValidationPipelineDialogMapper"
 ```
 
 ## Debugging order

@@ -1,0 +1,587 @@
+<!--  Copyright 2021-2025 ModSync  -->
+<!--  Licensed under the Business Source License 1.1 (BSL 1.1).  -->
+<!--  See LICENSE.txt file in the project root for full license information.  -->
+<Window
+    x:Class="ModSync.Dialogs.SettingsDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:ModSync.Controls"
+    xmlns:converters="clr-namespace:ModSync.Converters"
+    Title="Settings"
+    Width="500"
+    Height="600"
+    MinWidth="400"
+    MinHeight="400"
+    ExtendClientAreaChromeHints="NoChrome"
+    ExtendClientAreaTitleBarHeightHint="-1"
+    ExtendClientAreaToDecorationsHint="True"
+    SystemDecorations="BorderOnly"
+    WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <converters:IsUnixConverter x:Key="IsUnixConverter" />
+    </Window.Resources>
+
+    <Window.Styles />
+
+    <Grid Margin="20" RowDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+        <!--  Custom Window Controls  -->
+        <StackPanel
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Margin="0,8,8,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Orientation="Horizontal"
+            Spacing="0">
+            <Button
+                Width="40"
+                Height="40"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Click="MinimizeButton_Click"
+                Content="-"
+                FontSize="15" />
+            <Button
+                Width="40"
+                Height="40"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Click="ToggleMaximizeButton_Click"
+                Content="▢"
+                FontSize="15" />
+            <Button
+                Width="40"
+                Height="40"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Click="CloseButton_Click"
+                Content="X"
+                FontSize="15" />
+        </StackPanel>
+
+        <!--  Header  -->
+        <TextBlock
+            Grid.Row="3"
+            Margin="0,0,0,20"
+            HorizontalAlignment="Center"
+            FontSize="24"
+            FontWeight="Bold"
+            Text="⚙️ Settings" />
+
+        <!--  Settings Content  -->
+        <ScrollViewer
+            Grid.Row="4"
+            MaxHeight="{Binding $parent[Window].Height, RelativeSource={RelativeSource AncestorType=Window}}"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="15">
+                <!--  ReSharper disable once Xaml.BindingWithoutContextNotResolved  -->
+                <StackPanel x:Name="SettingsStackPanel" DataContext="{Binding MainConfigInstance}">
+
+
+                    <!--  General Settings Section  -->
+                    <Border
+                        Padding="15"
+                        BorderThickness="2"
+                        CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="⚙️ General Settings" />
+
+                            <CheckBox
+                                Content="Verbose Logging"
+                                IsChecked="{Binding debugLogging}"
+                                ToolTip.Tip="Shows extra output in both the logfile and the output window." />
+
+                            <CheckBox
+                                Margin="0,5,0,0"
+                                Content="Auto-Fix Config Errors"
+                                IsChecked="{Binding attemptFixes}"
+                                ToolTip.Tip="When enabled, automatically fixes common config issues (missing dependencies, conflicting mods) when loading mod files. Fixes are applied after deserialization and before the components are available in the UI." />
+
+                            <CheckBox
+                                Margin="0,5,0,0"
+                                Content="Don't ask for Admin"
+                                IsChecked="{Binding noAdmin}"
+                                ToolTip.Tip="Activating this toggles __COMPAT_LAYER=RunAsInvoker for 'Patcher' and 'Execute' instructions. It signals Windows to launch executables as if they already have admin rights, preventing unnecessary UAC checks. Handy for older apps without an app.manifest (e.g. TSLPatcher). Note: enabling this setting might cause permission issues. Instead, running ModSync as administrator is recommended. On Linux/Mac this simply calls `sudo -n true` instead of `sudo` when relevant." />
+
+                            <CheckBox
+                                Margin="0,5,0,0"
+                                Content="Mock case-insensitive filesystem"
+                                IsChecked="{Binding caseInsensitivePathing}"
+                                ToolTip.Tip="Attempt to perform case-insensitive file/folder lookups for all instructions. Somewhat slow, especially on HDDs.">
+                                <CheckBox.IsVisible>
+                                    <Binding Converter="{StaticResource IsUnixConverter}" />
+                                </CheckBox.IsVisible>
+                            </CheckBox>
+
+                            <CheckBox
+                                Margin="0,5,0,0"
+                                Content="Enable file system watcher"
+                                IsChecked="{Binding enableFileWatcher}"
+                                ToolTip.Tip="When enabled, directory picker controls will automatically refresh their suggestions when files are added, removed, or renamed in the selected directories. This provides real-time updates but may impact performance on slower systems." />
+
+                            <TextBlock
+                                Margin="0,15,0,5"
+                                FontWeight="Bold"
+                                Text="Theme:" />
+                            <ComboBox
+                                x:Name="ThemeComboBox"
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Stretch"
+                                SelectionChanged="ThemeComboBox_SelectionChanged"
+                                ToolTip.Tip="Select the application theme">
+                                <ComboBoxItem Content="Light Theme" Tag="Light" />
+                                <ComboBoxItem Content="KOTOR Theme" Tag="KOTOR" />
+                                <ComboBoxItem Content="KOTOR 2 Theme" Tag="KOTOR2" />
+                            </ComboBox>
+
+                            <TextBlock
+                                Margin="0,15,0,5"
+                                FontWeight="Bold"
+                                Text="File Encoding:" />
+                            <ComboBox
+                                x:Name="FileEncodingComboBox"
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Stretch"
+                                SelectedIndex="0"
+                                SelectionChanged="FileEncodingComboBox_SelectionChanged"
+                                ToolTip.Tip="Character encoding used when loading/saving mod files. UTF-8 is standard, but Windows-1252 may be needed for files with special characters.">
+                                <ComboBoxItem Content="UTF-8" Tag="utf-8" />
+                                <ComboBoxItem Content="Windows-1252 (CP-1252)" Tag="windows-1252" />
+                                <ComboBoxItem Content="Windows-1251 (CP-1251)" Tag="windows-1251" />
+                                <ComboBoxItem Content="Windows-1250 (CP-1250)" Tag="windows-1250" />
+                                <ComboBoxItem Content="Windows-1253 (CP-1253)" Tag="windows-1253" />
+                                <ComboBoxItem Content="Windows-1254 (CP-1254)" Tag="windows-1254" />
+                                <ComboBoxItem Content="Windows-1255 (CP-1255)" Tag="windows-1255" />
+                                <ComboBoxItem Content="Windows-1256 (CP-1256)" Tag="windows-1256" />
+                                <ComboBoxItem Content="Windows-1257 (CP-1257)" Tag="windows-1257" />
+                                <ComboBoxItem Content="Windows-1258 (CP-1258)" Tag="windows-1258" />
+                                <ComboBoxItem Content="ISO-8859-1 (Latin-1)" Tag="iso-8859-1" />
+                                <ComboBoxItem Content="ISO-8859-2 (Latin-2)" Tag="iso-8859-2" />
+                                <ComboBoxItem Content="ISO-8859-3 (Latin-3)" Tag="iso-8859-3" />
+                                <ComboBoxItem Content="ISO-8859-4 (Latin-4)" Tag="iso-8859-4" />
+                                <ComboBoxItem Content="ISO-8859-5 (Cyrillic)" Tag="iso-8859-5" />
+                                <ComboBoxItem Content="ISO-8859-6 (Arabic)" Tag="iso-8859-6" />
+                                <ComboBoxItem Content="ISO-8859-7 (Greek)" Tag="iso-8859-7" />
+                                <ComboBoxItem Content="ISO-8859-8 (Hebrew)" Tag="iso-8859-8" />
+                                <ComboBoxItem Content="ISO-8859-9 (Latin-5)" Tag="iso-8859-9" />
+                                <ComboBoxItem Content="ISO-8859-10 (Latin-6)" Tag="iso-8859-10" />
+                                <ComboBoxItem Content="ISO-8859-11 (Thai)" Tag="iso-8859-11" />
+                                <ComboBoxItem Content="ISO-8859-13 (Latin-7)" Tag="iso-8859-13" />
+                                <ComboBoxItem Content="ISO-8859-14 (Latin-8)" Tag="iso-8859-14" />
+                                <ComboBoxItem Content="ISO-8859-15 (Latin-9)" Tag="iso-8859-15" />
+                                <ComboBoxItem Content="ISO-8859-16 (Latin-10)" Tag="iso-8859-16" />
+                                <ComboBoxItem Content="KOI8-R (Russian)" Tag="koi8-r" />
+                                <ComboBoxItem Content="KOI8-U (Ukrainian)" Tag="koi8-u" />
+                                <ComboBoxItem Content="KOI8-T (Tajik)" Tag="koi8-t" />
+                                <ComboBoxItem Content="KOI8-B (Bulgarian)" Tag="koi8-b" />
+                                <ComboBoxItem Content="KOI8-F (French)" Tag="koi8-f" />
+                                <ComboBoxItem Content="MacRoman" Tag="macintosh" />
+                                <ComboBoxItem Content="MacCyrillic" Tag="x-mac-cyrillic" />
+                                <ComboBoxItem Content="MacGreek" Tag="x-mac-greek" />
+                                <ComboBoxItem Content="MacHebrew" Tag="x-mac-hebrew" />
+                                <ComboBoxItem Content="MacArabic" Tag="x-mac-arabic" />
+                                <ComboBoxItem Content="MacThai" Tag="x-mac-thai" />
+                                <ComboBoxItem Content="EUC-JP (Japanese)" Tag="euc-jp" />
+                                <ComboBoxItem Content="Shift_JIS (Japanese)" Tag="shift_jis" />
+                                <ComboBoxItem Content="ISO-2022-JP (Japanese)" Tag="iso-2022-jp" />
+                                <ComboBoxItem Content="EUC-KR (Korean)" Tag="euc-kr" />
+                                <ComboBoxItem Content="ISO-2022-KR (Korean)" Tag="iso-2022-kr" />
+                                <ComboBoxItem Content="GB2312 (Chinese Simplified)" Tag="gb2312" />
+                                <ComboBoxItem Content="GBK (Chinese)" Tag="gbk" />
+                                <ComboBoxItem Content="GB18030 (Chinese)" Tag="gb18030" />
+                                <ComboBoxItem Content="Big5 (Chinese Traditional)" Tag="big5" />
+                                <ComboBoxItem Content="Big5-HKSCS (Hong Kong)" Tag="big5-hkscs" />
+                                <ComboBoxItem Content="TIS-620 (Thai)" Tag="tis-620" />
+                                <ComboBoxItem Content="Windows-874 (Thai)" Tag="windows-874" />
+                                <ComboBoxItem Content="IBM-437 (DOS Latin US)" Tag="ibm437" />
+                                <ComboBoxItem Content="IBM-850 (DOS Latin-1)" Tag="ibm850" />
+                                <ComboBoxItem Content="IBM-852 (DOS Latin-2)" Tag="ibm852" />
+                                <ComboBoxItem Content="IBM-855 (DOS Cyrillic)" Tag="ibm855" />
+                                <ComboBoxItem Content="IBM-857 (DOS Turkish)" Tag="ibm857" />
+                                <ComboBoxItem Content="IBM-860 (DOS Portuguese)" Tag="ibm860" />
+                                <ComboBoxItem Content="IBM-861 (DOS Icelandic)" Tag="ibm861" />
+                                <ComboBoxItem Content="IBM-862 (DOS Hebrew)" Tag="ibm862" />
+                                <ComboBoxItem Content="IBM-863 (DOS Canadian French)" Tag="ibm863" />
+                                <ComboBoxItem Content="IBM-864 (DOS Arabic)" Tag="ibm864" />
+                                <ComboBoxItem Content="IBM-865 (DOS Nordic)" Tag="ibm865" />
+                                <ComboBoxItem Content="IBM-866 (DOS Cyrillic Russian)" Tag="ibm866" />
+                                <ComboBoxItem Content="IBM-869 (DOS Greek)" Tag="ibm869" />
+                                <ComboBoxItem Content="UTF-16 LE" Tag="utf-16le" />
+                                <ComboBoxItem Content="UTF-16 BE" Tag="utf-16be" />
+                                <ComboBoxItem Content="UTF-32 LE" Tag="utf-32le" />
+                                <ComboBoxItem Content="UTF-32 BE" Tag="utf-32be" />
+                                <ComboBoxItem Content="UTF-7" Tag="utf-7" />
+                                <ComboBoxItem Content="ASCII" Tag="ascii" />
+                                <ComboBoxItem Content="US-ASCII" Tag="us-ascii" />
+                                <ComboBoxItem Content="Latin-1 (ISO-8859-1)" Tag="latin1" />
+                                <ComboBoxItem Content="Windows-1251 (Cyrillic)" Tag="cp1251" />
+                                <ComboBoxItem Content="Windows-1252 (Western European)" Tag="cp1252" />
+                                <ComboBoxItem Content="Windows-1250 (Central European)" Tag="cp1250" />
+                                <ComboBoxItem Content="Windows-1253 (Greek)" Tag="cp1253" />
+                                <ComboBoxItem Content="Windows-1254 (Turkish)" Tag="cp1254" />
+                                <ComboBoxItem Content="Windows-1255 (Hebrew)" Tag="cp1255" />
+                                <ComboBoxItem Content="Windows-1256 (Arabic)" Tag="cp1256" />
+                                <ComboBoxItem Content="Windows-1257 (Baltic)" Tag="cp1257" />
+                                <ComboBoxItem Content="Windows-1258 (Vietnamese)" Tag="cp1258" />
+                                <ComboBoxItem Content="ISO-8859-1 (Western European)" Tag="iso8859-1" />
+                                <ComboBoxItem Content="ISO-8859-2 (Central European)" Tag="iso8859-2" />
+                                <ComboBoxItem Content="ISO-8859-3 (South European)" Tag="iso8859-3" />
+                                <ComboBoxItem Content="ISO-8859-4 (North European)" Tag="iso8859-4" />
+                                <ComboBoxItem Content="ISO-8859-5 (Cyrillic)" Tag="iso8859-5" />
+                                <ComboBoxItem Content="ISO-8859-6 (Arabic)" Tag="iso8859-6" />
+                                <ComboBoxItem Content="ISO-8859-7 (Greek)" Tag="iso8859-7" />
+                                <ComboBoxItem Content="ISO-8859-8 (Hebrew)" Tag="iso8859-8" />
+                                <ComboBoxItem Content="ISO-8859-9 (Turkish)" Tag="iso8859-9" />
+                                <ComboBoxItem Content="ISO-8859-10 (Nordic)" Tag="iso8859-10" />
+                                <ComboBoxItem Content="ISO-8859-11 (Thai)" Tag="iso8859-11" />
+                                <ComboBoxItem Content="ISO-8859-13 (Baltic)" Tag="iso8859-13" />
+                                <ComboBoxItem Content="ISO-8859-14 (Celtic)" Tag="iso8859-14" />
+                                <ComboBoxItem Content="ISO-8859-15 (Latin-9)" Tag="iso8859-15" />
+                                <ComboBoxItem Content="ISO-8859-16 (Latin-10)" Tag="iso8859-16" />
+                                <ComboBoxItem Content="CP437 (DOS Latin US)" Tag="cp437" />
+                                <ComboBoxItem Content="CP850 (DOS Latin-1)" Tag="cp850" />
+                                <ComboBoxItem Content="CP852 (DOS Latin-2)" Tag="cp852" />
+                                <ComboBoxItem Content="CP855 (DOS Cyrillic)" Tag="cp855" />
+                                <ComboBoxItem Content="CP857 (DOS Turkish)" Tag="cp857" />
+                                <ComboBoxItem Content="CP860 (DOS Portuguese)" Tag="cp860" />
+                                <ComboBoxItem Content="CP861 (DOS Icelandic)" Tag="cp861" />
+                                <ComboBoxItem Content="CP862 (DOS Hebrew)" Tag="cp862" />
+                                <ComboBoxItem Content="CP863 (DOS Canadian French)" Tag="cp863" />
+                                <ComboBoxItem Content="CP864 (DOS Arabic)" Tag="cp864" />
+                                <ComboBoxItem Content="CP865 (DOS Nordic)" Tag="cp865" />
+                                <ComboBoxItem Content="CP866 (DOS Cyrillic)" Tag="cp866" />
+                                <ComboBoxItem Content="CP869 (DOS Greek)" Tag="cp869" />
+                                <ComboBoxItem Content="CP874 (Thai)" Tag="cp874" />
+                                <ComboBoxItem Content="CP932 (Japanese Shift JIS)" Tag="cp932" />
+                                <ComboBoxItem Content="CP936 (Chinese GBK)" Tag="cp936" />
+                                <ComboBoxItem Content="CP949 (Korean)" Tag="cp949" />
+                                <ComboBoxItem Content="CP950 (Chinese Big5)" Tag="cp950" />
+                                <ComboBoxItem Content="CP1250 (Central European)" Tag="cp1250" />
+                                <ComboBoxItem Content="CP1251 (Cyrillic)" Tag="cp1251" />
+                                <ComboBoxItem Content="CP1252 (Western European)" Tag="cp1252" />
+                                <ComboBoxItem Content="CP1253 (Greek)" Tag="cp1253" />
+                                <ComboBoxItem Content="CP1254 (Turkish)" Tag="cp1254" />
+                                <ComboBoxItem Content="CP1255 (Hebrew)" Tag="cp1255" />
+                                <ComboBoxItem Content="CP1256 (Arabic)" Tag="cp1256" />
+                                <ComboBoxItem Content="CP1257 (Baltic)" Tag="cp1257" />
+                                <ComboBoxItem Content="CP1258 (Vietnamese)" Tag="cp1258" />
+                            </ComboBox>
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                FontSize="11"
+                                Opacity="0.7"
+                                Text="Change this if you're experiencing errors with special characters in TOML/YAML/JSON files."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  Download Settings Section  -->
+                    <Border
+                        Padding="15"
+                        BorderThickness="2"
+                        CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="📥 Download Settings" />
+
+                            <CheckBox
+                                Content="Validate and replace invalid archives"
+                                IsChecked="{Binding validateAndReplaceInvalidArchives}"
+                                ToolTip.Tip="When enabled, automatically validates downloaded archive files (zip, rar, 7z) using 7-Zip. If an archive is corrupt or incomplete, it will be automatically deleted and re-downloaded. When disabled, existing files are never replaced, which may result in using corrupt archives." />
+
+                            <CheckBox
+                                Margin="0,5,0,0"
+                                Content="Filter downloads by screen resolution"
+                                IsChecked="{Binding filterDownloadsByResolution}"
+                                ToolTip.Tip="When enabled, automatically skips downloading files that don't match your system's screen resolution. For example, if you have a 1920x1080 display, files with '3840x2160' in the name will be skipped. This saves bandwidth and disk space by only downloading resolution-specific files that match your display." />
+
+                            <TextBlock
+                                Margin="0,15,0,5"
+                                FontWeight="Bold"
+                                Text="Nexus Mods API Key (Optional):" />
+                            <TextBox
+                                Text="{Binding NexusModsApiKey}"
+                                ToolTip.Tip="Optional: Enter your Nexus Mods API key for handling downloads from NexusMods. Get your API key from: https://www.nexusmods.com/users/myaccount?tab=api+access."
+                                Watermark="Enter your Nexus Mods API key here..." />
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                FontSize="11"
+                                Opacity="0.7"
+                                Text="Get your API key from: https://www.nexusmods.com/users/myaccount?tab=api+access"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  Directory Settings Section  -->
+                    <Border
+                        Padding="15"
+                        BorderThickness="2"
+                        CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="📁 Directory Settings" />
+
+                            <!--  Detailed Directory Explanations  -->
+                            <StackPanel Margin="0,5,0,10" Spacing="8">
+                                <TextBlock FontWeight="SemiBold" Text="📁 Mod Directory (Workspace):" />
+                                <TextBlock
+                                    Margin="15,0,0,0"
+                                    Text="Choose any folder on your computer to use as your mod workspace. This is where:"
+                                    TextWrapping="Wrap" />
+                                <StackPanel Margin="15,5,0,0" Spacing="2">
+                                    <TextBlock Text="• Mod files will be downloaded from the internet" />
+                                    <TextBlock Text="• Mod archives will be extracted and processed" />
+                                    <TextBlock Text="• Temporary files will be stored during installation" />
+                                </StackPanel>
+                                <TextBlock
+                                    Margin="15,5,0,0"
+                                    FontStyle="Italic"
+                                    Text="Tip: Create a dedicated folder like 'C:\KOTORMods' or use your Documents folder"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <!--  Directory Controls  -->
+                            <StackPanel Margin="0,10,0,10">
+                                <controls:DirectoryPickerControl
+                                    x:Name="ModDirectoryPicker"
+                                    Title="Mod Workspace Directory:"
+                                    Margin="0,0,0,10"
+                                    DirectoryChanged="OnDirectoryChanged"
+                                    PickerType="ModDirectory"
+                                    ToolTip.Tip="Select any folder on your computer to use as your mod workspace. This is where mod files will be downloaded and processed."
+                                    Watermark="Choose a folder for your mod workspace (e.g., C:\KOTORMods)" />
+
+                                <!--  KOTOR Directory Explanation  -->
+                                <StackPanel Margin="0,10,0,10" Spacing="8">
+                                    <TextBlock FontWeight="SemiBold" Text="🎮 KOTOR Directory:" />
+                                    <TextBlock
+                                        Margin="15,0,0,0"
+                                        Text="Point to your KOTOR game installation folder (where the game is installed)"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <controls:DirectoryPickerControl
+                                    x:Name="KotorDirectoryPicker"
+                                    Title="KOTOR Game Directory:"
+                                    DirectoryChanged="OnDirectoryChanged"
+                                    PickerType="KotorDirectory"
+                                    ToolTip.Tip="Point to the folder where KOTOR is installed (usually contains swkotor.exe or swkotor2.exe)"
+                                    Watermark="Enter your KOTOR game installation folder" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!--  PyKotor/HoloPatcher Settings Section  -->
+                    <Border
+                        Padding="15"
+                        BorderThickness="2"
+                        CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="🔧 PyKotor/HoloPatcher Version" />
+
+                            <TextBlock
+                                Margin="0,0,0,6"
+                                FontWeight="SemiBold"
+                                Text="TSLPatcher install backend" />
+                            <TextBlock
+                                Margin="0,0,0,8"
+                                Opacity="0.8"
+                                Text="Choose whether TSLPatcher/HoloPatcher mod folders are applied with the bundled HoloPatcher (Resources) or an external KPatcher CLI (same arguments as HoloPatcher)."
+                                TextWrapping="Wrap" />
+                            <ComboBox
+                                x:Name="PatcherEngineComboBox"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Stretch"
+                                SelectionChanged="PatcherEngineComboBox_SelectionChanged"
+                                ToolTip.Tip="HoloPatcher: app Resources / PyKotor. KPatcher: external executable (PATH or path below)." />
+                            <TextBlock
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold"
+                                Text="KPatcher executable (optional)" />
+                            <TextBox
+                                x:Name="KPatcherPathTextBox"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Stretch"
+                                Watermark="Leave empty to search PATH, app folder, and Resources"
+                                ToolTip.Tip="Full path to KPatcher or KPatcher.dll host. If empty, ModSync searches PATH and common locations." />
+
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                Opacity="0.8"
+                                Text="Select and download different versions of the PyKotor library (which includes HoloPatcher). The bundled version is included with the application, but you can update to newer releases from GitHub."
+                                TextWrapping="Wrap" />
+
+                            <ComboBox
+                                x:Name="HolopatcherVersionComboBox"
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Stretch"
+                                PlaceholderText="Fetching available PyKotor versions..."
+                                SelectionChanged="HolopatcherVersionComboBox_SelectionChanged"
+                                ToolTip.Tip="Select a PyKotor version to download and install (includes HoloPatcher source)" />
+
+                            <ProgressBar
+                                x:Name="DownloadProgressBar"
+                                Height="4"
+                                Margin="0,10,0,0"
+                                IsIndeterminate="True"
+                                IsVisible="False"
+                                ToolTip.Tip="Downloading PyKotor version..." />
+
+                            <TextBlock
+                                x:Name="DownloadStatusText"
+                                Margin="0,5,0,0"
+                                FontSize="11"
+                                IsVisible="False"
+                                Opacity="0.7"
+                                Text="Downloading..."
+                                TextWrapping="Wrap" />
+
+                            <StackPanel
+                                Margin="0,10,0,0"
+                                Orientation="Horizontal"
+                                Spacing="10">
+                                <Button
+                                    x:Name="RefreshVersionsButton"
+                                    Click="RefreshVersionsButton_Click"
+                                    Content="Refresh Versions"
+                                    ToolTip.Tip="Fetch the latest available HoloPatcher versions from GitHub" />
+                                <Button
+                                    x:Name="DownloadVersionButton"
+                                    Click="DownloadVersionButton_Click"
+                                    Content="Download Selected"
+                                    ToolTip.Tip="Download and install the selected HoloPatcher version" />
+                            </StackPanel>
+
+                            <TextBlock
+                                x:Name="CurrentVersionLabel"
+                                Margin="0,10,0,0"
+                                FontSize="11"
+                                Opacity="0.7"
+                                Text="Current: Using bundled PyKotor source"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  About & Updates Section  -->
+                    <Border
+                        Padding="15"
+                        BorderThickness="2"
+                        CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="ℹ️ About &amp; Updates" />
+
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                Text="Keep ModSync up to date with the latest features and improvements."
+                                TextWrapping="Wrap" />
+
+                            <Button
+                                x:Name="CheckForUpdatesButton"
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Left"
+                                Click="CheckForUpdates_Click"
+                                Content="Check for Updates"
+                                ToolTip.Tip="Manually check for available updates" />
+
+                            <TextBlock
+                                x:Name="UpdateStatusText"
+                                Margin="0,10,0,0"
+                                FontSize="12"
+                                Opacity="0.7"
+                                Text="Application will check for updates automatically."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  Telemetry Settings Section  -->
+                    <Border
+                        Padding="15"
+                        BorderThickness="2"
+                        CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="📊 Telemetry &amp; Analytics" />
+
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                Opacity="0.8"
+                                Text="Anonymous telemetry helps improve ModSync by collecting usage statistics, performance metrics, and crash reports. All data is fully anonymized and sent securely to bolabaden.org. You can opt-out at any time."
+                                TextWrapping="Wrap" />
+
+                            <CheckBox
+                                x:Name="EnableTelemetryCheckBox"
+                                Margin="0,5,0,0"
+                                Content="Enable anonymous telemetry"
+                                IsChecked="True"
+                                ToolTip.Tip="Enable or disable all telemetry collection. When enabled, anonymous usage data, performance metrics, and crash reports help improve the application. All data is cryptographically hashed and fully anonymized." />
+
+                            <Separator Margin="0,10" />
+
+                            <TextBlock
+                                FontSize="11"
+                                Opacity="0.7"
+                                Text="What we collect: Feature usage, performance timings, crash reports (hashed)."
+                                TextWrapping="Wrap" />
+
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                FontSize="11"
+                                Opacity="0.7"
+                                Text="What we DON'T collect: Personal information, mod names, file paths, passwords, or any sensitive data. All data is cryptographically anonymized."
+                                TextWrapping="Wrap" />
+
+                            <Button
+                                Margin="0,10,0,0"
+                                HorizontalAlignment="Left"
+                                Click="ViewPrivacyDetails_Click"
+                                Content="View Privacy Details"
+                                ToolTip.Tip="See exactly what data is collected and how it's used" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!--  Buttons  -->
+        <StackPanel
+            Grid.Row="5"
+            Margin="0,20,0,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                MinWidth="80"
+                Margin="0,0,10,0"
+                Click="Cancel_Click"
+                Content="Cancel" />
+            <Button
+                MinWidth="80"
+                Click="OK_Click"
+                Content="OK" />
+        </StackPanel>
+    </Grid>
+</Window>

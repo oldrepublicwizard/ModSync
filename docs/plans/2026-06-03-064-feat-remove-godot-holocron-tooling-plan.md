@@ -26,7 +26,7 @@ Fully remove the in-repo Godot Holocron experiment (`tools/`), bridge CLI tests,
 
 ### U1. Delete tooling and tests
 
-**Files:** `tools/` (entire tree), `src/KOTORModSync.Tests/KotorFormatBridgeCliTests.cs`, `src/KOTORModSync.Tests/Fixtures/kotor/sample.mod` (if only used by bridge tests)
+**Files:** `tools/` (entire tree), `src/ModSync.Tests/KotorFormatBridgeCliTests.cs`, `src/ModSync.Tests/Fixtures/kotor/sample.mod` (if only used by bridge tests)
 
 ### U2. Delete Holocron KB and plans
 

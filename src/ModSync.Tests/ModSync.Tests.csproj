@@ -1,0 +1,97 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\ModSync.props" />
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);NUnit2023</NoWarn>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <Platforms>AnyCPU;x86;x64;arm64</Platforms>
+    <OutputType>Exe</OutputType>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <RunSettingsFilePath>$(MSBuildProjectDirectory)\ModSync.Tests.runsettings</RunSettingsFilePath>
+    <Version>$(ModSyncVersion)</Version>
+    <AssemblyVersion>$(ModSyncAssemblyVersion)</AssemblyVersion>
+    <FileVersion>$(ModSyncFileVersion)</FileVersion>
+  </PropertyGroup>
+
+  <!-- Release Configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <TargetFrameworks>net9.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <!-- Debug Configuration: Optimized for faster development builds -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <!-- Disable analyzers in Debug builds for faster compilation -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <TargetFrameworks>net9.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="NUnit" Version="4.0.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="NUnit.Analyzers" Version="3.10.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Release'">runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Debug'">runtime; native; contentfiles</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="MegaApiClient" Version="1.10.5" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Avalonia.Headless.XUnit" Version="11.3.16" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.16" />
+  </ItemGroup>
+
+  <!-- Modern 2025 Code Analyzers -->
+  <!-- Analyzers are disabled in Debug builds via EnableNETAnalyzers=false and RunAnalyzersDuringBuild=false -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Release'">runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Debug'">runtime; native; contentfiles</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.25.0.90414">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Release'">runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Debug'">runtime; native; contentfiles</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Meziantou.Analyzer" Version="2.0.126">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Release'">runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Debug'">runtime; native; contentfiles</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ModSync.Core\ModSync.Core.csproj" />
+    <ProjectReference Include="..\ModSync.GUI\ModSync.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="RegexPreviewHighlightingTests.cs" />
+    <Compile Remove="MainWindowUITests.cs" />
+    <Compile Remove="CheckpointSystemIntegrationTests.cs" />
+    <Compile Remove="DocumentationRoundTripTests.cs" />
+    <Compile Remove="MarkdownFileTests.cs" />
+    <Compile Remove="MarkdownImportTests.cs" />
+    <Compile Remove="ModSyncMetadataTests.cs" />
+    <Compile Remove="ResourceMetadataSerializationTests.cs" />
+  </ItemGroup>
+
+</Project>

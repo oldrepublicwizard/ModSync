@@ -13,7 +13,7 @@
 | Resource | Path |
 |----------|------|
 | Sidecar README | `telemetry-auth/README.md` |
-| Client signing | `KOTORMODSYNC_SIGNING_SECRET`, `telemetry_config.json`, `OFFICIAL_BUILD` embedded key |
+| Client signing | `MODSYNC_SIGNING_SECRET` (legacy: `KOTORMODSYNC_SIGNING_SECRET`), `%AppData%/ModSync/telemetry_config.json`, `OFFICIAL_BUILD` embedded key |
 | Relay env | `KOTORMODSYNC_RELAY_CREDENTIAL` (production); local Docker may use documented test defaults |
 
 ## Workflow branch note

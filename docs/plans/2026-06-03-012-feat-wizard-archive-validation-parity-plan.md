@@ -50,7 +50,7 @@ PRs #103–#107 unified pipeline parsing for conflicts and dry-run summaries. `g
 **Requirements:** R1, R2
 
 **Files:**
-- Modify: `src/KOTORModSync.GUI/Services/WizardValidationStagePresenter.cs`
+- Modify: `src/ModSync.GUI/Services/WizardValidationStagePresenter.cs`
 
 **Test scenarios:**
 - `ERROR: Test Mod: missing archive` → card title `❌ Test Mod`, message contains detail.
@@ -65,7 +65,7 @@ PRs #103–#107 unified pipeline parsing for conflicts and dry-run summaries. `g
 **Requirements:** R3
 
 **Files:**
-- Modify: `src/KOTORModSync.GUI/Services/WizardValidationStagePresenter.cs`
+- Modify: `src/ModSync.GUI/Services/WizardValidationStagePresenter.cs`
 
 **Test scenarios:**
 - Stage `Passed = false`, `Summary = "2 component error(s)"` → one card `❌ Archive Validation` with that summary (in addition to per-mod cards from U1).
@@ -79,8 +79,8 @@ PRs #103–#107 unified pipeline parsing for conflicts and dry-run summaries. `g
 **Requirements:** R4
 
 **Files:**
-- Modify: `src/KOTORModSync.GUI/Services/ValidationPipelineDialogMapper.cs`
-- Modify: `src/KOTORModSync.Tests/ValidationPipelineDialogMapperTests.cs`
+- Modify: `src/ModSync.GUI/Services/ValidationPipelineDialogMapper.cs`
+- Modify: `src/ModSync.Tests/ValidationPipelineDialogMapperTests.cs`
 
 **Test scenarios:**
 - `WARNING: Mod B: stale archive` → issue with `⚠`, `ArchiveValidation`, mod name `Mod B`.

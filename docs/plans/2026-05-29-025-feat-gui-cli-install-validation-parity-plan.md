@@ -33,13 +33,13 @@ Architecture review and desktop testing confirmed GUI wizard validation uses `Va
 
 ### U1. Route CLI install through InstallationValidationPipeline
 
-**Files:** `src/KOTORModSync.Core/CLI/ModBuildConverter.cs`
+**Files:** `src/ModSync.Core/CLI/ModBuildConverter.cs`
 
 **Approach:** Replace environment-only block in `RunInstallAsync` with `WizardFull` pipeline; mirror validate selection flags (`UseFileSelection`, `--select`); wire `ConfirmationCallback` for HoloPatcher prompts.
 
 ### U2. Install validation parity test
 
-**Files:** `src/KOTORModSync.Tests/ValidationPipelineParityTests.cs`
+**Files:** `src/ModSync.Tests/ValidationPipelineParityTests.cs`
 
 **Test scenarios:** Missing archive → `validate` exit 1; `install` exit 1 without `--skip-validation`. Restriction conflict with both selected → pipeline auto-deselects dependency mod; `install --skip-validation -y` succeeds for remaining mod.
 

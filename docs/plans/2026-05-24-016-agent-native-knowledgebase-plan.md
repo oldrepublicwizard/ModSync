@@ -15,7 +15,7 @@ Organize agent-facing documentation into a canonical knowledgebase, run a scored
 
 ## Problem Frame
 
-KOTORModSync already supports substantial agent workflows (headless tests, Core CLI `validate`/`install`, GUI preload args, `scripts/agents/*`), but that capability is scattered across `AGENTS.md`, runbooks, and source. There is no `docs/knowledgebase/` index, no institutional learnings under `docs/solutions/`, and no scored audit of agent-native principles. Agents rediscover the Core CLI and best-effort install path repeatedly.
+ModSync already supports substantial agent workflows (headless tests, Core CLI `validate`/`install`, GUI preload args, `scripts/agents/*`), but that capability is scattered across `AGENTS.md`, runbooks, and source. There is no `docs/knowledgebase/` index, no institutional learnings under `docs/solutions/`, and no scored audit of agent-native principles. Agents rediscover the Core CLI and best-effort install path repeatedly.
 
 This is a **documentation and agent-tooling** slice, not a product feature to make the Avalonia app agent-native at runtime.
 
@@ -36,7 +36,7 @@ This is a **documentation and agent-tooling** slice, not a product feature to ma
 
 ## Scope Boundaries
 
-- No Avalonia UI changes, no new MCP servers, no generated-doc edits (`docs/KOTORModSync_Master.md`).
+- No Avalonia UI changes, no new MCP servers, no generated-doc edits (`docs/ModSync_Master.md`).
 - Do not commit untracked junk (`.compound-engineering/`, `agentdecompile_projects/`, `audit/`, `package.json`, `tmp/`).
 - Agent-native scores will reflect a **desktop installer**, not a web agent product; gaps are documented honestly.
 

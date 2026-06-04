@@ -38,7 +38,7 @@ Slices 1–2 proved four-format round-trip and two-source merge. Remaining gaps:
 
 ### U1. CLI validate `--dry-run-only`
 
-**File:** `src/KOTORModSync.Core/CLI/ModBuildConverter.cs`
+**File:** `src/ModSync.Core/CLI/ModBuildConverter.cs`
 
 ### U2. CLI `--auto-generate-local`
 
@@ -46,7 +46,7 @@ Slices 1–2 proved four-format round-trip and two-source merge. Remaining gaps:
 
 ### U3. Tests
 
-**File:** `src/KOTORModSync.Tests/FullBuildMergedDryRunTests.cs`
+**File:** `src/ModSync.Tests/FullBuildMergedDryRunTests.cs`
 
 ### U4. Agent scripts + docs
 
@@ -55,7 +55,7 @@ Slices 1–2 proved four-format round-trip and two-source merge. Remaining gaps:
 ## Verification
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj \
   --filter "Name~FullBuildMergedDryRunTests|Name~FullBuildMarkdownMergeRoundTripTests|Name~FullBuildSerializationRoundTripTests"
 
 ./scripts/agents/cli_full_build_pipeline.sh --game k1 \

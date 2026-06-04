@@ -1,0 +1,389 @@
+<!--  Copyright 2021-2025 ModSync  -->
+<!--  Licensed under the Business Source License 1.1 (BSL 1.1).  -->
+<!--  See LICENSE.txt file in the project root for full license information.  -->
+<UserControl
+    x:Class="ModSync.Dialogs.WizardPages.WelcomePage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="WelcomePageRoot"
+    d:DesignHeight="720"
+    d:DesignWidth="1280"
+    mc:Ignorable="d">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,24" Spacing="24">
+            <!--  Hero Section with Gradient Card  -->
+            <Border Padding="48,36" CornerRadius="20">
+                <StackPanel HorizontalAlignment="Center" Spacing="20">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="64"
+                        Text="&#x26A1;&#xFE0F;"
+                        TextAlignment="Center" />  <!-- ⚡ = &#x26A1;&#xFE0F; -->
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="36"
+                        FontWeight="Bold"
+                        Text="Welcome to ModSync"
+                        TextAlignment="Center" />
+                    <TextBlock
+                        MaxWidth="800"
+                        HorizontalAlignment="Center"
+                        FontSize="18"
+                        Opacity="0.9"
+                        Text="The Complete Multi-Mod Installation Solution for Knights of the Old Republic"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                    <Border
+                        Margin="0,12,0,0"
+                        Padding="20,14"
+                        HorizontalAlignment="Center"
+                        CornerRadius="10">
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <TextBlock FontSize="15" Text="✓ Automatic Dependencies" />
+                            <TextBlock FontSize="15" Text="✓ Cross-Platform" />
+                            <TextBlock FontSize="15" Text="✓ One-Click Install" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!--  The Problem & Solution Cards  -->
+            <Grid ColumnDefinitions="*,16,*">
+                <!--  Problem Card  -->
+                <Border
+                    Grid.Column="0"
+                    Padding="24,20"
+                    CornerRadius="12">
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Text="&#x274C; The Problem" />  <!-- ❌ = &#x274C; -->
+                        <TextBlock
+                            FontSize="14"
+                            Opacity="0.85"
+                            Text="Installing multiple KOTOR mods is tedious and error-prone:"
+                            TextWrapping="Wrap" />
+                        <StackPanel Spacing="6">
+                            <TextBlock FontSize="13" Text="• Manual file copying and deletion" />
+                            <TextBlock FontSize="13" Text="• Complex install order requirements" />
+                            <TextBlock FontSize="13" Text="• One mistake = start over from scratch" />
+                            <TextBlock FontSize="13" Text="• Hours spent clicking through installers" />
+                            <TextBlock FontSize="13" Text="• Confusing compatibility instructions" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!--  Solution Card  -->
+                <Border
+                    Grid.Column="2"
+                    Padding="24,20"
+                    CornerRadius="12">
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Text="&#x2705; The Solution" />  <!-- ✅ = &#x2705; -->
+                        <TextBlock
+                            FontSize="14"
+                            Opacity="0.85"
+                            Text="ModSync automates everything for you:"
+                            TextWrapping="Wrap" />
+                        <StackPanel Spacing="6">
+                            <TextBlock FontSize="13" Text="• Select mods you want, click Install" />
+                            <TextBlock FontSize="13" Text="• Automatic dependency resolution" />
+                            <TextBlock FontSize="13" Text="• Smart install order management" />
+                            <TextBlock FontSize="13" Text="• No manual file operations needed" />
+                            <TextBlock FontSize="13" Text="• Built-in compatibility checking" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!--  Installation Process Steps  -->
+            <Border Padding="28,24" CornerRadius="12">
+                <StackPanel Spacing="20">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Text="&#x1F4CB; Installation Process" />
+
+                    <StackPanel Spacing="16">
+                        <!--  Step 1  -->
+                        <Border Padding="16,12" CornerRadius="8">
+                            <Grid ColumnDefinitions="Auto,16,*">
+                                <Border
+                                    Grid.Column="0"
+                                    Width="40"
+                                    Height="40"
+                                    CornerRadius="20"
+                                    VerticalAlignment="Top">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Text="1" />
+                                </Border>
+                                <StackPanel Grid.Column="2" Spacing="6">
+                                    <TextBlock
+                                        Text="&#x1F4C1; Configure Directories" />  <!-- 📁 = &#x1F4C1; -->
+                                    <TextBlock
+                                        Text="Point to your KOTOR installation and mod workspace folder"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!--  Step 2  -->
+                        <Border Padding="16,12" CornerRadius="8">
+                            <Grid ColumnDefinitions="Auto,16,*">
+                                <Border
+                                    Grid.Column="0"
+                                    Width="40"
+                                    Height="40"
+                                    CornerRadius="20"
+                                    VerticalAlignment="Top">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Text="2" />
+                                </Border>
+                                <StackPanel Grid.Column="2" Spacing="6">
+                                    <TextBlock
+                                        Text="&#x1F4C4; Load Instruction File" />  <!-- 📄 = &#x1F4C4; -->
+                                    <TextBlock
+                                        Text="Choose a curated mod build from popular configurations"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!--  Step 3  -->
+                        <Border Padding="16,12" CornerRadius="8">
+                            <Grid ColumnDefinitions="Auto,16,*">
+                                <Border
+                                    Grid.Column="0"
+                                    Width="40"
+                                    Height="40"
+                                    CornerRadius="20"
+                                    VerticalAlignment="Top">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Text="3" />
+                                </Border>
+                                <StackPanel Grid.Column="2" Spacing="6">
+                                    <TextBlock
+                                        Text="&#x1F3AF; Select Your Mods" />  <!-- 🎯 = &#x1F3AF; -->
+                                    <TextBlock
+                                        Text="Browse mods by category, filter by tier, search by name - dependencies auto-select"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!--  Step 4  -->
+                        <Border Padding="16,12" CornerRadius="8">
+                            <Grid ColumnDefinitions="Auto,16,*">
+                                <Border
+                                    Grid.Column="0"
+                                    Width="40"
+                                    Height="40"
+                                    CornerRadius="20"
+                                    VerticalAlignment="Top">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Text="4" />
+                                </Border>
+                                <StackPanel Grid.Column="2" Spacing="6">
+                                    <TextBlock
+                                        Text="&#x2B07;&#xFE0F; Automatic Downloads" />  <!-- ⬇️ = &#x2B07;&#xFE0F; -->
+                                    <TextBlock
+                                        Text="Missing mods? We'll download them automatically while you continue"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!--  Step 5  -->
+                        <Border Padding="16,12" CornerRadius="8">
+                            <Grid ColumnDefinitions="Auto,16,*">
+                                <Border
+                                    Grid.Column="0"
+                                    Width="40"
+                                    Height="40"
+                                    CornerRadius="20"
+                                    VerticalAlignment="Top">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Text="5" />
+                                </Border>
+                                <StackPanel Grid.Column="2" Spacing="6">
+                                    <TextBlock
+                                        Text="&#x2705; Validation &amp; Install" />  <!-- ✅ = &#x2705; -->
+                                    <TextBlock
+                                        Text="Verify everything is ready, then sit back as mods install automatically"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!--  Key Features Grid  -->
+            <Border Padding="28,24" CornerRadius="12">
+                <StackPanel Spacing="20">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="24"
+                        FontWeight="Bold"
+                        Text="&#x1F31F; Key Features" />  <!-- 🌟 = &#x1F31F; -->
+
+                    <Grid ColumnDefinitions="*,16,*" RowDefinitions="Auto,12,Auto">
+                        <!--  Feature 1  -->
+                        <Border
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Padding="20,16"
+                            CornerRadius="10">
+                            <StackPanel Spacing="10">  <!-- 🔄 = &#x1F504; -->
+                                <TextBlock
+                                    FontSize="28"
+                                    Text="&#x1F504;"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Text="Smart Dependencies"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    FontSize="13"
+                                    Opacity="0.8"
+                                    Text="Automatically resolves and installs required mods in correct order"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <!--  Feature 2  -->
+                        <Border
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            Padding="20,16"
+                            CornerRadius="10">
+                            <StackPanel Spacing="10">  <!-- 🔍 = &#x1F50D; -->
+                                <TextBlock
+                                    FontSize="28"
+                                    Text="&#x1F50D;"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Text="Pre-Install Validation"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    FontSize="13"
+                                    Opacity="0.8"
+                                    Text="Catches compatibility issues before installation starts"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <!--  Feature 3  -->
+                        <Border
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Padding="20,16"
+                            CornerRadius="10">
+                            <StackPanel Spacing="10">  <!-- 💾 = &#x1F4BE; -->
+                                <TextBlock
+                                    FontSize="28"
+                                    Text="&#x1F4BE;"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Text="Checkpoint System"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    FontSize="13"
+                                    Opacity="0.8"
+                                    Text="Roll back to previous states if something goes wrong"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <!--  Feature 4  -->
+                        <Border
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Padding="20,16"
+                            CornerRadius="10">
+                            <StackPanel Spacing="10">  <!-- 🌐 = &#x1F310; -->
+                                <TextBlock
+                                    FontSize="28"
+                                    Text="&#x1F310;"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Text="Cross-Platform"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    FontSize="13"
+                                    Opacity="0.8"
+                                    Text="Works on Windows, Linux, and macOS without Wine"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!--  Important Notice  -->
+            <Border Padding="24,20" CornerRadius="12">
+                <Grid ColumnDefinitions="Auto,16,*">
+                    <TextBlock
+                        Grid.Column="0"
+                        VerticalAlignment="Top"
+                        FontSize="32"
+                        Text="&#x26A0;&#xFE0F;" />  <!-- ⚠️ = &#x26A0;&#xFE0F; -->
+                    <StackPanel Grid.Column="2" Spacing="10">
+                        <TextBlock
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Text="Important: Fresh Installation Required" />  <!-- 🔍 = &#x1F50D; -->
+                        <TextBlock
+                            FontSize="14"
+                            Opacity="0.9"
+                            Text="For best results, start with a clean installation of KOTOR. If you've previously installed mods manually, please uninstall the game completely and reinstall before proceeding. This ensures compatibility and prevents conflicts."
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Ready to Begin  -->
+            <Border Padding="32,28" CornerRadius="16">
+                <StackPanel HorizontalAlignment="Center" Spacing="16">
+                    <TextBlock
+                        FontSize="24"
+                        FontWeight="Bold"
+                        Text="Ready to Transform Your KOTOR Experience?"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        FontSize="15"
+                        Opacity="0.8"
+                        Text="Click 'Next' to begin the installation wizard"
+                        TextAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

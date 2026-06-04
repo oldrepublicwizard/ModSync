@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo "======================================================================"
-echo "KOTORModSync Telemetry Auth - Deployment Verification"
+echo "ModSync Telemetry Auth - Deployment Verification"
 echo "======================================================================"
 echo ""
 

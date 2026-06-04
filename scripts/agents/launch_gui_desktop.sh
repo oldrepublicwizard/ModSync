@@ -59,12 +59,12 @@ fi
 
 export DISPLAY="$display_value"
 
-dotnet build "$repo_root/src/KOTORModSync.GUI/KOTORModSync.csproj" -c "$configuration" -f "$framework" >/dev/null
+dotnet build "$repo_root/src/ModSync.GUI/ModSync.csproj" -c "$configuration" -f "$framework" >/dev/null
 
-output_dir="$repo_root/src/KOTORModSync.GUI/bin/${configuration}/${framework}"
+output_dir="$repo_root/src/ModSync.GUI/bin/${configuration}/${framework}"
 "$repo_root/scripts/agents/ensure_linux_holopatcher.sh" "$output_dir" >/dev/null || true
 
-exec dotnet "$output_dir/KOTORModSync.dll" \
+exec dotnet "$output_dir/ModSync.dll" \
   --instructionFile="$instruction_file" \
   --kotorPath="$kotor_dir" \
   --modDirectory="$mod_dir"

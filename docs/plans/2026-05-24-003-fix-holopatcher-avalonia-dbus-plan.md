@@ -9,20 +9,20 @@ date: 2026-05-24
 
 ## Summary
 
-Clear the deferred `Tmds.DBus.Protocol 0.21.2` finding on sibling HoloPatcher projects by uplifting their Avalonia package set to **11.3.16** (matching the shipped `KOTORModSync.GUI` remediation) and tightening CI so sibling graphs must stay patched.
+Clear the deferred `Tmds.DBus.Protocol 0.21.2` finding on sibling HoloPatcher projects by uplifting their Avalonia package set to **11.3.16** (matching the shipped `ModSync.GUI` remediation) and tightening CI so sibling graphs must stay patched.
 
 ---
 
 ## Problem Frame
 
-`KOTORModSync.sln` is clean after PR #75, but CI's informational inventory still reports `Tmds.DBus.Protocol 0.21.2` on `src/HoloPatcher/HoloPatcher.csproj` and `src/HoloPatcher.UI/HoloPatcher.UI/HoloPatcher.UI.csproj` via Avalonia 11.3.9 → FreeDesktop.
+`ModSync.sln` is clean after PR #75, but CI's informational inventory still reports `Tmds.DBus.Protocol 0.21.2` on `src/HoloPatcher/HoloPatcher.csproj` and `src/HoloPatcher.UI/HoloPatcher.UI/HoloPatcher.UI.csproj` via Avalonia 11.3.9 → FreeDesktop.
 
 ---
 
 ## Requirements
 
 - R1. Both HoloPatcher sibling projects must stop resolving `Tmds.DBus.Protocol 0.21.2` on `net9.0` restore graphs.
-- R2. Avalonia package versions must align with the in-repo `KOTORModSync.GUI` pattern (11.3.16 core, ItemsRepeater 11.1.5, ReactiveUI 11.3.9 where no 11.3.16 package exists).
+- R2. Avalonia package versions must align with the in-repo `ModSync.GUI` pattern (11.3.16 core, ItemsRepeater 11.1.5, ReactiveUI 11.3.9 where no 11.3.16 package exists).
 - R3. CI must fail if sibling HoloPatcher graphs reintroduce vulnerable `Tmds.DBus.Protocol` (promote inventory from informational to gated).
 - R4. Scope stays limited to sibling HoloPatcher csproj package/CI changes — no HoloPatcher source refactors or broken legacy project-reference repairs unless required for restore audit.
 
@@ -51,7 +51,7 @@ Clear the deferred `Tmds.DBus.Protocol 0.21.2` finding on sibling HoloPatcher pr
 
 | Check | Result |
 |-------|--------|
-| `dotnet list KOTORModSync.sln package --vulnerable --include-transitive` | No vulnerable packages on Core, GUI, or Tests |
+| `dotnet list ModSync.sln package --vulnerable --include-transitive` | No vulnerable packages on Core, GUI, or Tests |
 | HoloPatcher sibling restore + `dotnet list --vulnerable --include-transitive` | Clean on `HoloPatcher` and `HoloPatcher.UI` |
 | `dotnet nuget why` | `Tmds.DBus.Protocol 0.21.3` via Avalonia.FreeDesktop (patched line) |
 | PR #76 CI | All checks green before merge |

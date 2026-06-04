@@ -45,14 +45,14 @@ Full install/dry-run accuracy with real archives remains environment-dependent; 
 
 ### U1. XML serialization
 
-**Files:** `src/KOTORModSync.Core/Services/ModComponentSerializationService.cs`
+**Files:** `src/ModSync.Core/Services/ModComponentSerializationService.cs`
 
 - Add `SerializeModComponentAsXmlString` / `DeserializeModComponentFromXmlString` via JSON intermediate + Newtonsoft XML helpers.
 - Add `case "xml"` to serialize/deserialize switches and auto-detect fallback chain.
 
 ### U2. CLI dry-run
 
-**Files:** `src/KOTORModSync.Core/CLI/ModBuildConverter.cs`
+**Files:** `src/ModSync.Core/CLI/ModBuildConverter.cs`
 
 - Add `--dry-run` to `ValidateOptions`.
 - Require `--game-dir` and `--source-dir`; set `MainConfig`; sync `IsSelected` from validation subset; call `DryRunValidator`.
@@ -60,8 +60,8 @@ Full install/dry-run accuracy with real archives remains environment-dependent; 
 ### U3. Tests
 
 **Files:**
-- Create: `src/KOTORModSync.Tests/FullBuildSerializationRoundTripTests.cs`
-- Modify: `src/KOTORModSync.Tests/TestSerialization.cs`
+- Create: `src/ModSync.Tests/FullBuildSerializationRoundTripTests.cs`
+- Modify: `src/ModSync.Tests/TestSerialization.cs`
 
 ### U4. Agent script and docs
 
@@ -74,8 +74,8 @@ Full install/dry-run accuracy with real archives remains environment-dependent; 
 ## Verification
 
 ```bash
-dotnet build KOTORModSync.sln --configuration Debug
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+dotnet build ModSync.sln --configuration Debug
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj \
   --filter "Name~FullBuild" \
   --configuration Debug
 ./scripts/agents/cli_validate.sh --input ./mod-builds/TOMLs/KOTOR1_Full.toml \

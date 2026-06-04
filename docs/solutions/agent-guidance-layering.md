@@ -4,7 +4,7 @@
 
 ## Problem
 
-KOTORModSync agent knowledge was spread across:
+ModSync agent knowledge was spread across:
 
 - Always-on rules (path sandbox, VFS, tests)
 - Routing entry points (`AGENTS.md`, copilot instructions)
@@ -33,7 +33,7 @@ Authority order when docs conflict: see [doc-hierarchy.md](../knowledgebase/doc-
 2. **Link, don't copy** — `AGENTS.md` should link to `docs/knowledgebase/README.md`, not duplicate CLI flag lists.
 3. **Update together** — When wizard order or preload args change, update `AGENTS.md`, runbook, and `agent-action-parity.md`.
 4. **Evidence labels** — Use `[REPO]` / `[UI]` / `[OPEN]` in audits and research (see knowledgebase README).
-5. **Do not edit generated maps** — `docs/KOTORModSync_Master.md` is tooling output.
+5. **Do not edit generated maps** — `docs/ModSync_Master.md` is tooling output.
 
 ## Drift signals
 

@@ -90,8 +90,8 @@ Release Please ran on every push to `master`, opened version-bump PRs for low-si
 
 **Files:**
 - Modify: `.release-please-manifest.json`
-- Modify: `src/KOTORModSync.Core/MainConfig.cs`
-- Modify: `Info.plist`, `src/KOTORModSync.GUI/Info.plist`
+- Modify: `src/ModSync.Core/MainConfig.cs`
+- Modify: `Info.plist`, `src/ModSync.GUI/Info.plist`
 - Modify: `CHANGELOG.md`
 - Modify: `release-please-config.json`
 

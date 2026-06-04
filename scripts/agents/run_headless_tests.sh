@@ -38,6 +38,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-dotnet test "$repo_root/src/KOTORModSync.Tests/KOTORModSync.Tests.csproj" \
+dotnet test "$repo_root/src/ModSync.Tests/ModSync.Tests.csproj" \
   --configuration "$configuration" \
   --filter "$filter"

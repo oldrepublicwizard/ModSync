@@ -84,7 +84,7 @@ Use the launch helper:
 
 What the script does:
 
-- builds `src/KOTORModSync.GUI`
+- builds `src/ModSync.GUI`
 - ensures Linux `Resources/holopatcher` exists
 - launches the app with:
   - `--instructionFile=...`
@@ -223,7 +223,7 @@ This links:
 
 to:
 
-- `src/KOTORModSync.GUI/bin/Debug/net9.0/Resources/holopatcher`
+- `src/ModSync.GUI/bin/Debug/net9.0/Resources/holopatcher`
 
 That is the path `InstallationService.FindHolopatcherAsync()` checks on non-Windows platforms.
 

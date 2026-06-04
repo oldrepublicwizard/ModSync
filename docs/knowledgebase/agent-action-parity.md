@@ -4,7 +4,7 @@
 
 ## Install wizard (primary flow)
 
-Wizard order from `src/KOTORModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AGENTS.md`:
+Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AGENTS.md`:
 
 | Step | Page | User action | Agent path | Parity |
 |------|------|-------------|------------|--------|

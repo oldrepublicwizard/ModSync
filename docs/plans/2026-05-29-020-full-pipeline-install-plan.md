@@ -38,7 +38,7 @@ Agents can merge and dry-run without archives, but cannot run a single script th
 
 ### U2. Auto-generate-local integration test
 
-**Files:** `src/KOTORModSync.Tests/AutoGenerateLocalCliIntegrationTests.cs`
+**Files:** `src/ModSync.Tests/AutoGenerateLocalCliIntegrationTests.cs`
 
 ### U3. KB and plan status
 
@@ -47,7 +47,7 @@ Agents can merge and dry-run without archives, but cannot run a single script th
 ## Verification
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj \
   --filter "Name~AutoGenerateLocalCliIntegrationTests|Name~FullBuildMergedDryRunTests"
 
 ./scripts/agents/cli_full_build_pipeline.sh --game k1 \

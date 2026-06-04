@@ -1,6 +1,6 @@
 # Scripts Directory
 
-This directory contains utility scripts for managing the KOTORModSync Telemetry Authentication Service.
+This directory contains utility scripts for managing the ModSync Telemetry Authentication Service.
 
 ## Available Scripts
 
@@ -107,7 +107,7 @@ OTLP_ENDPOINT=https://otlp.example.com ./scripts/test-auth.sh valid
 
 **⚠️ Important:** After rotating, you MUST:
 1. Update GitHub Actions secret
-2. Publish new KOTORModSync release
+2. Publish new ModSync release
 3. Notify users to update
 
 ---

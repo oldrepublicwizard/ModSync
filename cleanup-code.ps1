@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
-$solution = "KOTORModSync.sln"
+$solution = "ModSync.sln"
 
 if ($Verify -and $Fix) {
     Write-Error "Specify either -Verify or -Fix, not both."

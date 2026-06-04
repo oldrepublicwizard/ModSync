@@ -1,4 +1,4 @@
-# KOTORModSync knowledgebase
+# ModSync knowledgebase
 
 Canonical index for humans and coding agents working on this repository. Start here when routing a task or verifying how agent workflows map to product behavior.
 
@@ -33,7 +33,7 @@ Use these when citing findings in plans, PRs, or audits:
 
 ### Domain model (start here for TOML and validation)
 
-- [Product overview](product-overview.md) — what KOTORModSync is, audiences, workflows
+- [Product overview](product-overview.md) — what ModSync is, audiences, workflows
 - [Instruction file format](instruction-format.md) — path placeholders, action types, minimal examples
 - [Mod component model](mod-component-model.md) — component/instruction fields, selection semantics
 - [Validation pipeline](validation-pipeline.md) — five stages, fail-fast, CLI/GUI mapping
@@ -111,5 +111,5 @@ Use these when citing findings in plans, PRs, or audits:
 
 ## What this knowledgebase is not
 
-- Not a substitute for generated maps (`docs/KOTORModSync_Master.md`, `docs/KOTORModSync_Codebase_Map.json`) — use those for exhaustive symbol lookup, not routing.
+- Not a substitute for generated maps (`docs/ModSync_Master.md`, `docs/ModSync_Codebase_Map.json`) — use those for exhaustive symbol lookup, not routing.
 - Not a promise that every GUI button has a headless equivalent — see the audit and parity docs for explicit gaps.

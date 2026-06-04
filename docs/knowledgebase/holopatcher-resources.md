@@ -10,7 +10,7 @@
 
 Links `vendor/bin/HoloPatcher_linux` into the **GUI** build output:
 
-`src/KOTORModSync.GUI/bin/Debug/net9.0/Resources/holopatcher`
+`src/ModSync.GUI/bin/Debug/net9.0/Resources/holopatcher`
 
 ## Core CLI vs GUI `Resources/`
 
@@ -22,8 +22,8 @@ Core `install` / `validate --full` load HoloPatcher from `Resources/` under the 
 Manual equivalent:
 
 ```bash
-ln -sfn src/KOTORModSync.GUI/bin/Debug/net9.0/Resources \
-  src/KOTORModSync.Core/bin/Debug/net9.0/Resources
+ln -sfn src/ModSync.GUI/bin/Debug/net9.0/Resources \
+  src/ModSync.Core/bin/Debug/net9.0/Resources
 ```
 
 ## Runtime lookup (Core)

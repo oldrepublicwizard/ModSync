@@ -1,16 +1,16 @@
 # Product overview
 
-`[REPO]` What KOTORModSync is, who it serves, and how work flows through the repo. For user FAQ and build steps, see `README.md` (marked WIP in places).
+`[REPO]` What ModSync is, who it serves, and how work flows through the repo. For user FAQ and build steps, see `README.md` (marked WIP in places).
 
 ## What it is
 
-KOTORModSync is a **cross-platform multi-mod installer** for *Star Wars: Knights of the Old Republic* (K1) and *The Sith Lords* (K2/TSL). It reads **instruction files** (TOML and related formats) that describe how each mod is installed, resolves **dependencies and incompatibilities**, and executes the steps (extract, patch, move, delete, and so on) against a KOTOR game directory.
+ModSync is a **cross-platform multi-mod installer** for *Star Wars: Knights of the Old Republic* (K1) and *The Sith Lords* (K2/TSL). It reads **instruction files** (TOML and related formats) that describe how each mod is installed, resolves **dependencies and incompatibilities**, and executes the steps (extract, patch, move, delete, and so on) against a KOTOR game directory.
 
 `[SYNTH]` The product sits between **mod-build authors** (who encode install logic once) and **players** (who pick mods and run install/validate without hand-copying files or running TSLPatcher manually for every mod).
 
 ## Problem it solves
 
-KOTOR modding often requires dozens of repetitive, order-sensitive steps per mod. KOTORModSync automates that pipeline and encodes compatibility rules so end users can select mods and let the tool order and execute installs. It also supports **HoloPatcher on Mac/Linux without Wine** (`README.md`).
+KOTOR modding often requires dozens of repetitive, order-sensitive steps per mod. ModSync automates that pipeline and encodes compatibility rules so end users can select mods and let the tool order and execute installs. It also supports **HoloPatcher on Mac/Linux without Wine** (`README.md`).
 
 ## Audiences
 
@@ -48,7 +48,7 @@ KOTOR modding often requires dozens of repetitive, order-sensitive steps per mod
 |-------|--------|
 | Core | C# .NET Standard 2.0 — instructions, VFS, validation, CLI |
 | GUI | Avalonia UI v11, .NET 9 (and legacy net48 Windows builds) |
-| Tests | Single project `KOTORModSync.Tests` (NUnit + xUnit) |
+| Tests | Single project `ModSync.Tests` (NUnit + xUnit) |
 | Instruction formats | TOML, Markdown, YAML, JSON, XML (`FileLoadingService.cs`) |
 
 ## Rework disclaimer

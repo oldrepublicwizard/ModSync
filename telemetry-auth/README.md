@@ -1,10 +1,10 @@
-# KOTORModSync Telemetry Authentication Service
+# ModSync Telemetry Authentication Service
 
 [![Docker Build](https://github.com/YOUR_ORG/kotormodsync-telemetry-auth/actions/workflows/docker-build.yml/badge.svg)](https://github.com/YOUR_ORG/kotormodsync-telemetry-auth/actions/workflows/docker-build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Docker Pulls](https://img.shields.io/docker/pulls/bolabaden/kotormodsync-telemetry-auth)](https://hub.docker.com/r/bolabaden/kotormodsync-telemetry-auth)
 
-Lightweight, secure HMAC-SHA256 authentication service for validating OpenTelemetry telemetry requests from KOTORModSync clients.
+Lightweight, secure HMAC-SHA256 authentication service for validating OpenTelemetry telemetry requests from ModSync clients.
 
 ## 🎯 Purpose
 
@@ -87,7 +87,7 @@ Clients must send:
 - `X-KMS-Signature` - HMAC-SHA256 hex digest (64 characters)
 - `X-KMS-Timestamp` - Unix timestamp in seconds (10 digits)
 - `X-KMS-Session-ID` - Unique session identifier
-- `X-KMS-Client-Version` - KOTORModSync version string
+- `X-KMS-Client-Version` - ModSync version string
 
 ## Configuration
 
@@ -256,7 +256,7 @@ curl http://localhost:8080/health
 2. Update secret file: `echo "new-secret" > /path/to/kotormodsync_signing_secret.txt`
 3. Restart service: `docker compose restart kotormodsync-auth`
 4. Update GitHub Actions secret
-5. Publish new KOTORModSync release
+5. Publish new ModSync release
 
 ### View Logs
 ```bash
@@ -287,7 +287,7 @@ docker compose exec kotormodsync-auth wget -qO- http://localhost:8080/health
 
 - **[Deployment Guide](DEPLOYMENT.md)** - Production deployment instructions
 - **[Contributing Guide](CONTRIBUTING.md)** - How to contribute to this project
-- **[Client Integration](https://github.com/YOUR_ORG/KOTORModSync)** - How to integrate with KOTORModSync
+- **[Client Integration](https://github.com/YOUR_ORG/ModSync)** - How to integrate with ModSync
 
 ## 🤝 Contributing
 
@@ -305,7 +305,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built for the [KOTORModSync](https://github.com/YOUR_ORG/KOTORModSync) project
+- Built for the [ModSync](https://github.com/YOUR_ORG/ModSync) project
 - Uses industry-standard HMAC-SHA256 authentication
 - Inspired by webhook authentication patterns from GitHub, Stripe, and AWS
 

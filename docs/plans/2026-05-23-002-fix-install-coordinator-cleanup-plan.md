@@ -15,7 +15,7 @@ Stabilize the Windows `InstallCoordinatorTests` teardown path so the shared pipe
 
 ## Problem Frame
 
-`Build and Test KOTORModSync` is red on `master` because the `InstallCoordinatorTests` filter fails in teardown on `windows-latest` while deleting temporary `.modsync` folders. The current helper already retries deletion and attempts Git-specific cleanup, which means the remaining failures point to a real ownership/path mismatch rather than a simple timing hiccup.
+`Build and Test ModSync` is red on `master` because the `InstallCoordinatorTests` filter fails in teardown on `windows-latest` while deleting temporary `.modsync` folders. The current helper already retries deletion and attempts Git-specific cleanup, which means the remaining failures point to a real ownership/path mismatch rather than a simple timing hiccup.
 
 ---
 
@@ -56,13 +56,13 @@ Stabilize the Windows `InstallCoordinatorTests` teardown path so the shared pipe
 
 ### Relevant Code and Patterns
 
-- `src/KOTORModSync.Core/Installation/InstallCoordinator.cs` creates `CheckpointManager` and `GitCheckpointService`, but `InstallCoordinator` itself is not disposable and `ClearSessionForTests` only attempts a raw recursive delete of `.modsync`.
-- `src/KOTORModSync.Core/Services/GitCheckpointService.cs` initializes the repository under `CheckpointPaths.GetCheckpointsRoot(gameDirectory)`, which resolves to `.modsync/checkpoints`, and exposes `Dispose()` plus `ClearAllCheckpointsAsync()`.
-- `src/KOTORModSync.Core/Services/Checkpoints/CheckpointPaths.cs` is the authoritative layout for `.modsync`, `checkpoints`, session state, and backup artifacts.
-- `src/KOTORModSync.Core/Services/InstallationService.cs` creates an `InstallCoordinator` and uses `coordinator.CheckpointService.CreateCheckpointAsync(...)`, but does not currently dispose the coordinator/checkpoint service afterward.
-- `src/KOTORModSync.Tests/InstallCoordinatorTestsHelper.cs` centralizes teardown cleanup, but its Git-specific cleanup logic currently assumes `.modsync/.git` instead of the real `.modsync/checkpoints/.git` location.
-- `src/KOTORModSync.Tests/InstallCoordinatorTests.cs` is the exact suite exercised by `.github/workflows/build-and-test.yml` in the failing `Run shared pipeline tests` step.
-- `src/KOTORModSync.Tests/GitCheckpointCleanupTests.cs` already covers adjacent cleanup scenarios and is the closest existing pattern for checkpoint-disposal regression coverage.
+- `src/ModSync.Core/Installation/InstallCoordinator.cs` creates `CheckpointManager` and `GitCheckpointService`, but `InstallCoordinator` itself is not disposable and `ClearSessionForTests` only attempts a raw recursive delete of `.modsync`.
+- `src/ModSync.Core/Services/GitCheckpointService.cs` initializes the repository under `CheckpointPaths.GetCheckpointsRoot(gameDirectory)`, which resolves to `.modsync/checkpoints`, and exposes `Dispose()` plus `ClearAllCheckpointsAsync()`.
+- `src/ModSync.Core/Services/Checkpoints/CheckpointPaths.cs` is the authoritative layout for `.modsync`, `checkpoints`, session state, and backup artifacts.
+- `src/ModSync.Core/Services/InstallationService.cs` creates an `InstallCoordinator` and uses `coordinator.CheckpointService.CreateCheckpointAsync(...)`, but does not currently dispose the coordinator/checkpoint service afterward.
+- `src/ModSync.Tests/InstallCoordinatorTestsHelper.cs` centralizes teardown cleanup, but its Git-specific cleanup logic currently assumes `.modsync/.git` instead of the real `.modsync/checkpoints/.git` location.
+- `src/ModSync.Tests/InstallCoordinatorTests.cs` is the exact suite exercised by `.github/workflows/build-and-test.yml` in the failing `Run shared pipeline tests` step.
+- `src/ModSync.Tests/GitCheckpointCleanupTests.cs` already covers adjacent cleanup scenarios and is the closest existing pattern for checkpoint-disposal regression coverage.
 
 ### Institutional Learnings
 
@@ -110,10 +110,10 @@ Stabilize the Windows `InstallCoordinatorTests` teardown path so the shared pipe
 **Dependencies:** None
 
 **Files:**
-- Modify: `src/KOTORModSync.Core/Installation/InstallCoordinator.cs`
-- Modify: `src/KOTORModSync.Core/Services/InstallationService.cs`
-- Modify: `src/KOTORModSync.Core/Services/GitCheckpointService.cs`
-- Test: `src/KOTORModSync.Tests/InstallCoordinatorTests.cs`
+- Modify: `src/ModSync.Core/Installation/InstallCoordinator.cs`
+- Modify: `src/ModSync.Core/Services/InstallationService.cs`
+- Modify: `src/ModSync.Core/Services/GitCheckpointService.cs`
+- Test: `src/ModSync.Tests/InstallCoordinatorTests.cs`
 
 **Approach:**
 - Trace the ownership boundary for `CheckpointService` and make disposal explicit instead of relying on garbage collection.
@@ -123,8 +123,8 @@ Stabilize the Windows `InstallCoordinatorTests` teardown path so the shared pipe
 **Execution note:** Add characterization coverage around the current teardown-sensitive path before changing disposal behavior.
 
 **Patterns to follow:**
-- `src/KOTORModSync.Core/Services/GitCheckpointService.cs` disposal boundary
-- `src/KOTORModSync.Tests/GitCheckpointCleanupTests.cs` for checkpoint-handle cleanup expectations
+- `src/ModSync.Core/Services/GitCheckpointService.cs` disposal boundary
+- `src/ModSync.Tests/GitCheckpointCleanupTests.cs` for checkpoint-handle cleanup expectations
 
 **Test scenarios:**
 - Happy path: an `InstallCoordinator`-driven initialization/checkpoint flow can complete and then release checkpoint resources without leaving `.modsync/checkpoints/.git` locked.
@@ -143,9 +143,9 @@ Stabilize the Windows `InstallCoordinatorTests` teardown path so the shared pipe
 **Dependencies:** U1
 
 **Files:**
-- Modify: `src/KOTORModSync.Tests/InstallCoordinatorTestsHelper.cs`
-- Modify: `src/KOTORModSync.Core/Services/Checkpoints/CheckpointPaths.cs`
-- Test: `src/KOTORModSync.Tests/GitCheckpointCleanupTests.cs`
+- Modify: `src/ModSync.Tests/InstallCoordinatorTestsHelper.cs`
+- Modify: `src/ModSync.Core/Services/Checkpoints/CheckpointPaths.cs`
+- Test: `src/ModSync.Tests/GitCheckpointCleanupTests.cs`
 
 **Approach:**
 - Replace helper assumptions about `.modsync/.git` with the authoritative path helpers from `CheckpointPaths`.
@@ -153,8 +153,8 @@ Stabilize the Windows `InstallCoordinatorTests` teardown path so the shared pipe
 - Reconcile the helper's intent/comments with its actual final-failure behavior so teardown semantics stay deliberate.
 
 **Patterns to follow:**
-- `src/KOTORModSync.Core/Services/Checkpoints/CheckpointPaths.cs` for root/checkpoint/session path derivation
-- Existing retry/backoff structure in `src/KOTORModSync.Tests/InstallCoordinatorTestsHelper.cs`
+- `src/ModSync.Core/Services/Checkpoints/CheckpointPaths.cs` for root/checkpoint/session path derivation
+- Existing retry/backoff structure in `src/ModSync.Tests/InstallCoordinatorTestsHelper.cs`
 
 **Test scenarios:**
 - Happy path: helper cleanup deletes a temp directory containing `.modsync/checkpoints/.git` after a repository-backed checkpoint run.
@@ -174,8 +174,8 @@ Stabilize the Windows `InstallCoordinatorTests` teardown path so the shared pipe
 **Dependencies:** U1, U2
 
 **Files:**
-- Modify: `src/KOTORModSync.Tests/InstallCoordinatorTests.cs`
-- Modify: `src/KOTORModSync.Tests/GitCheckpointCleanupTests.cs`
+- Modify: `src/ModSync.Tests/InstallCoordinatorTests.cs`
+- Modify: `src/ModSync.Tests/GitCheckpointCleanupTests.cs`
 - Modify: `.github/workflows/build-and-test.yml`
 
 **Approach:**
@@ -227,12 +227,12 @@ Stabilize the Windows `InstallCoordinatorTests` teardown path so the shared pipe
 
 ## Sources & References
 
-- Related code: `src/KOTORModSync.Core/Installation/InstallCoordinator.cs`
-- Related code: `src/KOTORModSync.Core/Services/GitCheckpointService.cs`
-- Related code: `src/KOTORModSync.Core/Services/Checkpoints/CheckpointPaths.cs`
-- Related code: `src/KOTORModSync.Tests/InstallCoordinatorTestsHelper.cs`
-- Related code: `src/KOTORModSync.Tests/InstallCoordinatorTests.cs`
-- Related code: `src/KOTORModSync.Tests/GitCheckpointCleanupTests.cs`
+- Related code: `src/ModSync.Core/Installation/InstallCoordinator.cs`
+- Related code: `src/ModSync.Core/Services/GitCheckpointService.cs`
+- Related code: `src/ModSync.Core/Services/Checkpoints/CheckpointPaths.cs`
+- Related code: `src/ModSync.Tests/InstallCoordinatorTestsHelper.cs`
+- Related code: `src/ModSync.Tests/InstallCoordinatorTests.cs`
+- Related code: `src/ModSync.Tests/GitCheckpointCleanupTests.cs`
 - Related workflow: `.github/workflows/build-and-test.yml`
 - Related PR: `th3w1zard1/ModSync#71`
 - Related CI run: `https://github.com/th3w1zard1/ModSync/actions/runs/25337662870`

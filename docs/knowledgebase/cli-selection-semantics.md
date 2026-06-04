@@ -2,7 +2,7 @@
 
 `[REPO]` How `install` and `validate` treat component selection vs TOML `IsSelected` flags.
 
-Source: `ModBuildConverter.ApplySelectionFilters` and validate/install handlers in `src/KOTORModSync.Core/CLI/ModBuildConverter.cs`.
+Source: `ModBuildConverter.ApplySelectionFilters` and validate/install handlers in `src/ModSync.Core/CLI/ModBuildConverter.cs`.
 
 ## `install` without `--select` (default)
 

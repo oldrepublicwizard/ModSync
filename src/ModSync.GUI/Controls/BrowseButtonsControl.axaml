@@ -1,0 +1,17 @@
+<!-- Copyright 2021-2025 ModSync -->
+<!-- Licensed under the Business Source License 1.1 (BSL 1.1). -->
+<!-- See LICENSE.txt file in the project root for full license information. -->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ModSync.Controls.BrowseButtonsControl">
+    <StackPanel>
+        <Button HorizontalAlignment="Stretch"
+                Content="📦 Browse Mod Files"
+                Click="BrowseModFiles_Click"
+                ToolTip.Tip="Browse files inside mod archives and select specific files" />
+        <Button HorizontalAlignment="Stretch"
+                Content="📁 Browse Files"
+                Click="BrowseSourceFiles_Click"
+                ToolTip.Tip="Browse for files on disk" />
+    </StackPanel>
+</UserControl>

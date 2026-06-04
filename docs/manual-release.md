@@ -23,7 +23,7 @@ Review and merge that PR when the version bump is correct.
 
 ### 3. Build artifacts (and optionally publish)
 
-**Actions → Build and Release KOTORModSync → Run workflow**
+**Actions → Build and Release ModSync → Run workflow**
 
 | Input | Default | Purpose |
 |--------|---------|---------|

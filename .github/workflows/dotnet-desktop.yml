@@ -52,8 +52,8 @@ jobs:
     runs-on: windows-latest
 
     env:
-      Solution_Name: KOTORModSync
-      Test_Project_Path: KOTORModSync.Tests\KOTORModSync.Tests.csproj
+      Solution_Name: ModSync
+      Test_Project_Path: ModSync.Tests\ModSync.Tests.csproj
 
     steps:
     - name: Checkout

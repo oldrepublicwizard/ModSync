@@ -4,7 +4,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 configuration="${CONFIGURATION:-Debug}"
-project="${repo_root}/src/KOTORModSync.Tests/KOTORModSync.Tests.csproj"
+project="${repo_root}/src/ModSync.Tests/ModSync.Tests.csproj"
 
 echo "PR #110 validation tests (WizardValidationStagePresenter)..."
 dotnet test "$project" --configuration "$configuration" \

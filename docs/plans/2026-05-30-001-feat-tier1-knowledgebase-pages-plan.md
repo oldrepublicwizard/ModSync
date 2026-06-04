@@ -24,7 +24,7 @@ This slice adds **Tier 1 domain docs** only — no product code changes.
 
 ## Requirements
 
-- R1. `product-overview.md` — what KOTORModSync is, audiences, primary workflows, rework disclaimer.
+- R1. `product-overview.md` — what ModSync is, audiences, primary workflows, rework disclaimer.
 - R2. `instruction-format.md` — path placeholders, supported formats, action types, dependency fields, minimal examples.
 - R3. `mod-component-model.md` — ModComponent/Instruction fields, options, widescreen, selection semantics (GUI vs CLI).
 - R4. `validation-pipeline.md` — five stages, fail-fast rules, GUI/CLI flag mapping.

@@ -1,5 +1,5 @@
 # Release Please: manual only — opens/updates a version-bump PR. Does NOT publish GitHub Releases.
-# GitHub Releases are created only via "Build and Release KOTORModSync" workflow_dispatch
+# GitHub Releases are created only via "Build and Release ModSync" workflow_dispatch
 # with create_github_release=true.
 #
 # Requires repo Settings → Actions → General:

@@ -57,14 +57,14 @@ Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface refere
 
 `[REPO]` `MainWindow.axaml.cs` still coordinates editor, downloads, validation orchestration UI, drag-drop, menus, and Getting Started. Further extraction targets: download orchestration, editor hosting, menus — validation **pipeline** work now lives in `LegacyValidationRunner` + `ValidationPipelineDialogMapper`.
 
-**Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/KOTORModSync.GUI/Services/`.
+**Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/ModSync.GUI/Services/`.
 
 ### Duplicate wizard hosts
 
 `[REPO]` Two entry paths:
 
-- `InstallWizardDialog` — modal wizard (`src/KOTORModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs`)
-- `WizardHostControl` — embedded host (`src/KOTORModSync.GUI/Controls/WizardHostControl.axaml.cs`)
+- `InstallWizardDialog` — modal wizard (`src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs`)
+- `WizardHostControl` — embedded host (`src/ModSync.GUI/Controls/WizardHostControl.axaml.cs`)
 
 Both register similar page sequences. Consolidation requires UX decisions (modal vs embedded) and regression testing across editor + install flows.
 

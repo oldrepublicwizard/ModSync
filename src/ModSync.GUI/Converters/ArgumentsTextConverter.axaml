@@ -1,0 +1,4 @@
+<!-- Copyright 2021-2025 ModSync -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:converters="clr-namespace:ModSync.Converters">
+    <converters:ArgumentsTextConverter x:Key="ArgumentsTextConverter" />
+</ResourceDictionary>

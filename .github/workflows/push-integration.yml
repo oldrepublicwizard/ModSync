@@ -9,7 +9,7 @@ on:
 
 env:
   DOTNET_VERSION: "9.0.x"
-  TEST_PROJECT: "src/KOTORModSync.Tests/KOTORModSync.Tests.csproj"
+  TEST_PROJECT: "src/ModSync.Tests/ModSync.Tests.csproj"
 
 jobs:
   linux-headless-and-cli:

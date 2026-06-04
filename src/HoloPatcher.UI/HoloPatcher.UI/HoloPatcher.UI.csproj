@@ -119,7 +119,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\KOTORModSync\KOTORModSync.csproj" />
+    <ProjectReference Include="..\..\ModSync.GUI\ModSync.csproj" />
   </ItemGroup>
 
 </Project>

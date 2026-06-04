@@ -34,27 +34,27 @@ Extract duplicated `InstallationValidationPipeline` → `ValidationIssue` mappin
 
 ### U1. Add ValidationPipelineDialogMapper
 
-**Files:** `src/KOTORModSync.GUI/Services/ValidationPipelineDialogMapper.cs` (new)
+**Files:** `src/ModSync.GUI/Services/ValidationPipelineDialogMapper.cs` (new)
 
 **Approach:** Move logic from `MainWindow.AddPipelineStageIssuesToDialog`, dry-run loop, and `GetSolutionForIssue`. Expose `AddPipelineStageIssues`, `AddDryRunIssues`, `GetSolutionForIssue`, and internal `ParseModNameAndDescription` for tests.
 
 ### U2. Wire consumers
 
 **Files:**
-- Modify: `src/KOTORModSync.GUI/MainWindow.axaml.cs`
-- Modify: `src/KOTORModSync.GUI/Services/ValidationService.cs`
+- Modify: `src/ModSync.GUI/MainWindow.axaml.cs`
+- Modify: `src/ModSync.GUI/Services/ValidationService.cs`
 
 **Approach:** Replace inline mapping with mapper calls; `AnalyzeValidationFailures` uses mapper for stages + dry-run (drop incomplete `MapDryRunIssuesToDialogIssues`).
 
 ### U3. Mapper unit tests
 
-**Files:** `src/KOTORModSync.Tests/ValidationPipelineDialogMapperTests.cs` (new)
+**Files:** `src/ModSync.Tests/ValidationPipelineDialogMapperTests.cs` (new)
 
 **Scenarios:** ERROR:/WARNING: colon split; environment failure → one ✗ issue; dry-run warning → ⚠ issue with solution; archive category solution string.
 
 ## Verification
 
 ```bash
-dotnet build KOTORModSync.sln
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~ValidationPipelineDialogMapperTests"
+dotnet build ModSync.sln
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~ValidationPipelineDialogMapperTests"
 ```

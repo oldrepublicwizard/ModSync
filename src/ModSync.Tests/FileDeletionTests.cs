@@ -1,0 +1,401 @@
+// Copyright 2021-2025 ModSync
+// Licensed under the Business Source License 1.1 (BSL 1.1).
+// See LICENSE.txt file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+using ModSync.Core;
+using ModSync.Core.Services.FileSystem;
+using ModSync.Core.Utility;
+
+using NUnit.Framework;
+
+#pragma warning disable U2U1000, CS8618, RCS1118
+
+namespace ModSync.Tests
+{
+    [TestFixture]
+    public class FileDeletionTests
+    {
+        private string _testRootDir;
+        private string _sourceDir;
+        private string _destinationDir;
+        private string _realTestDir;
+        private string _virtualTestDir;
+        private MainConfig _originalConfig;
+        private string _sevenZipPath;
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _sevenZipPath = VirtualFileSystemTests.Find7Zip();
+        }
+
+        [SetUp]
+        public void Setup()
+        {
+            _testRootDir = Path.Combine(Path.GetTempPath(), "ModSync_FileDeletion_Tests_" + Guid.NewGuid().ToString("N"));
+            _realTestDir = Path.Combine(_testRootDir, "Real");
+            _virtualTestDir = Path.Combine(_testRootDir, "Virtual");
+            _sourceDir = Path.Combine(_testRootDir, "TestFiles", "source");
+            _destinationDir = Path.Combine(_testRootDir, "TestFiles", "dest");
+
+            Directory.CreateDirectory(_sourceDir);
+            Directory.CreateDirectory(_destinationDir);
+
+            _originalConfig = new MainConfig();
+            _ = new MainConfig
+            {
+                sourcePath = new DirectoryInfo(_sourceDir),
+                destinationPath = new DirectoryInfo(_destinationDir),
+            };
+        }
+
+        [TearDown]
+        public void Teardown()
+        {
+            try
+            {
+                if (Directory.Exists(_testRootDir))
+                {
+                    Directory.Delete(_testRootDir, recursive: true);
+                }
+            }
+            catch (Exception ex)
+            {
+                TestContext.Progress.WriteLine($"Warning: Could not delete test directory: {ex.Message}");
+            }
+
+            _ = new MainConfig
+            {
+                sourcePath = _originalConfig.sourcePath,
+                destinationPath = _originalConfig.destinationPath,
+            };
+        }
+        private async Task<(VirtualFileSystemProvider virtualProvider, string realSource, string realDest)> RunBothProviders(List<Instruction> instructions, string sourceDir, string destinationDir)
+        {
+
+            var virtualInstructions = new List<Instruction>();
+            var realInstructions = new List<Instruction>();
+            foreach (Instruction instruction in instructions)
+            {
+                virtualInstructions.Add(new Instruction
+                {
+                    Action = instruction.Action,
+                    Source = instruction.Source.ToList(),
+                    Destination = instruction.Destination,
+                    Overwrite = instruction.Overwrite,
+                    Arguments = instruction.Arguments,
+                });
+                realInstructions.Add(new Instruction
+                {
+                    Action = instruction.Action,
+                    Source = instruction.Source.ToList(),
+                    Destination = instruction.Destination,
+                    Overwrite = instruction.Overwrite,
+                    Arguments = instruction.Arguments,
+                });
+            }
+
+            string virtualRoot = Path.Combine(_testRootDir, "Virtual");
+            string virtualSource = Path.Combine(virtualRoot, "source");
+            string virtualDest = Path.Combine(virtualRoot, "dest");
+            _ = Directory.CreateDirectory(virtualSource);
+            _ = Directory.CreateDirectory(virtualDest);
+            VirtualFileSystemTests.CopyDirectory(sourceDir, virtualSource);
+            if (!string.IsNullOrEmpty(destinationDir) && Directory.Exists(destinationDir))
+            {
+                VirtualFileSystemTests.CopyDirectory(destinationDir, virtualDest);
+            }
+
+            var virtualProvider = new VirtualFileSystemProvider();
+            await virtualProvider.InitializeFromRealFileSystemAsync(virtualSource);
+            var virtualComponent = new ModComponent { Name = "TestComponent", Instructions = new System.Collections.ObjectModel.ObservableCollection<Instruction>(virtualInstructions) };
+
+            _ = new MainConfig
+            {
+                sourcePath = new DirectoryInfo(virtualSource),
+                destinationPath = new DirectoryInfo(virtualDest),
+            };
+
+            _ = await virtualComponent.ExecuteInstructionsAsync(virtualComponent.Instructions, new List<ModComponent> { virtualComponent }, CancellationToken.None, virtualProvider);
+
+            string realRoot = Path.Combine(_testRootDir, "Real");
+            string realSource = Path.Combine(realRoot, "source");
+            string realDest = Path.Combine(realRoot, "dest");
+            _ = Directory.CreateDirectory(realSource);
+            _ = Directory.CreateDirectory(realDest);
+            VirtualFileSystemTests.CopyDirectory(sourceDir, realSource);
+            if (!string.IsNullOrEmpty(destinationDir) && Directory.Exists(destinationDir))
+            {
+                VirtualFileSystemTests.CopyDirectory(destinationDir, realDest);
+            }
+
+            var realProvider = new RealFileSystemProvider();
+            var realComponent = new ModComponent { Name = "TestComponent", Instructions = new System.Collections.ObjectModel.ObservableCollection<Instruction>(realInstructions) };
+
+            _ = new MainConfig
+            {
+                sourcePath = new DirectoryInfo(realSource),
+                destinationPath = new DirectoryInfo(realDest),
+            };
+
+            _ = await realComponent.ExecuteInstructionsAsync(realComponent.Instructions, new List<ModComponent> { realComponent }, CancellationToken.None, realProvider);
+
+            return (virtualProvider, realSource, realDest);
+        }
+
+        private async Task RunDeleteDuplicateFile(string directory, string fileExtension, List<string> compatibleExtensions)
+        {
+            var instructions = new List<Instruction>
+            {
+            new Instruction {
+                Action = Instruction.ActionType.DelDuplicate,
+                    Destination = "<<modDirectory>>",
+                    Arguments = fileExtension,
+                    Source = compatibleExtensions.ToList(),
+                },
+            };
+
+            (VirtualFileSystemProvider virtualProvider, string realSource, string realDest) = await RunBothProviders(instructions, directory, directory);
+
+            Assert.That(virtualProvider.GetValidationIssues(), Is.Empty);
+            Assert.That(Directory.GetFiles(directory).Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task DeleteDuplicateFile_NoDuplicateFiles_NoFilesDeleted()
+        {
+
+            string file1 = Path.Combine(_sourceDir, "file1.txt");
+            string file2 = Path.Combine(_sourceDir, "file2.png");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file1, "Content 1");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file2, "Content 2");
+
+            var instructions = new List<Instruction>
+            {
+            new Instruction {
+                Action = Instruction.ActionType.DelDuplicate,
+                    Destination = "<<modDirectory>>",
+                    Arguments = ".txt",
+                    Source = new List<string> { ".txt", ".png" },
+                },
+            };
+
+            (VirtualFileSystemProvider virtualProvider, string realSource, string realDest) = await RunBothProviders(instructions, _sourceDir, _destinationDir);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(virtualProvider, Is.Not.Null, "Virtual file system provider should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Not.Null, "Validation issues list should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Empty, "Delete duplicate operation with no duplicates should not produce errors");
+                Assert.That(_sourceDir, Is.Not.Null, "Source directory should not be null");
+                Assert.That(Directory.Exists(_sourceDir), Is.True, "Source directory should exist");
+                Assert.That(File.Exists(Path.Combine(_sourceDir, "file1.txt")), Is.True, "File1 should remain when no duplicates exist");
+                Assert.That(File.Exists(Path.Combine(_sourceDir, "file2.png")), Is.True, "File2 should remain when no duplicates exist");
+            });
+        }
+
+        [Test]
+        public async Task DeleteDuplicateFile_DuplicateFilesWithDifferentExtensions_AllDuplicatesDeleted()
+        {
+
+            string file1 = Path.Combine(_sourceDir, "file.txt");
+            string file2 = Path.Combine(_sourceDir, "file.png");
+            string file3 = Path.Combine(_sourceDir, "file.jpg");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file1, "Content 1");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file2, "Content 2");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file3, "Content 3");
+
+            var instructions = new List<Instruction>
+            {
+            new Instruction {
+                Action = Instruction.ActionType.DelDuplicate,
+                    Destination = "<<modDirectory>>",
+                    Arguments = ".txt",
+                    Source = new List<string> { ".txt", ".png", ".jpg" },
+                },
+            };
+
+            (VirtualFileSystemProvider virtualProvider, string realSource, string realDest) = await RunBothProviders(instructions, _sourceDir, _destinationDir);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(virtualProvider, Is.Not.Null, "Virtual file system provider should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Not.Null, "Validation issues list should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Empty, "Delete duplicate operation should not produce errors");
+                Assert.That(File.Exists(Path.Combine(realSource, "file.txt")), Is.False, "File with target extension should be deleted");
+                Assert.That(File.Exists(Path.Combine(realSource, "file.png")), Is.True, "File with different extension should remain");
+                Assert.That(File.Exists(Path.Combine(realSource, "file.jpg")), Is.True, "File with different extension should remain");
+            });
+        }
+
+        [Test]
+        public async Task DeleteDuplicateFile_CaseInsensitiveFileNames_DuplicatesDeleted()
+        {
+
+            string file1 = Path.Combine(_sourceDir, "FILE.tga");
+            string file2 = Path.Combine(_sourceDir, "fIle.tpc");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file1, "Content 1");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file2, "Content 2");
+
+            var instructions = new List<Instruction>
+            {
+            new Instruction {
+                Action = Instruction.ActionType.DelDuplicate,
+                    Destination = "<<modDirectory>>",
+                    Arguments = ".tga",
+                    Source = new List<string> { ".tga", ".tpc" },
+                },
+            };
+
+            (VirtualFileSystemProvider virtualProvider, string realSource, string realDest) = await RunBothProviders(instructions, _sourceDir, _destinationDir);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(virtualProvider, Is.Not.Null, "Virtual file system provider should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Not.Null, "Validation issues list should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Empty, "Delete duplicate operation should not produce errors");
+                Assert.That(File.Exists(Path.Combine(realSource, "FILE.tga")), Is.False, "File with target extension should be deleted (case-insensitive)");
+                Assert.That(File.Exists(Path.Combine(realSource, "fIle.tpc")), Is.True, "File with different extension should remain");
+            });
+        }
+
+        [Test]
+        public async Task DeleteDuplicateFile_InvalidFileExtension_NoFilesDeleted()
+        {
+
+            string file1 = Path.Combine(_sourceDir, "file1.txt");
+            string file2 = Path.Combine(_sourceDir, "file2.png");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file1, "Content 1");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file2, "Content 2");
+
+            var instructions = new List<Instruction>
+            {
+            new Instruction {
+                Action = Instruction.ActionType.DelDuplicate,
+                    Destination = "<<modDirectory>>",
+                    Arguments = ".jpg",
+                    Source = new List<string> { ".txt", ".png" },
+                },
+            };
+
+            (VirtualFileSystemProvider virtualProvider, string realSource, string realDest) = await RunBothProviders(instructions, _sourceDir, _destinationDir);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(virtualProvider, Is.Not.Null, "Virtual file system provider should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Not.Null, "Validation issues list should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Empty, "Delete duplicate operation with invalid extension should not produce errors");
+                Assert.That(_sourceDir, Is.Not.Null, "Source directory should not be null");
+                Assert.That(Directory.Exists(_sourceDir), Is.True, "Source directory should exist");
+                Assert.That(File.Exists(Path.Combine(_sourceDir, "file1.txt")), Is.True, "File1 should remain when target extension doesn't match");
+                Assert.That(File.Exists(Path.Combine(_sourceDir, "file2.png")), Is.True, "File2 should remain when target extension doesn't match");
+            });
+        }
+
+        [Test]
+        public async Task DeleteDuplicateFile_EmptyDirectory_NoFilesDeleted()
+        {
+
+            var instructions = new List<Instruction>
+            {
+            new Instruction {
+                Action = Instruction.ActionType.DelDuplicate,
+                    Destination = "<<modDirectory>>",
+                    Arguments = ".txt",
+                    Source = new List<string> { ".txt" },
+                },
+            };
+
+            (VirtualFileSystemProvider virtualProvider, string realSource, string realDest) = await RunBothProviders(instructions, _sourceDir, _destinationDir);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(virtualProvider, Is.Not.Null, "Virtual file system provider should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Not.Null, "Validation issues list should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Empty, "Delete duplicate operation on empty directory should not produce errors");
+                Assert.That(Directory.Exists(_sourceDir), Is.True, "Source directory should still exist");
+                Assert.That(Directory.GetFiles(_sourceDir), Is.Empty, "Empty directory should remain empty");
+            });
+        }
+
+        [Test]
+        public async Task DeleteDuplicateFile_DuplicateFilesInSubdirectories_NoFilesDeleted()
+        {
+
+            string subdirectory = Path.Combine(_sourceDir, "Subdirectory");
+            Directory.CreateDirectory(subdirectory);
+            string file1 = Path.Combine(_sourceDir, "file.txt");
+            string file2 = Path.Combine(subdirectory, "file.png");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file1, "Content 1");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file2, "Content 2");
+
+            var instructions = new List<Instruction>
+            {
+            new Instruction {
+                Action = Instruction.ActionType.DelDuplicate,
+                    Destination = "<<modDirectory>>",
+                    Arguments = ".txt",
+                    Source = new List<string> { ".txt", ".png" },
+                },
+            };
+
+            (VirtualFileSystemProvider virtualProvider, string realSource, string realDest) = await RunBothProviders(instructions, _sourceDir, _destinationDir);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(virtualProvider, Is.Not.Null, "Virtual file system provider should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Not.Null, "Validation issues list should not be null");
+                Assert.That(virtualProvider.GetValidationIssues(), Is.Empty, "Delete duplicate operation should not produce errors");
+                Assert.That(File.Exists(file1), Is.True, "File in root directory should remain (duplicates only checked in same directory)");
+                Assert.That(File.Exists(file2), Is.True, "File in subdirectory should remain (duplicates only checked in same directory)");
+                Assert.That(Directory.Exists(subdirectory), Is.True, "Subdirectory should still exist");
+            });
+        }
+
+        [Test]
+        public async Task DeleteDuplicateFile_CaseSensitiveExtensions_DuplicatesDeleted()
+        {
+            if (UtilityHelper.GetOperatingSystem() == OSPlatform.Windows)
+            {
+                await TestContext.Progress.WriteLineAsync("Test is not possible on Windows.");
+                return;
+            }
+
+            string directory = Path.Combine(_testRootDir, "DuplicatesWithCaseInsensitiveExtensions");
+            _ = Directory.CreateDirectory(directory);
+            string file1 = Path.Combine(directory, "file.tpc");
+            string file2 = Path.Combine(directory, "file.TPC");
+            string file3 = Path.Combine(directory, "file.tga");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file1, "Content 1");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file2, "Content 2");
+            await NetFrameworkCompatibility.WriteAllTextAsync(file3, "Content 3");
+
+            var instructions = new List<Instruction>
+            {
+            new Instruction {
+                Action = Instruction.ActionType.DelDuplicate,
+                    Destination = "<<modDirectory>>",
+                    Arguments = ".tpc",
+                    Source = new List<string> { ".tpc", ".tga" },
+                },
+            };
+
+            await RunDeleteDuplicateFile(directory, ".tpc", new List<string> { ".tpc", ".tga" }.ToList());
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(File.Exists(file1), Is.False, "First file with target extension should be deleted");
+                Assert.That(File.Exists(file2), Is.False, "Second file with target extension (different case) should be deleted");
+                Assert.That(File.Exists(file3), Is.True, "File with different extension should remain");
+            });
+        }
+    }
+}

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-HMAC Authentication Service for KOTORModSync Telemetry
+HMAC Authentication Service for ModSync Telemetry
 
 This service validates HMAC-SHA256 signatures in the X-KMS-Signature header
-to ensure only authentic KOTORModSync clients can send telemetry data.
+to ensure only authentic ModSync clients can send telemetry data.
 
 Used with Traefik ForwardAuth middleware.
 """
@@ -36,10 +36,10 @@ class AuthHandler(BaseHTTPRequestHandler):
     """
     Traefik ForwardAuth handler that validates HMAC signatures.
     
-    Expected headers from KOTORModSync:
+    Expected headers from ModSync:
     - X-KMS-Signature: HMAC-SHA256 hex digest of request
     - X-KMS-Timestamp: Unix timestamp in seconds
-    - X-KMS-Client-Version: KOTORModSync version
+    - X-KMS-Client-Version: ModSync version
     - X-KMS-Session-ID: Session identifier
     
     Signature is computed as:

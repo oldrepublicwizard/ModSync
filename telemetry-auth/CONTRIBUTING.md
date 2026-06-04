@@ -1,6 +1,6 @@
-# Contributing to KOTORModSync Telemetry Auth
+# Contributing to ModSync Telemetry Auth
 
-Thank you for considering contributing to this project! This service is part of the KOTORModSync ecosystem and helps secure telemetry data.
+Thank you for considering contributing to this project! This service is part of the ModSync ecosystem and helps secure telemetry data.
 
 ## Getting Started
 

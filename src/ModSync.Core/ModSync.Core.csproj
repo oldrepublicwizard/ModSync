@@ -1,0 +1,132 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\ModSync.props" />
+
+  <PropertyGroup>
+    <LangVersion>7.3</LangVersion>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <Platforms>AnyCPU;x86;x64;arm64</Platforms>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+    <Version>$(ModSyncVersion)</Version>
+    <AssemblyVersion>$(ModSyncAssemblyVersion)</AssemblyVersion>
+    <FileVersion>$(ModSyncFileVersion)</FileVersion>
+    <PackageId>ModSync.Core</PackageId>
+    <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+
+  <!-- RuntimeIdentifiers: Forward-compatible dynamic assignment based on .NET version -->
+  <!-- .NET Framework 4.x: Windows-only with legacy RIDs -->
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net4'))">
+    <RuntimeIdentifiers>win7-x86;win7-x64;win10-x86;win10-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+  <!-- .NET 6-7: Legacy Windows RIDs + cross-platform -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net6.0' OR '$(TargetFramework)'=='net7.0'">
+    <RuntimeIdentifiers>win7-x86;win7-x64;win10-x86;win10-x64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+  <!-- .NET 8+: Modern Windows RIDs + cross-platform (forward-compatible with net10.0, net11.0, etc.) -->
+  <PropertyGroup Condition="!$(TargetFramework.StartsWith('net4')) AND '$(TargetFramework)'!='net6.0' AND '$(TargetFramework)'!='net7.0'">
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <!-- Release Configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <!-- Use latest .NET (9) + .NET Framework 4.8 fallback for Windows-only legacy support -->
+    <TargetFrameworks>net9.0;net48</TargetFrameworks>
+  </PropertyGroup>
+
+  <!-- Debug Configuration: Optimized for faster development builds -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <!-- Build only latest .NET (net9.0) for Debug to speed up development builds (unless TargetFramework is explicitly set) -->
+    <TargetFrameworks Condition="'$(TargetFramework)' == ''">net9.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TargetFramework)' != ''">$(TargetFramework)</TargetFrameworks>
+    <!-- Disable analyzers in Debug builds for faster compilation -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+  </PropertyGroup>
+
+  <!-- Console CLI host: always emit a runnable apphost + DLL so `dotnet run` / `dotnet exec` work.
+       GUI references this project and consumes ModSync.Core.dll; the .exe is harmless. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <!-- Licensing -->
+  <PropertyGroup>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <Copyright>2025 th3w1zard1</Copyright>
+    <Title>ModSync</Title>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
+    <None Include="NLog.config" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
+    <PackageReference Include="Python.Included" Version="3.11.6" />
+    <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
+    <PackageReference Include="Tomlyn" Version="0.17.0" />
+    <PackageReference Include="YamlDotNet" Version="16.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="ini-parser-netstandard" Version="2.5.2" />
+    <PackageReference Include="SharpCompress" Version="0.48.1" />
+    <PackageReference Include="SevenZip" Version="19.0.0" />
+    <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
+    <PackageReference Include="AngleSharp" Version="1.1.2" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.59" />
+    <PackageReference Include="Iesi.Collections" Version="4.0.5" />
+    <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
+    <PackageReference Include="MegaApiClient" Version="1.10.5" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="OpenTelemetry" Version="1.15.3" />
+    <PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.15.3" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
+    <PackageReference Include="OpenTelemetry.Exporter.Prometheus.HttpListener" Version="1.15.3-beta.1" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Octodiff" Version="1.2.33" />
+    <PackageReference Include="NLog" Version="5.3.4" />
+    <PackageReference Include="NLog.Config" Version="4.7.15">
+      <ExcludeAssets>contentFiles</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Modern 2025 Code Analyzers -->
+  <!-- Analyzers are disabled in Debug builds via EnableNETAnalyzers=false and RunAnalyzersDuringBuild=false -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Release'">runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Debug'">runtime; native; contentfiles</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.25.0.90414">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Release'">runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Debug'">runtime; native; contentfiles</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Meziantou.Analyzer" Version="2.0.126">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Release'">runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets Condition="'$(Configuration)' == 'Debug'">runtime; native; contentfiles</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Folder Include="Data\test data and notes\" />
+  </ItemGroup>
+
+</Project>

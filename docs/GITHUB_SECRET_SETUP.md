@@ -1,8 +1,8 @@
-# GitHub Secret Setup for KOTORModSync Telemetry
+# GitHub Secret Setup for ModSync Telemetry
 
 ## Required GitHub Secret
 
-**Name:** `KOTORMODSYNC_SIGNING_SECRET`
+**Name:** `KOTORMODSYNC_SIGNING_SECRET` (GitHub Actions secret; client also accepts `MODSYNC_SIGNING_SECRET`)
 
 **Purpose:** HMAC-SHA256 signing key for authenticating telemetry requests to bolabaden.org. Prevents unauthorized/fake telemetry from being sent.
 
@@ -35,7 +35,7 @@ Use the resulting string (for example, `Xk7jP9mN2qR5wT8vY1aZ3bC4dE6fG7hI8jK9lM0n
 
 ### 2. Add to GitHub
 
-1. Go to your GitHub repository: `https://github.com/th3w1zard1/KOTORModSync`
+1. Go to your GitHub repository: `https://github.com/th3w1zard1/ModSync`
 2. Click **Settings** (top right)
 3. In the left sidebar, click **Secrets and variables** → **Actions**
 4. Click **New repository secret**
@@ -63,7 +63,7 @@ The same secret needs to be configured on your server to verify signatures. See 
 **What it does:**
 
 1. Only runs on official builds (NOT on pull requests)
-2. Creates `KOTORModSync.Core/Services/EmbeddedSecrets.cs` during build
+2. Creates `ModSync.Core/Services/EmbeddedSecrets.cs` during build
 3. Embeds the signing secret into the compiled binary
 4. File is auto-generated and never committed to Git
 
@@ -71,13 +71,13 @@ The same secret needs to be configured on your server to verify signatures. See 
 
 ## How Authentication Works
 
-### Client Side (KOTORModSync)
+### Client Side (ModSync)
 
 When sending telemetry to `https://otlp.bolabaden.org`:
 
 1. **Loads signing secret** (priority order):
    - Environment variable: `KOTORMODSYNC_SIGNING_SECRET`
-   - Local config file: `%AppData%/KOTORModSync/telemetry.key`
+   - Local config file: `%AppData%/ModSync/telemetry.key`
    - Embedded secret (only in official builds from GitHub Actions)
 
 2. **Computes HMAC-SHA256 signature**:
@@ -355,7 +355,7 @@ For local development/testing **without** the GitHub Secret:
 
 ### Option 1: Local Config File
 
-Create `%AppData%/KOTORModSync/telemetry.key` (Windows) or `~/.config/KOTORModSync/telemetry.key` (Linux/Mac):
+Create `%AppData%/ModSync/telemetry.key` (Windows) or `~/.config/ModSync/telemetry.key` (Linux/Mac):
 
 ```
 your_secret_here
@@ -438,7 +438,7 @@ Check if secret is set:
    echo $KOTORMODSYNC_SIGNING_SECRET
 
    # Check config file exists
-   cat %AppData%/KOTORModSync/telemetry.key
+   cat %AppData%/ModSync/telemetry.key
    ```
 
 2. Check application logs:
@@ -457,7 +457,7 @@ Check if secret is set:
 2. ✅ Add to GitHub: Settings → Secrets → Actions → `KOTORMODSYNC_SIGNING_SECRET`
 3. ✅ Add to server: Configure Nginx Lua verification (see above)
 4. ✅ Test: Run GitHub Actions build, verify EmbeddedSecrets.cs is created
-5. ✅ Deploy: Run KOTORModSync, check telemetry headers include signature
+5. ✅ Deploy: Run ModSync, check telemetry headers include signature
 
 **Workflows using the secret:**
 
@@ -465,11 +465,11 @@ Check if secret is set:
 
 **Files involved:**
 
-- `KOTORModSync.Core/Services/TelemetryConfiguration.cs` - Loads secret
-- `KOTORModSync.Core/Services/TelemetryAuthenticator.cs` - Computes signature
-- `KOTORModSync.Core/Services/TelemetryService.cs` - Sends authenticated requests
-- `KOTORModSync.Core/Services/EmbeddedSecrets.cs` - Auto-generated (NOT in git)
+- `ModSync.Core/Services/TelemetryConfiguration.cs` - Loads secret
+- `ModSync.Core/Services/TelemetryAuthenticator.cs` - Computes signature
+- `ModSync.Core/Services/TelemetryService.cs` - Sends authenticated requests
+- `ModSync.Core/Services/EmbeddedSecrets.cs` - Auto-generated (NOT in git)
 
 ---
 
-**Questions?** Check logs with `docker compose logs otel-collector` or KOTORModSync application logs for `[Telemetry]` messages.
+**Questions?** Check logs with `docker compose logs otel-collector` or ModSync application logs for `[Telemetry]` messages.

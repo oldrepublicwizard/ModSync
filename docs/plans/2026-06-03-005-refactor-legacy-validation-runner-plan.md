@@ -34,11 +34,11 @@ Move pipeline execution and `ValidationPipelineDialogMapper` aggregation out of 
 ### U1. LegacyValidationRunner + MainWindow wiring
 
 **Files:**
-- New: `src/KOTORModSync.GUI/Services/LegacyValidationRunner.cs`
-- Modify: `src/KOTORModSync.GUI/MainWindow.axaml.cs`
+- New: `src/ModSync.GUI/Services/LegacyValidationRunner.cs`
+- Modify: `src/ModSync.GUI/MainWindow.axaml.cs`
 
 ### U2. Runner tests
 
-**Files:** `src/KOTORModSync.Tests/LegacyValidationRunnerTests.cs`
+**Files:** `src/ModSync.Tests/LegacyValidationRunnerTests.cs`
 
 **Verification:** `dotnet test --filter LegacyValidationRunnerTests`
