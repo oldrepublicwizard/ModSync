@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
 # Print or run the recommended merge sequence for open PRs #110 and #111.
-# Default is dry-run. Pass --execute to merge #110 after verify (maintainer only).
+# Default is dry-run. --execute merges #110; --execute-all completes #110 and #111.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 agents_dir="$(dirname "${BASH_SOURCE[0]}")"
 default_branch="${DEFAULT_BRANCH:-master}"
 execute=false
+execute_all=false
 
 usage() {
   cat <<EOF
-Usage: merge_open_prs.sh [--execute]
+Usage: merge_open_prs.sh [--execute | --execute-all]
 
   Dry-run (default): print recommended merge steps for #110 then #111.
 
-  --execute  On feat/wizard-archive-validation-parity, run verify_open_pr_ready.sh
-             then: gh pr merge 110 --merge
-             (#111 still requires rebase onto origin/${default_branch} before merge)
+  --execute      On feat/wizard-archive-validation-parity: verify + gh pr merge 110 --merge
+  --execute-all  Full handoff: merge #110, rebase #111 onto origin/${default_branch},
+                 verify, push --force-with-lease, merge #111
 
 See: docs/solutions/parallel-pr-merge-handoff-2026-06-03.md
 EOF
@@ -25,6 +26,7 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --execute) execute=true; shift ;;
+    --execute-all) execute_all=true; execute=true; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage; exit 1 ;;
   esac
@@ -63,6 +65,30 @@ if [[ "$branch" != "feat/wizard-archive-validation-parity" ]]; then
 fi
 
 echo "== Executing PR #110 merge =="
+git -C "$repo_root" checkout feat/wizard-archive-validation-parity
 "${agents_dir}/verify_open_pr_ready.sh"
 gh pr merge 110 --merge
-echo "PR #110 merged. Complete steps 2–3 above for PR #111."
+echo "PR #110 merged."
+
+if [[ "$execute_all" != true ]]; then
+  echo "Complete steps 2–3 above for PR #111, or re-run with --execute-all."
+  exit 0
+fi
+
+echo "== Rebase and merge PR #111 =="
+git -C "$repo_root" fetch origin
+git -C "$repo_root" checkout feat/holocron-erf-nested-open
+git -C "$repo_root" rebase "origin/${default_branch}"
+"${agents_dir}/verify_open_pr_ready.sh"
+git -C "$repo_root" push --force-with-lease origin feat/holocron-erf-nested-open
+echo "Waiting for PR #111 CI..."
+set +e
+gh pr checks 111 --watch
+checks_exit=$?
+set -e
+if [[ "$checks_exit" -ne 0 ]]; then
+  echo "PR #111 CI not green (exit ${checks_exit}). Fix before: gh pr merge 111 --merge" >&2
+  exit 2
+fi
+gh pr merge 111 --merge
+echo "PR #111 merged. Handoff complete."

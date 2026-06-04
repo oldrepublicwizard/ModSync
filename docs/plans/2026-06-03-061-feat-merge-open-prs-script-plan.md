@@ -18,7 +18,7 @@ Handoff doc lists `gh pr merge` commands but no scripted sequence. After plan `0
 
 ### In scope
 
-- `scripts/agents/merge_open_prs.sh` — print sequence; `--execute` runs verify + `gh pr merge 110` only (second PR needs rebase on maintainer machine)
+- `scripts/agents/merge_open_prs.sh` — print sequence; `--execute` merges #110; `--execute-all` completes #110 + rebase/push/merge #111
 - Fix handoff `origin/master` branch name
 - `scripts/agents/README.md` catalog
 - Plan `061` index (Holocron KB; wizard deferred table)
