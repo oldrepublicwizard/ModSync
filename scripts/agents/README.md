@@ -12,6 +12,7 @@
 `[REPO]` Before merging, run the filter for the branch you touched (see [ci-test-matrix.md](../../docs/knowledgebase/ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs)):
 
 ```bash
+./scripts/agents/verify_open_pr_ready.sh   # tests + gh pr checks (recommended pre-merge)
 ./scripts/agents/test_current_open_pr.sh   # auto-select by git branch
 ./scripts/agents/test_pr110_validation.sh   # PR #110
 ./scripts/agents/test_pr111_holocron_bridge.sh   # PR #111 (skips without PyKotor)
@@ -34,6 +35,7 @@ Godot UI work is not covered by these scripts — open `tools/godot-holocron/pro
 | `test_pr110_validation.sh` | PR #110: presenter + dialog mapper tests |
 | `test_pr111_holocron_bridge.sh` | PR #111: `KotorFormatBridgeCliTests` |
 | `test_current_open_pr.sh` | Detect branch → run #110 or #111 script |
+| `verify_open_pr_ready.sh` | `test_current_open_pr` + `gh pr checks` for #110 / #111 |
 | `mcp_filesystem.sh` | MCP filesystem server scoped to repo |
 | `mcp_playwright.sh` | MCP Playwright server |
 | `mcp_desktop_commander.sh` | MCP Desktop Commander |

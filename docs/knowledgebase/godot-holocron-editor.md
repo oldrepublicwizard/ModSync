@@ -14,7 +14,7 @@
 ## Active delivery
 
 - **Branch:** `feat/holocron-erf-nested-open`
-- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`058`)
+- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`059`)
 - **Not in:** Install wizard / `ValidatePage` work (PR #110)
 - **Status:** Merge-ready for Phase 1; Phase 2 editors (TPC/WAV/MDL/DLG) deferred per `docs/plans/2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md`
 
@@ -23,7 +23,7 @@
 1. Confirm CI green on [PR #111](https://github.com/th3w1zard1/ModSync/pull/111).
 2. Merge **after or independently of** PR #110 — no shared validation wizard files.
 3. Post-merge Phase 2: start from `docs/plans/2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md`.
-4. Pre-merge: `./scripts/agents/test_current_open_pr.sh` (or [ci-test-matrix.md](ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs)).
+4. Pre-merge: `./scripts/agents/verify_open_pr_ready.sh` (or `test_current_open_pr.sh`; see [ci-test-matrix.md](ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs)).
 5. Validation wizard UX lives on [PR #110](https://github.com/th3w1zard1/ModSync/pull/110) — see [gui-validation-surfaces.md](gui-validation-surfaces.md) (synced on this branch in plan `051`).
 6. After first merge: [parallel-pr-merge-handoff-2026-06-03.md](../solutions/parallel-pr-merge-handoff-2026-06-03.md) (rebase remaining branch).
 
