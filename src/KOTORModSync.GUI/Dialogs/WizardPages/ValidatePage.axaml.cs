@@ -449,6 +449,8 @@ namespace KOTORModSync.Dialogs.WizardPages
 
         private void FocusFirstValidationIssue()
         {
+            FlushLogQueue();
+
             if (_logExpander != null)
             {
                 _logExpander.IsExpanded = true;
