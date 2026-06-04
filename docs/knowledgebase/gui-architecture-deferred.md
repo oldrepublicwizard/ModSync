@@ -35,10 +35,12 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Copy report flushes log queue inside report builder | Done | plan `043` |
 | Go to first issue tooltip + Holocron KB cross-link | Done | plan `044` |
 | Agent index links (AGENTS.md, knowledgebase README) | Done | plan `045` |
+| Validation pipeline → ValidatePage UX cross-link | Done | plan `046` |
+| Merge-ready arc closure through plan `047` | Done | plan `047` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`045`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`047`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
-**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`045`). Do not bundle with Holocron.
+**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`047`). Do not bundle with Holocron.
 
 **PR #111** — separate track: [godot-holocron-editor.md](godot-holocron-editor.md) (not the install wizard).
 
