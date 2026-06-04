@@ -478,6 +478,32 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Read_SampleMod_ResourcesIncludeTest2da()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            var result = RunBridge("read", SampleModPath);
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            var resources = result.GetProperty("payload").GetProperty("resources");
+            bool found = false;
+            for (int i = 0; i < resources.GetArrayLength(); i++)
+            {
+                var entry = resources[i];
+                if (entry.GetProperty("resref").GetString() == "test2da"
+                    && string.Equals(entry.GetProperty("restype").GetString(), "2da", StringComparison.OrdinalIgnoreCase))
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            Assert.That(found, Is.True, "sample.mod fixture should list embedded test2da.2da");
+        }
+
+        [Test]
         public void Inject_ReplacesMemberInArchiveCopy()
         {
             if (!File.Exists(SampleModPath))

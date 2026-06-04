@@ -34,6 +34,15 @@ python3 tools/godot-holocron/bridge/kotor_format_bridge.py installations
 python3 tools/godot-holocron/bridge/kotor_format_bridge.py supported-types
 ```
 
+Archive membership (ERF/RIM/MOD/SAV):
+
+```bash
+python3 tools/godot-holocron/bridge/kotor_format_bridge.py read /path/to/archive.mod
+python3 tools/godot-holocron/bridge/kotor_format_bridge.py extract /path/to/archive.mod --resref test2da --restype 2da --output /tmp/member.2da
+python3 tools/godot-holocron/bridge/kotor_format_bridge.py inject /path/to/archive.mod --resref test2da --restype 2da --source /tmp/member.2da
+python3 tools/godot-holocron/bridge/kotor_format_bridge.py remove /path/to/archive.mod --resref test2da --restype 2da
+```
+
 ## Parity roadmap
 
 HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phase 1** (#109):
@@ -74,4 +83,4 @@ From repo root:
 dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~KotorFormatBridge"
 ```
 
-Tests skip automatically when PyKotor is not importable (28 tests when PyKotor is available, including probe/read/write/installations and archive extract/inject/remove error paths).
+Tests skip automatically when PyKotor is not importable (29 tests when PyKotor is available, including probe/read/write/installations and archive extract/inject/remove error paths).

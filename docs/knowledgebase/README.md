@@ -39,6 +39,7 @@ Use these when citing findings in plans, PRs, or audits:
 - [Validation pipeline](validation-pipeline.md) — five stages, fail-fast, CLI/GUI mapping
 - [GUI validation surfaces](gui-validation-surfaces.md) — `ValidationPipelineDialogMapper`, wizard vs dialog UI
 - [GUI architecture (deferred)](gui-architecture-deferred.md) — MainWindow split, wizard hosts, scope guidance
+- [Godot Holocron editor](godot-holocron-editor.md) — PyKotor bridge + Godot plugin (PR #111; not the install wizard)
 
 ### Workflows
 
