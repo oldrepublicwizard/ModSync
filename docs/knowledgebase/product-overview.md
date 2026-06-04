@@ -12,10 +12,6 @@ KOTORModSync is a **cross-platform multi-mod installer** for *Star Wars: Knights
 
 KOTOR modding often requires dozens of repetitive, order-sensitive steps per mod. KOTORModSync automates that pipeline and encodes compatibility rules so end users can select mods and let the tool order and execute installs. It also supports **HoloPatcher on Mac/Linux without Wine** (`README.md`).
 
-## Active open PRs (2026-06-03)
-
-`[REPO]` Two merge-ready feature branches: wizard validation ([#110](https://github.com/th3w1zard1/ModSync/pull/110)) and Godot Holocron Phase 1 ([#111](https://github.com/th3w1zard1/ModSync/pull/111)). Review and merge independently — see [doc-hierarchy.md](doc-hierarchy.md#active-open-prs-2026-06-03).
-
 ## Audiences
 
 | Audience | Goal | Typical entry |

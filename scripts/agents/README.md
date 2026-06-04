@@ -7,18 +7,14 @@
 - .NET 9 SDK on `PATH`
 - For GUI scripts: X11 `DISPLAY`, `mod-builds` clone, template dirs (see below)
 
-## Open PRs — targeted tests (2026-06-03)
+## Wizard validation tests
 
-`[REPO]` Before merging, run the filter for the branch you touched (see [ci-test-matrix.md](../../docs/knowledgebase/ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs)):
+`[REPO]` After changing `ValidatePage` or validation services (see [gui-validation-surfaces.md](../../docs/knowledgebase/gui-validation-surfaces.md)):
 
 ```bash
-./scripts/agents/verify_open_pr_ready.sh   # tests + gh pr checks (recommended pre-merge)
-./scripts/agents/test_current_open_pr.sh   # auto-select by git branch
-./scripts/agents/test_pr110_validation.sh   # PR #110
-./scripts/agents/test_pr111_holocron_bridge.sh   # PR #111 (skips without PyKotor)
+./scripts/agents/test_pr110_validation.sh
+./scripts/agents/verify_open_pr_ready.sh   # tests + gh pr checks when a PR is open
 ```
-
-Godot UI work is not covered by these scripts — open `tools/godot-holocron/project.godot` in Godot 4.3+.
 
 ## Catalog
 
@@ -32,11 +28,9 @@ Godot UI work is not covered by these scripts — open `tools/godot-holocron/pro
 | `cli_full_build_pipeline.sh` | Merge mod-builds `full.md` + `KOTOR*_Full.toml`, export formats, `--auto-generate-local`, `--dry-run` / `--dry-run-only`, optional `--install` |
 | `common.sh` | `ensure_core_resources_symlink` helper (sourced by other scripts) |
 | `run_headless_tests.sh` | `dotnet test` excluding `LongRunning` |
-| `test_pr110_validation.sh` | PR #110: presenter + dialog mapper tests |
-| `test_pr111_holocron_bridge.sh` | PR #111: `KotorFormatBridgeCliTests` |
-| `test_current_open_pr.sh` | Detect branch → run #110 or #111 script |
-| `verify_open_pr_ready.sh` | `test_current_open_pr` + `gh pr checks` for #110 / #111 |
-| `merge_open_prs.sh` | Dry-run merge sequence; `--execute` merges #110 after verify |
+| `test_pr110_validation.sh` | Wizard presenter + dialog mapper tests |
+| `test_current_open_pr.sh` | Alias for `test_pr110_validation.sh` |
+| `verify_open_pr_ready.sh` | Wizard tests + `gh pr checks` for current branch PR |
 | `mcp_filesystem.sh` | MCP filesystem server scoped to repo |
 | `mcp_playwright.sh` | MCP Playwright server |
 | `mcp_desktop_commander.sh` | MCP Desktop Commander |

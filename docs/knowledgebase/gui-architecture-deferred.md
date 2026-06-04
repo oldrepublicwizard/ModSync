@@ -33,36 +33,23 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Flush log queue before focus/scroll to first issue | Done | plan `041` |
 | Validation surfaces KB (focus/copy/log UX) | Done | plan `042` |
 | Copy report flushes log queue inside report builder | Done | plan `043` |
-| Go to first issue tooltip + Holocron KB cross-link | Done | plan `044` |
+| Go to first issue tooltip + KB cross-link | Done | plan `044` |
 | Agent index links (AGENTS.md, knowledgebase README) | Done | plan `045` |
 | Validation pipeline → ValidatePage UX cross-link | Done | plan `046` |
 | Merge-ready arc closure through plan `047` | Done | plan `047` |
 | Presenter/mapper test commands in validation surfaces KB | Done | plan `048` |
 | Install lifecycle → ValidatePage UX cross-link | Done | plan `049` |
 | Push sync + merge checklist (plans 048–049) | Done | plan `050` |
-| Agent parallel-PR routing + Holocron KB validation sync | Done | plan `051` |
+| Agent PR routing + validation KB sync | Done | plan `051` |
 | Doc-hierarchy + copilot-instructions active PR routing | Done | plan `052` |
 | Knowledgebase index merge-closure pointers | Done | plan `053` |
 | Agent-parity + CI matrix PR test filters | Done | plan `054` |
 | Runbook + scripts/agents README merge-closure | Done | plan `055` |
-| Parallel PR merge handoff solution | Done | plan `056` |
 | PR-targeted test scripts (`test_pr110_validation.sh`) | Done | plan `057` |
-| Branch-aware `test_current_open_pr.sh` + AGENTS wiring | Done | plan `058` |
-| `verify_open_pr_ready.sh` (tests + `gh pr checks`) | Done | plan `059` |
-| KB quick commands + merge handoff `gh pr merge` | Done | plan `060` |
-| `merge_open_prs.sh` (dry-run / `--execute` for #110) | Done | plan `061` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`061`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
-**PR #110** — merge-ready (plans `012`, `021`–`061`). Use `./scripts/agents/merge_open_prs.sh --execute` on this branch when ready. Merge **without** bundling Holocron (#111).
-
-### Merge checklist — PR #110
-
-1. `./scripts/agents/merge_open_prs.sh` (dry-run) then `./scripts/agents/merge_open_prs.sh --execute` to merge [PR #110](https://github.com/th3w1zard1/ModSync/pull/110).
-2. Do not squash Holocron work into this PR.
-3. Post-merge: follow [parallel-pr-merge-handoff-2026-06-03.md](../solutions/parallel-pr-merge-handoff-2026-06-03.md) if #111 is still open.
-
-**PR #111** — separate track: [godot-holocron-editor.md](godot-holocron-editor.md) (not the install wizard).
+**PR #110** shipped on `master` (wizard validation parity arc).
 
 ## Deferred — high impact
 
@@ -92,12 +79,6 @@ Both register similar page sequences. Consolidation requires UX decisions (modal
 | `EmbeddedLogPanel` | Line-count fix landed (#99); further output UX is cosmetic |
 | Archive `ERROR:` wizard result cards | Done (PR #110) — wizard + `ValidationPipelineDialogMapper` parity |
 | ValidatePage copy report / log UX | Done (PR #110) — see [gui-validation-surfaces.md](gui-validation-surfaces.md) |
-
-## Deferred — separate product track
-
-| Topic | Notes |
-|-------|--------|
-| Godot Holocron editor plugin | PR #111 — see [godot-holocron-editor.md](godot-holocron-editor.md); separate from install wizard |
 
 ## Suggested PR sizing
 

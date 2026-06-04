@@ -1,6 +1,6 @@
 # GUI validation surfaces
 
-`[REPO]` Wizard validation UX is delivered on branch `feat/wizard-archive-validation-parity` ([PR #110](https://github.com/th3w1zard1/ModSync/pull/110)). This page is synced here so agents on the Holocron branch ([PR #111](https://github.com/th3w1zard1/ModSync/pull/111)) do not rely on stale “log only” archive notes. Edit validation behavior on the wizard branch, then re-sync if both PRs are still open.
+`[REPO]` Install wizard validation UX shipped in [PR #110](https://github.com/th3w1zard1/ModSync/pull/110) on `master`. Edit `ValidatePage`, `WizardValidationStagePresenter`, and `ValidationPipelineDialogMapper` together when changing validation UI.
 
 How the Avalonia app presents `InstallationValidationPipeline` results after PRs #103–#104. Core pipeline behavior is in [validation-pipeline.md](validation-pipeline.md).
 
@@ -90,4 +90,3 @@ dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQual
 - [validation-pipeline.md](validation-pipeline.md) — stages and CLI flags
 - [gui-architecture-deferred.md](gui-architecture-deferred.md) — larger GUI refactors not done here
 - [agent-action-parity.md](agent-action-parity.md) — CLI vs GUI capabilities
-- [godot-holocron-editor.md](godot-holocron-editor.md) — separate Godot track ([PR #111](https://github.com/th3w1zard1/ModSync/pull/111))

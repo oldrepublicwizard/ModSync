@@ -15,16 +15,9 @@ For broad repo tasks, start with `.github/copilot-instructions.md` for the short
 
 **Knowledgebase (canonical index):** [docs/knowledgebase/README.md](docs/knowledgebase/README.md) — agent-native audit, CLI reference, action parity, and links to runbooks/scripts.
 
-### Parallel open PRs (do not bundle)
+For **install wizard `ValidatePage`** behavior (stage cards, copy report, go-to-first-issue), read [docs/knowledgebase/gui-validation-surfaces.md](docs/knowledgebase/gui-validation-surfaces.md) before editing validation UI.
 
-| Track | Branch | PR | Pre-merge tests |
-|-------|--------|-----|-----------------|
-| Install wizard validation parity | `feat/wizard-archive-validation-parity` | [#110](https://github.com/th3w1zard1/ModSync/pull/110) | `./scripts/agents/test_pr110_validation.sh` |
-| Godot Holocron Phase 1 | `feat/holocron-erf-nested-open` | [#111](https://github.com/th3w1zard1/ModSync/pull/111) | `./scripts/agents/test_pr111_holocron_bridge.sh` |
-
-On either branch: `./scripts/agents/verify_open_pr_ready.sh` (tests + CI) or `./scripts/agents/test_current_open_pr.sh`. Merge handoff: [docs/solutions/parallel-pr-merge-handoff-2026-06-03.md](docs/solutions/parallel-pr-merge-handoff-2026-06-03.md).
-
-For **install wizard `ValidatePage`** behavior (stage cards, copy report, go-to-first-issue), read [docs/knowledgebase/gui-validation-surfaces.md](docs/knowledgebase/gui-validation-surfaces.md) before editing validation UI. Godot Holocron is a separate plugin — [docs/knowledgebase/godot-holocron-editor.md](docs/knowledgebase/godot-holocron-editor.md).
+**Wizard validation regression tests:** `./scripts/agents/test_pr110_validation.sh`
 
 Start with:
 

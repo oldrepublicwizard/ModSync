@@ -2,7 +2,7 @@
 
 `[REPO]` End-to-end install flow: install wizard page order, Core install orchestration, Git checkpoints, widescreen follow-up, and CLI parity. Validation is documented separately in [validation-pipeline.md](validation-pipeline.md).
 
-**Open PR note:** Wizard validation UX changes belong on [#110](https://github.com/th3w1zard1/ModSync/pull/110) only — not the Godot Holocron track ([#111](https://github.com/th3w1zard1/ModSync/pull/111)). See [parallel-pr-merge-handoff-2026-06-03.md](../solutions/parallel-pr-merge-handoff-2026-06-03.md).
+**Validation UX:** [gui-validation-surfaces.md](gui-validation-surfaces.md) (shipped in PR #110).
 
 Sources: `src/KOTORModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs`, `src/KOTORModSync.GUI/Dialogs/WizardPages/InstallingPage.axaml.cs`, `src/KOTORModSync.Core/Services/InstallationService.cs`, `src/KOTORModSync.Core/Installation/InstallCoordinator.cs`.
 
