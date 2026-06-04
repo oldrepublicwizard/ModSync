@@ -2,6 +2,8 @@
 
 Godot 4 **editor plugin** that edits KOTOR 1/2 resources through a **PyKotor** Python bridge—the same format stack used by [HolocronToolset](https://github.com/OpenKotOR/HolocronToolset).
 
+**ModSync repo context:** Delivered on branch `feat/holocron-erf-nested-open` ([PR #111](https://github.com/th3w1zard1/ModSync/pull/111)). Install-wizard validation work is a separate PR ([#110](https://github.com/th3w1zard1/ModSync/pull/110)). Agent KB: [docs/knowledgebase/godot-holocron-editor.md](../../docs/knowledgebase/godot-holocron-editor.md).
+
 ## Prerequisites
 
 - Godot 4.3+ (tested with 4.6)
@@ -45,7 +47,7 @@ python3 tools/godot-holocron/bridge/kotor_format_bridge.py remove /path/to/archi
 
 ## Parity roadmap
 
-HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phase 1** (#109):
+HolocronToolset ships ~30 specialized PyQt editors. **Phase 0–1** (PR [#111](https://github.com/th3w1zard1/ModSync/pull/111); prior #92/#109 superseded on this branch):
 
 | Area | Status |
 |------|--------|
@@ -54,7 +56,7 @@ HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phas
 | GFF / JSON tree editor (all GFF-family extensions) | Done |
 | Text editor (NSS, LYT, VIS, …) | Done |
 | TLK string table editor + bridge write | Phase 1 |
-| ERF/RIM/MOD/SAV container browser (read-only list) | Done (Phase 1, #109) |
+| ERF/RIM/MOD/SAV container browser | Done (Phase 1, #111) |
 | Open nested resource from archive (extract + editor) | Done (Phase 1+, bridge `extract`) |
 | Save nested edits back into archive (`inject` on editor Save) | Done (Phase 1+, bridge `inject`) |
 | Return to archive listing after nested save (refreshed sizes) | Done (Phase 1+, dock reload) |
@@ -66,8 +68,8 @@ HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phas
 | Open selected member (**Enter** or double-click) | Done (plan 041) |
 | Binary member hex preview (read-only) | Done (via shared text editor) |
 | Refresh listing / extract member to disk | Done (container toolbar; **F5** refresh) |
-| SSF sound-slot editor + bridge write | Done (Phase 1, #109) |
-| Installation list → open `dialog.tlk` | Done (Phase 1, #109) |
+| SSF sound-slot editor + bridge write | Done (Phase 1, #111) |
+| Installation list → open `dialog.tlk` | Done (Phase 1, #111) |
 | Add/remove archive members (`inject` add, `remove`, container toolbar) | Done (Phase 2; remove confirms; resref override on add) |
 | Dock editor routing via `probe.editor_kind` | Done (plan 019) |
 | Unsupported types — clear message, no bogus open | Done (plan 020) |
