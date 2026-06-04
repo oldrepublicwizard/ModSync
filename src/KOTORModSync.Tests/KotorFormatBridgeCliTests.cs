@@ -318,6 +318,7 @@ namespace KOTORModSync.Tests
                     "--output",
                     tempPath);
                 Assert.That(extractResult.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(extractResult.GetProperty("bytes").GetInt32(), Is.GreaterThan(0));
                 Assert.That(File.Exists(tempPath), Is.True);
 
                 var directRead = RunBridge("read", SampleTwoDaPath);
@@ -327,6 +328,39 @@ namespace KOTORModSync.Tests
                     extractedRead.GetProperty("payload").GetProperty("data").GetProperty("rows").GetArrayLength(),
                     Is.EqualTo(
                         directRead.GetProperty("payload").GetProperty("data").GetProperty("rows").GetArrayLength()));
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+        }
+
+        [Test]
+        public void Extract_SampleMod_ReturnsBytesInResponse()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                var extractResult = RunBridge(
+                    "extract",
+                    SampleModPath,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--output",
+                    tempPath);
+                Assert.That(extractResult.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(extractResult.GetProperty("bytes").GetInt32(), Is.GreaterThan(0));
+                Assert.That(extractResult.GetProperty("output").GetString(), Is.EqualTo(tempPath));
             }
             finally
             {
@@ -509,7 +543,9 @@ namespace KOTORModSync.Tests
 
             var result = RunBridge("read", SampleModPath);
             Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
-            var resources = result.GetProperty("payload").GetProperty("resources");
+            var payload = result.GetProperty("payload");
+            Assert.That(payload.GetProperty("format").GetString(), Is.EqualTo("erf"));
+            var resources = payload.GetProperty("resources");
             Assert.That(resources.GetArrayLength(), Is.GreaterThan(0));
         }
 

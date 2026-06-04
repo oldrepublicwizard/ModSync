@@ -12,13 +12,13 @@ branches:
 
 ## Holocron (PR #111)
 
-- [ ] `Probe_ExtractedTwoDa_ReturnsTwodaEditorKind` (extract from sample.mod then probe)
-- [ ] README test count 29 → 30
+- [x] `Probe_ExtractedTwoDa_ReturnsTwodaEditorKind` (extract from sample.mod then probe)
+- [x] README test count 29 → 30
 
 ## Wizard (PR #110)
 
-- [ ] `validation-pipeline.md`: ValidatePage presentation section → `gui-validation-surfaces.md`
-- [ ] `gui-architecture-deferred.md` plan `046` row
+- [x] `validation-pipeline.md`: ValidatePage presentation section → `gui-validation-surfaces.md` (plan `047` on wizard branch)
+- [x] `gui-architecture-deferred.md` plan `046` row (plan `047` on wizard branch)
 
 ## Verification
 

@@ -14,7 +14,7 @@
 ## Active delivery
 
 - **Branch:** `feat/holocron-erf-nested-open`
-- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`046`)
+- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`047`)
 - **Not in:** Install wizard / `ValidatePage` work (PR #110)
 
 ## Bridge tests
@@ -34,7 +34,7 @@ Skips when PyKotor is not importable. Fixture: `src/KOTORModSync.Tests/Fixtures/
 
 ## Phase 2+ (deferred)
 
-MDL, TPC, WAV, DLG graph editors — see `docs/plans/2026-05-29-godot-holocron-editor-plugin-plan.md`.
+MDL, TPC, WAV, DLG graph editors — see `docs/plans/2026-05-29-godot-holocron-editor-plugin-plan.md` and `docs/plans/2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md`.
 
 ## Related
 
