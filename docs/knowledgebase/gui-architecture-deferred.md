@@ -45,16 +45,17 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Knowledgebase index merge-closure pointers | Done | plan `053` |
 | Agent-parity + CI matrix PR test filters | Done | plan `054` |
 | Runbook + scripts/agents README merge-closure | Done | plan `055` |
+| Parallel PR merge handoff solution | Done | plan `056` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`055`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`056`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
-**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`055`). Merge **without** Holocron (#111).
+**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`056`). Merge **without** Holocron (#111).
 
 ### Merge checklist — PR #110
 
 1. Confirm CI green on [PR #110](https://github.com/th3w1zard1/ModSync/pull/110).
 2. Merge to default branch; do not squash Holocron work into this PR.
-3. Post-merge: run filters in [ci-test-matrix.md](ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs) if touching validation UI again.
+3. Post-merge: follow [parallel-pr-merge-handoff-2026-06-03.md](../solutions/parallel-pr-merge-handoff-2026-06-03.md) if #111 is still open; run [ci-test-matrix.md](ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs) filters when touching validation UI again.
 
 **PR #111** — separate track: [godot-holocron-editor.md](godot-holocron-editor.md) (not the install wizard).
 
