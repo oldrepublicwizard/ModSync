@@ -14,7 +14,7 @@
 ## Active delivery
 
 - **Branch:** `feat/holocron-erf-nested-open`
-- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`044`)
+- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`045`)
 - **Not in:** Install wizard / `ValidatePage` work (PR #110)
 
 ## Bridge tests

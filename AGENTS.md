@@ -15,6 +15,8 @@ For broad repo tasks, start with `.github/copilot-instructions.md` for the short
 
 **Knowledgebase (canonical index):** [docs/knowledgebase/README.md](docs/knowledgebase/README.md) — agent-native audit, CLI reference, action parity, and links to runbooks/scripts.
 
+For **install wizard `ValidatePage`** behavior (stage cards, copy report, go-to-first-issue), read [docs/knowledgebase/gui-validation-surfaces.md](docs/knowledgebase/gui-validation-surfaces.md) before editing validation UI (PR #110 track). Godot Holocron is a separate plugin — [docs/knowledgebase/godot-holocron-editor.md](docs/knowledgebase/godot-holocron-editor.md) (PR #111).
+
 Start with:
 
 - `docs/knowledgebase/README.md`
