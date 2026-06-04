@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp.Stack;
+using HoloPatcher.Formats.NCS.NCSDecomp.Stack;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode
+namespace HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode
 {
     public interface AExpression
     {

@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.Stack;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.Stack;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Utils
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Utils
 {
     public class NodeAnalysisData
     {

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS
+namespace HoloPatcher.Formats.NCS
 {
     /// <summary>
     /// Base class for NCS optimizers with common functionality.

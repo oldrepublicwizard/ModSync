@@ -1,4 +1,4 @@
-namespace KOTORModSync.Common
+namespace HoloPatcher.Common
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/common/misc.py:250-285
     // Original: class Game(IntEnum):

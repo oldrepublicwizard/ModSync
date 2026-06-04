@@ -1,12 +1,12 @@
 using System;
 using System.IO;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Memory;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Memory;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Mods.GFF
+namespace HoloPatcher.Mods.GFF
 {
 
     /// <summary>

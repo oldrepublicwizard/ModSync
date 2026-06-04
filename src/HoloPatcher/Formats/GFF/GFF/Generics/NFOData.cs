@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     /// <summary>
     /// High-level representation of Odyssey (KotOR/KotOR2) save metadata stored in <c>savenfo.res</c>.

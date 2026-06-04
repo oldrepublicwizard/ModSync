@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
-using UtilsType = KOTORModSync.Formats.NCS.NCSDecomp.Utils.Type;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
+using UtilsType = HoloPatcher.Formats.NCS.NCSDecomp.Utils.Type;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Stack
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Stack
 {
     public class Const : StackEntry
     {

@@ -1,16 +1,16 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/utils/NodeUtils.java:16-952
 // Original: public final class NodeUtils
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
 
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Utils
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Utils
 {
     public sealed class NodeUtils
     {

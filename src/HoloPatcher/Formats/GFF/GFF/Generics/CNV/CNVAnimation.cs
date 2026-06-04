@@ -1,8 +1,8 @@
 using System;
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Resource.Generics.CNV
+namespace HoloPatcher.Resource.Generics.CNV
 {
     /// <summary>
     /// Represents a unit of animation executed during a conversation node.

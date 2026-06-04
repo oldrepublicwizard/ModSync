@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using KOTORModSync;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.GFF
+namespace HoloPatcher.Formats.GFF
 {
 
     /// <summary>
@@ -17,11 +17,11 @@ namespace KOTORModSync.Formats.GFF
     public class GFFBinaryWriter
     {
         private readonly GFF _gff;
-        private readonly KOTORModSync.Common.RawBinaryWriter _structWriter;
-        private readonly KOTORModSync.Common.RawBinaryWriter _fieldWriter;
-        private readonly KOTORModSync.Common.RawBinaryWriter _fieldDataWriter;
-        private readonly KOTORModSync.Common.RawBinaryWriter _fieldIndicesWriter;
-        private readonly KOTORModSync.Common.RawBinaryWriter _listIndicesWriter;
+        private readonly HoloPatcher.Common.RawBinaryWriter _structWriter;
+        private readonly HoloPatcher.Common.RawBinaryWriter _fieldWriter;
+        private readonly HoloPatcher.Common.RawBinaryWriter _fieldDataWriter;
+        private readonly HoloPatcher.Common.RawBinaryWriter _fieldIndicesWriter;
+        private readonly HoloPatcher.Common.RawBinaryWriter _listIndicesWriter;
         private readonly List<string> _labels = new List<string>();
         private int _structCount = 0;
         private int _fieldCount = 0;
@@ -43,11 +43,11 @@ namespace KOTORModSync.Formats.GFF
         public GFFBinaryWriter(GFF gff)
         {
             _gff = gff;
-            _structWriter = KOTORModSync.Common.RawBinaryWriter.ToByteArray();
-            _fieldWriter = KOTORModSync.Common.RawBinaryWriter.ToByteArray();
-            _fieldDataWriter = KOTORModSync.Common.RawBinaryWriter.ToByteArray();
-            _fieldIndicesWriter = KOTORModSync.Common.RawBinaryWriter.ToByteArray();
-            _listIndicesWriter = KOTORModSync.Common.RawBinaryWriter.ToByteArray();
+            _structWriter = HoloPatcher.Common.RawBinaryWriter.ToByteArray();
+            _fieldWriter = HoloPatcher.Common.RawBinaryWriter.ToByteArray();
+            _fieldDataWriter = HoloPatcher.Common.RawBinaryWriter.ToByteArray();
+            _fieldIndicesWriter = HoloPatcher.Common.RawBinaryWriter.ToByteArray();
+            _listIndicesWriter = HoloPatcher.Common.RawBinaryWriter.ToByteArray();
         }
 
         public byte[] Write()
@@ -70,7 +70,7 @@ namespace KOTORModSync.Formats.GFF
             int listIndicesCount = _listIndicesWriter.Size();
 
             // Write the file using RawBinaryWriter for consistency
-            using (var fileWriter = KOTORModSync.Common.RawBinaryWriter.ToByteArray())
+            using (var fileWriter = HoloPatcher.Common.RawBinaryWriter.ToByteArray())
             {
                 // Write header
                 fileWriter.WriteBytes(Encoding.ASCII.GetBytes(_gff.Content.ToFourCC()));

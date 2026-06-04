@@ -1,16 +1,16 @@
 using System;
 using System.IO;
 using System.Text;
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Logger
+namespace HoloPatcher.Logger
 {
 
     /// <summary>
     /// Writes installation log files for TSLPatcher mod installations.
-    /// Creates installlog.txt in the mod directory for compatibility with KOTORModSync's VerifyInstall() method.
+    /// Creates installlog.txt in the mod directory for compatibility with HoloPatcher's VerifyInstall() method.
     /// </summary>
     public class InstallLogWriter : IDisposable
     {
@@ -100,7 +100,7 @@ namespace KOTORModSync.Logger
 
         /// <summary>
         /// Writes an error message to the log in the format required for VerifyInstall() to detect it.
-        /// CRITICAL: Must use exact format "Error: [message]" for KOTORModSync compatibility.
+        /// CRITICAL: Must use exact format "Error: [message]" for HoloPatcher compatibility.
         /// </summary>
         /// <param name="message">The error message to write</param>
         public void WriteError(string message)

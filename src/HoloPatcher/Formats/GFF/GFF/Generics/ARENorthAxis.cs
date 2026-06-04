@@ -1,4 +1,4 @@
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     /// <summary>
     /// Enumeration for ARE map north axis orientation.

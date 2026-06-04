@@ -4,11 +4,11 @@
 // See LICENSE.txt file in the project root for full license information.
 
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.IO;
 
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/CompilerUtil.java:29-363
     // Original: public class CompilerUtil

@@ -1,9 +1,9 @@
 using System;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Resource;
-using GFFAuto = KOTORModSync.Formats.GFF.GFFAuto;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Resource;
+using GFFAuto = HoloPatcher.Formats.GFF.GFFAuto;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     /// <summary>
     /// Auto-reader/writer for Odyssey save metadata (<c>NFO</c>) stored as a GFF.

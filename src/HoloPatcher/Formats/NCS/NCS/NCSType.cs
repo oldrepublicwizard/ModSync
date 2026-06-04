@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.NCS
+namespace HoloPatcher.Formats.NCS
 {
     /// <summary>
     /// Represents a type in the NCS type system.

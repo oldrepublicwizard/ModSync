@@ -3,10 +3,10 @@
 using System;
 using System.IO;
 using System.Text;
-using IOException = KOTORModSync.Formats.NCS.NCSDecomp.IOException;
-using KOTORModSync.Common;
+using IOException = HoloPatcher.Formats.NCS.NCSDecomp.IOException;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     /// <summary>
     /// Shared utility class for round-trip decompilation operations.

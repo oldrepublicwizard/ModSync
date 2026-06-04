@@ -2,10 +2,10 @@
 // Original: public class CleanupPass
 using System;
 using System.Collections.Generic;
-using KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode;
-using KOTORModSync.Formats.NCS.NCSDecomp.Stack;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Scriptutils
+using HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode;
+using HoloPatcher.Formats.NCS.NCSDecomp.Stack;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Scriptutils
 {
     public class CleanupPass
     {

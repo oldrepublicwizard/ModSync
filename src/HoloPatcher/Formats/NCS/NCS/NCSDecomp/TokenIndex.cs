@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using KOTORModSync.Formats.NCS.NCSDecomp.Analysis;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp.Analysis;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Parser
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Parser
 {
     // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/parser/TokenIndex.java:66-67
     // Original: class TokenIndex extends AnalysisAdapter { int index; }

@@ -1,4 +1,4 @@
-namespace KOTORModSync.Formats.SSF
+namespace HoloPatcher.Formats.SSF
 {
 
     /// <summary>

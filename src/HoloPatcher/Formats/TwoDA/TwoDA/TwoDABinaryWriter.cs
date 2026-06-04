@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace KOTORModSync.Formats.TwoDA
+namespace HoloPatcher.Formats.TwoDA
 {
 
     /// <summary>

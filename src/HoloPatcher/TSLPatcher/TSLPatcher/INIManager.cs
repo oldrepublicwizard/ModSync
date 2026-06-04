@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.TSLPatcher
+namespace HoloPatcher.TSLPatcher
 {
     /// <summary>
     /// Manages INI file operations with easy section merging and updating.

@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Resource
+namespace HoloPatcher.Resource
 {
 
     /// <summary>

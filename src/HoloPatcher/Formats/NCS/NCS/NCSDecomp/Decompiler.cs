@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/Decompiler.java:104-175
     // Original: public class Decompiler extends JFrame ... public static Settings settings = new Settings(); ... static { ... }

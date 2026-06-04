@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using KOTORModSync;
-using KOTORModSync.Formats.TLK;
-using KOTORModSync.Logger;
-using KOTORModSync.Memory;
+using HoloPatcher;
+using HoloPatcher.Formats.TLK;
+using HoloPatcher.Logger;
+using HoloPatcher.Memory;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Mods.TLK
+namespace HoloPatcher.Mods.TLK
 {
 
     /// <summary>

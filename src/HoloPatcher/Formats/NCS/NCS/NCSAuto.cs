@@ -4,18 +4,18 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using KOTORModSync;
-using KOTORModSync.Common.Script;
-using KOTORModSync.Formats.NCS.Compiler;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
-using KOTORModSync.Formats.NCS.Optimizers;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Common.Script;
+using HoloPatcher.Formats.NCS.Compiler;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
+using HoloPatcher.Formats.NCS.Optimizers;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
-using FileScriptData = KOTORModSync.Formats.NCS.NCSDecomp.Utils.FileScriptData;
-using KOTORModSync.Common;
+using FileScriptData = HoloPatcher.Formats.NCS.NCSDecomp.Utils.FileScriptData;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS
+namespace HoloPatcher.Formats.NCS
 {
 
     /// <summary>

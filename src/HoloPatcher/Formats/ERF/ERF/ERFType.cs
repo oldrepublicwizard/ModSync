@@ -1,4 +1,4 @@
-namespace KOTORModSync.Formats.ERF
+namespace HoloPatcher.Formats.ERF
 {
 
     /// <summary>

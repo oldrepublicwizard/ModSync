@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using KOTORModSync.Formats.NCS;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.Analysis;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using AST = KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using HoloPatcher.Formats.NCS;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.Analysis;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using AST = HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Utils
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Utils
 {
     /*
     NCS to AST Converter - Comprehensive instruction conversion.

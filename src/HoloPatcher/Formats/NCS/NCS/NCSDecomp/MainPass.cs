@@ -1,21 +1,21 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/MainPass.java:50-635
 // Original: public class MainPass extends PrunedDepthFirstAdapter
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using KOTORModSync.Formats.NCS.NCSDecomp.Analysis;
-using KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode;
-using KOTORModSync.Formats.NCS.NCSDecomp.Scriptutils;
-using KOTORModSync.Formats.NCS.NCSDecomp.Stack;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
-using UtilsType = KOTORModSync.Formats.NCS.NCSDecomp.Utils.Type;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp.Analysis;
+using HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode;
+using HoloPatcher.Formats.NCS.NCSDecomp.Scriptutils;
+using HoloPatcher.Formats.NCS.NCSDecomp.Stack;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
+using UtilsType = HoloPatcher.Formats.NCS.NCSDecomp.Utils.Type;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     public class MainPass : PrunedDepthFirstAdapter
     {

@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Scriptnode
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Scriptnode
 {
     public abstract class ScriptNode
     {

@@ -4,9 +4,9 @@
 // See LICENSE.txt file in the project root for full license information.
 
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/NoOpRegistrySpoofer.java:14-39
     // Original: public class NoOpRegistrySpoofer implements AutoCloseable

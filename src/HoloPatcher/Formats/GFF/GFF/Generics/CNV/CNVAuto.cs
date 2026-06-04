@@ -1,12 +1,12 @@
 using System;
 using System.IO;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Resource;
-using KOTORModSync.Common;
-using GFFAuto = KOTORModSync.Formats.GFF.GFFAuto;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Resource;
+using HoloPatcher.Common;
+using GFFAuto = HoloPatcher.Formats.GFF.GFFAuto;
 
-namespace KOTORModSync.Resource.Generics.CNV
+namespace HoloPatcher.Resource.Generics.CNV
 {
     // Matching pattern from GAMAuto and other GFF-based format auto classes
     // Original: read_cnv, write_cnv, bytes_cnv functions for CNV conversation format

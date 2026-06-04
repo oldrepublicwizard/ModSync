@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS.Compiler
+namespace HoloPatcher.Formats.NCS.Compiler
 {
     // Token base class and language definitions adapted from nss2csharp
 

@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Parser
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Parser
 {
     // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/parser/State.java:9-18
     // Original: final class State { int state; Object node; State(int state, Object node) { this.state = state; this.node = node; } }

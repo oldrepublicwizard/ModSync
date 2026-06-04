@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Lexer
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Lexer
 {
     public class LexerException : Exception
     {

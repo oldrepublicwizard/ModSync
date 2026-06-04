@@ -1,33 +1,33 @@
 using System;
 using System.IO;
-using KOTORModSync;
-using KOTORModSync.Formats.LIP;
+using HoloPatcher;
+using HoloPatcher.Formats.LIP;
 
-namespace KOTORModSync.Formats.LIP
+namespace HoloPatcher.Formats.LIP
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py:12-56
     // Original: class LIPBinaryReader(ResourceReader)
     public class LIPBinaryReader : IDisposable
     {
-        private readonly KOTORModSync.Common.RawBinaryReader _reader;
+        private readonly HoloPatcher.Common.RawBinaryReader _reader;
         private LIP _lip;
 
         public LIPBinaryReader(byte[] data, int offset = 0, int size = 0)
         {
             int? sizeNullable = size > 0 ? (int?)size : null;
-            _reader = KOTORModSync.Common.RawBinaryReader.FromBytes(data, offset, sizeNullable);
+            _reader = HoloPatcher.Common.RawBinaryReader.FromBytes(data, offset, sizeNullable);
         }
 
         public LIPBinaryReader(string filepath, int offset = 0, int size = 0)
         {
             int? sizeNullable = size > 0 ? (int?)size : null;
-            _reader = KOTORModSync.Common.RawBinaryReader.FromFile(filepath, offset, sizeNullable);
+            _reader = HoloPatcher.Common.RawBinaryReader.FromFile(filepath, offset, sizeNullable);
         }
 
         public LIPBinaryReader(Stream source, int offset = 0, int size = 0)
         {
             int? sizeNullable = size > 0 ? (int?)size : null;
-            _reader = KOTORModSync.Common.RawBinaryReader.FromStream(source, offset, sizeNullable);
+            _reader = HoloPatcher.Common.RawBinaryReader.FromStream(source, offset, sizeNullable);
         }
 
         // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py:32-56

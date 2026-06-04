@@ -1,10 +1,10 @@
 
 using System;
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics.CNV
+namespace HoloPatcher.Resource.Generics.CNV
 {
     /// <summary>
     /// Represents a directed edge from a source node to a target node (CNVNode).

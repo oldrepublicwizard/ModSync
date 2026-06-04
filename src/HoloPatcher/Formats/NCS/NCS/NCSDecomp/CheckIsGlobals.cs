@@ -1,9 +1,9 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/utils/CheckIsGlobals.java:16-42
 // Original: public class CheckIsGlobals extends PrunedReversedDepthFirstAdapter
-using KOTORModSync.Formats.NCS.NCSDecomp.Analysis;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp.Analysis;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Utils
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Utils
 {
     public class CheckIsGlobals : PrunedReversedDepthFirstAdapter
     {

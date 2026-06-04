@@ -1,13 +1,13 @@
 using System;
 using System.Numerics;
 using System.Collections.Generic;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics.GUI
+namespace HoloPatcher.Resource.Generics.GUI
 {
     /// <summary>
     /// Reads KOTOR GUI files from GFF format.

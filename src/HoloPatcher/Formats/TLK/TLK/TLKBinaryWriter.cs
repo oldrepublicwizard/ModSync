@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using KOTORModSync;
+using HoloPatcher;
 using BinaryWriter = System.IO.BinaryWriter;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.TLK
+namespace HoloPatcher.Formats.TLK
 {
 
     /// <summary>

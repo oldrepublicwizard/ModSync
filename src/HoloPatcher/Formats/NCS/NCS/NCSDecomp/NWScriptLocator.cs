@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using JavaSystem = KOTORModSync.Formats.NCS.NCSDecomp.JavaSystem;
-using KOTORModSync.Common;
+using JavaSystem = HoloPatcher.Formats.NCS.NCSDecomp.JavaSystem;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     /// <summary>
     /// Utility class to locate nwscript.nss files for K1 and TSL decompilation.

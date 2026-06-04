@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using KOTORModSync.Common.Script;
+using HoloPatcher.Common.Script;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.NCS.Compiler.NSS
+namespace HoloPatcher.Formats.NCS.Compiler.NSS
 {
     public class NssParser
     {

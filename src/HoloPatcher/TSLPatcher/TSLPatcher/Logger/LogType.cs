@@ -1,4 +1,4 @@
-namespace KOTORModSync.Logger
+namespace HoloPatcher.Logger
 {
 
     /// <summary>

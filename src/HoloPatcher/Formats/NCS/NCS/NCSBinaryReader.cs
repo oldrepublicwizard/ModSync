@@ -1,14 +1,14 @@
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS
+namespace HoloPatcher.Formats.NCS
 {
 
     /// <summary>
@@ -28,7 +28,7 @@ namespace KOTORModSync.Formats.NCS
         private const byte NCS_HEADER_MAGIC_BYTE = 0x42;
         private const int NCS_HEADER_SIZE = 13; // "NCS " (4) + "V1.0" (4) + magic_byte (1) + size (4)
 
-        private readonly KOTORModSync.Common.RawBinaryReader _reader;
+        private readonly HoloPatcher.Common.RawBinaryReader _reader;
         [CanBeNull]
         private NCS _ncs;
         private readonly Dictionary<int, NCSInstruction> _instructions = new Dictionary<int, NCSInstruction>();
@@ -49,17 +49,17 @@ namespace KOTORModSync.Formats.NCS
                 Console.WriteLine($"DEBUG NCSBinaryReader: WARNING - File does not exist: {filepath}");
                 Console.Error.WriteLine($"DEBUG NCSBinaryReader: WARNING - File does not exist: {filepath}");
             }
-            _reader = KOTORModSync.Common.RawBinaryReader.FromFile(filepath, offset, size > 0 ? size : (int?)null);
+            _reader = HoloPatcher.Common.RawBinaryReader.FromFile(filepath, offset, size > 0 ? size : (int?)null);
         }
 
         public NCSBinaryReader(byte[] data, int offset = 0, int size = 0)
         {
-            _reader = KOTORModSync.Common.RawBinaryReader.FromBytes(data, offset, size > 0 ? size : (int?)null);
+            _reader = HoloPatcher.Common.RawBinaryReader.FromBytes(data, offset, size > 0 ? size : (int?)null);
         }
 
         public NCSBinaryReader(Stream source, int offset = 0, int size = 0)
         {
-            _reader = KOTORModSync.Common.RawBinaryReader.FromStream(source, offset, size > 0 ? size : (int?)null);
+            _reader = HoloPatcher.Common.RawBinaryReader.FromStream(source, offset, size > 0 ? size : (int?)null);
         }
 
         /// <summary>

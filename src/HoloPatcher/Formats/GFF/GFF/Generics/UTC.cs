@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using KOTORModSync;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/generics/utc.py:18
     // Original: class UTC:

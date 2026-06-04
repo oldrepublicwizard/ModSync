@@ -3,26 +3,26 @@ using System.Numerics;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Common;
-using KOTORModSync.Config;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Formats.SSF;
-using KOTORModSync.Logger;
-using KOTORModSync.Memory;
-using KOTORModSync.Mods;
-using KOTORModSync.Mods.GFF;
-using KOTORModSync.Mods.NCS;
-using KOTORModSync.Mods.NSS;
-using KOTORModSync.Mods.SSF;
-using KOTORModSync.Mods.TLK;
-using KOTORModSync.Mods.TwoDA;
+using HoloPatcher;
+using HoloPatcher.Common;
+using HoloPatcher.Config;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Formats.SSF;
+using HoloPatcher.Logger;
+using HoloPatcher.Memory;
+using HoloPatcher.Mods;
+using HoloPatcher.Mods.GFF;
+using HoloPatcher.Mods.NCS;
+using HoloPatcher.Mods.NSS;
+using HoloPatcher.Mods.SSF;
+using HoloPatcher.Mods.TLK;
+using HoloPatcher.Mods.TwoDA;
 using IniParser;
 using IniParser.Model;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Reader
+namespace HoloPatcher.Reader
 {
 
     /// <summary>

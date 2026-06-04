@@ -2,10 +2,10 @@
 // Original: public class VarStruct extends Variable
 using System;
 using System.Collections.Generic;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
-using NCSDecompLinkedList = KOTORModSync.Formats.NCS.NCSDecomp.LinkedList;
-using UtilsType = KOTORModSync.Formats.NCS.NCSDecomp.Utils.Type;
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Stack
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
+using NCSDecompLinkedList = HoloPatcher.Formats.NCS.NCSDecomp.LinkedList;
+using UtilsType = HoloPatcher.Formats.NCS.NCSDecomp.Utils.Type;
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Stack
 {
     public class VarStruct : Variable
     {

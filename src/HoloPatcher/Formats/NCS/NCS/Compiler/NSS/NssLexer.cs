@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KOTORModSync.Formats.NCS.Compiler
+namespace HoloPatcher.Formats.NCS.Compiler
 {
     /// <summary>
     /// NSS (NWScript Source) lexer/tokenizer.

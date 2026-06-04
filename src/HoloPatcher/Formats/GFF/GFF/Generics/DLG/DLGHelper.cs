@@ -2,14 +2,14 @@ using System;
 using System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
-using KOTORModSync.Resource.Generics.CNV;
+using HoloPatcher.Common;
+using HoloPatcher.Resource.Generics.CNV;
 
-namespace KOTORModSync.Resource.Generics.DLG
+namespace HoloPatcher.Resource.Generics.DLG
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py
     // Original: construct_dlg, dismantle_dlg, read_dlg, bytes_dlg functions
@@ -591,7 +591,7 @@ namespace KOTORModSync.Resource.Generics.DLG
         }
 
         // TODO: Re-enable CNV conversion when CNV files are included in build
-        // CNV files are currently excluded from KOTORModSync.csproj (line 139)
+        // CNV files are currently excluded from HoloPatcher.csproj (line 139)
         // Matching pattern from CNVHelper - conversion between formats
         /*
         /// <summary>

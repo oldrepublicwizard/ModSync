@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     /// <summary>
     /// Static logger wrapper for NCS decompiler, compatible with C# 7.3 and .NET 4.6.2.

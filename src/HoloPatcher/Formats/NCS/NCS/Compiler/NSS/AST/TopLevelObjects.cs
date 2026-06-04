@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Common.Script;
-using KOTORModSync.Formats.NCS;
-using KOTORModSync.Formats.NCS.Compiler.NSS;
-using MissingIncludeError = KOTORModSync.Formats.NCS.Compiler.NSS.MissingIncludeError;
-using ScriptDataType = KOTORModSync.Common.Script.DataType;
+using HoloPatcher.Common.Script;
+using HoloPatcher.Formats.NCS;
+using HoloPatcher.Formats.NCS.Compiler.NSS;
+using MissingIncludeError = HoloPatcher.Formats.NCS.Compiler.NSS.MissingIncludeError;
+using ScriptDataType = HoloPatcher.Common.Script.DataType;
 
-namespace KOTORModSync.Formats.NCS.Compiler
+namespace HoloPatcher.Formats.NCS.Compiler
 {
     public class GlobalVariableDeclaration : TopLevelObject
     {

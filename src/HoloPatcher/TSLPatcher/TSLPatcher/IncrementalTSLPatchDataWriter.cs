@@ -6,29 +6,29 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using KOTORModSync;
-using KOTORModSync.Extract;
-using KOTORModSync.Formats.Capsule;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Formats.LIP;
-using KOTORModSync.Formats.SSF;
-using KOTORModSync.Formats.TLK;
-using KOTORModSync.Formats.TwoDA;
-using KOTORModSync.Resource;
-using KOTORModSync.Mods;
-using KOTORModSync.Mods.GFF;
-using KOTORModSync.Mods.NCS;
-using KOTORModSync.Mods.SSF;
-using KOTORModSync.Mods.TLK;
-using KOTORModSync.Mods.TwoDA;
-using KOTORModSync.Memory;
-using KOTORModSync.Tools;
+using HoloPatcher;
+using HoloPatcher.Extract;
+using HoloPatcher.Formats.Capsule;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Formats.LIP;
+using HoloPatcher.Formats.SSF;
+using HoloPatcher.Formats.TLK;
+using HoloPatcher.Formats.TwoDA;
+using HoloPatcher.Resource;
+using HoloPatcher.Mods;
+using HoloPatcher.Mods.GFF;
+using HoloPatcher.Mods.NCS;
+using HoloPatcher.Mods.SSF;
+using HoloPatcher.Mods.TLK;
+using HoloPatcher.Mods.TwoDA;
+using HoloPatcher.Memory;
+using HoloPatcher.Tools;
 using Andastra.Utility;
 using SystemTextEncoding = System.Text.Encoding;
 using JetBrains.Annotations;
-using InstallationClass = KOTORModSync.Installation.Installation;
-using KOTORModSync.Common;
-namespace KOTORModSync.TSLPatcher
+using InstallationClass = HoloPatcher.Installation.Installation;
+using HoloPatcher.Common;
+namespace HoloPatcher.TSLPatcher
 {
     // Matching PyKotor implementation at vendor/PyKotor/Libraries/PyKotor/src/pykotor/tslpatcher/writer.py:1166-1212
     // Original: @dataclass class TwoDALinkTarget, PendingStrRefReference, Pending2DARowReference

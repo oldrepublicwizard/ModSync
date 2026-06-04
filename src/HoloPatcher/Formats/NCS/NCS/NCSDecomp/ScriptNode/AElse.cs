@@ -1,9 +1,9 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/ScriptNode/AElse.java:7-49
 // Original: public class AElse extends ScriptRootNode
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode;
+using HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode
+namespace HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode
 {
     // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/ScriptNode/AElse.java:8-10
     // Original: public AElse(int start, int end) { super(start, end); }

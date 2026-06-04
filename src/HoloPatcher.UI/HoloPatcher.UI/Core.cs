@@ -6,15 +6,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using KOTORModSync;
-using KOTORModSync.Common;
-using KOTORModSync.Config;
-using KOTORModSync.Installation;
-using KOTORModSync.Logger;
-using KOTORModSync.Namespaces;
-using KOTORModSync.TSLPatcher;
-using KOTORModSync.Reader;
-using KOTORModSync.Uninstall;
+using HoloPatcher;
+using HoloPatcher.Common;
+using HoloPatcher.Config;
+using HoloPatcher.Installation;
+using HoloPatcher.Logger;
+using HoloPatcher.Namespaces;
+using HoloPatcher.TSLPatcher;
+using HoloPatcher.Reader;
+using HoloPatcher.Uninstall;
 using JetBrains.Annotations;
 #if WINDOWS
 using Microsoft.Win32;
@@ -25,7 +25,7 @@ namespace HoloPatcher.UI
 
     /// <summary>
     /// Core functionality for HoloPatcher.
-    /// Equivalent to holopatcher/KOTORModSync.py
+    /// Equivalent to holopatcher/HoloPatcher.py
     /// </summary>
     public static class Core
     {

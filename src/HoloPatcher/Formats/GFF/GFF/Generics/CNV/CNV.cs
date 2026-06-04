@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics.CNV
+namespace HoloPatcher.Resource.Generics.CNV
 {
     /// <summary>
     /// Stores conversation data for Eclipse Engine games (Dragon Age, ).

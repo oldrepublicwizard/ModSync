@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Logger
+namespace HoloPatcher.Logger
 {
     /// <summary>
     /// Robust logger for pykotor errors, exceptions, warnings, and info logging.

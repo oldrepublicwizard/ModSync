@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Logger;
-using KOTORModSync.Resource;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Logger;
+using HoloPatcher.Resource;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/generics/git.py
     // Original: construct_git and dismantle_git functions

@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using KOTORModSync.Resource;
+using HoloPatcher.Resource;
 
-namespace KOTORModSync.Formats.TLK
+namespace HoloPatcher.Formats.TLK
 {
 
     /// <summary>

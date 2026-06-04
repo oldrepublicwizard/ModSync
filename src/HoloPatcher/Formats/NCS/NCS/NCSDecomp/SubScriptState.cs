@@ -1,21 +1,21 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/scriptutils/SubScriptState.java:86-1759
 // Original: public class SubScriptState
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode;
-using KOTORModSync.Formats.NCS.NCSDecomp.Stack;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using AVarRef = KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode.AVarRef;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode;
+using HoloPatcher.Formats.NCS.NCSDecomp.Stack;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using AVarRef = HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode.AVarRef;
 
-using UtilsType = KOTORModSync.Formats.NCS.NCSDecomp.Utils.Type;
+using UtilsType = HoloPatcher.Formats.NCS.NCSDecomp.Utils.Type;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Scriptutils
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Scriptutils
 {
     public class SubScriptState
     {

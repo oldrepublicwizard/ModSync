@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.TwoDA;
+using HoloPatcher.Formats.TwoDA;
 
-namespace KOTORModSync.Diff
+namespace HoloPatcher.Diff
 {
 
     public class TwoDaCompareResult

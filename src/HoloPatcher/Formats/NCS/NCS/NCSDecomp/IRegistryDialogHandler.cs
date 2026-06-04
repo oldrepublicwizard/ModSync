@@ -1,6 +1,6 @@
 using System;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     /// <summary>
     /// Interface for displaying registry-related dialogs to the user.

@@ -20,7 +20,7 @@ using System.Text.RegularExpressions;
 //   00000321 04 05 str                CONSTS "MIN_RACE_GEAR"  (string const)
 //   00000EEC 2C 01 10 0000006C 00000090 STORESTATE sta_00000EFC 108 144
 // 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     public class PcodeReader
     {

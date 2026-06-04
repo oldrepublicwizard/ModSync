@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync.Formats.SSF;
+using HoloPatcher.Formats.SSF;
 
-namespace KOTORModSync.Diff
+namespace HoloPatcher.Diff
 {
 
     public class SsfCompareResult

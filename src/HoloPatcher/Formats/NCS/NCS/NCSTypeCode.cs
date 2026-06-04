@@ -1,6 +1,6 @@
 using System;
 
-namespace KOTORModSync.Formats.NCS
+namespace HoloPatcher.Formats.NCS
 {
     /// <summary>
     /// Type codes used in NCS bytecode operations.

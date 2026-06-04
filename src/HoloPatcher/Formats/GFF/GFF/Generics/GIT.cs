@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using KOTORModSync;
-using KOTORModSync.Common;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Common;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     /// <summary>
     /// Game Instance Template (GIT) file handler.

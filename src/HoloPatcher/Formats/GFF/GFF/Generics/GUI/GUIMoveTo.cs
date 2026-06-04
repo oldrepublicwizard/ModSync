@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Resource.Generics.GUI
+namespace HoloPatcher.Resource.Generics.GUI
 {
     /// <summary>
     /// Represents movement navigation between controls.

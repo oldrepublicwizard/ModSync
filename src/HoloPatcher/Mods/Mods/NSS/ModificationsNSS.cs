@@ -4,15 +4,15 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using KOTORModSync;
-using KOTORModSync.Formats.NCS;
-using KOTORModSync.Formats.NCS.Compiler;
-using KOTORModSync.Logger;
-using KOTORModSync.Memory;
+using HoloPatcher;
+using HoloPatcher.Formats.NCS;
+using HoloPatcher.Formats.NCS.Compiler;
+using HoloPatcher.Logger;
+using HoloPatcher.Memory;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Mods.NSS
+namespace HoloPatcher.Mods.NSS
 {
 
     /// <summary>
@@ -85,7 +85,7 @@ namespace KOTORModSync.Mods.NSS
 
                 try
                 {
-                    KOTORModSync.Formats.NCS.NCS ncs = NCSAuto.CompileNss(
+                    HoloPatcher.Formats.NCS.NCS ncs = NCSAuto.CompileNss(
                         mutableSource.Value,
                         game,
                         null,

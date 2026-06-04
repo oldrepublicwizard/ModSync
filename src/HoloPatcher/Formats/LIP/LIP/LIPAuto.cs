@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.Reflection;
-using KOTORModSync;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Resource;
 
-namespace KOTORModSync.Formats.LIP
+namespace HoloPatcher.Formats.LIP
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_auto.py
     // Original: detect_lip, read_lip, write_lip, bytes_lip functions
@@ -34,7 +34,7 @@ namespace KOTORModSync.Formats.LIP
             ResourceType fileFormat;
             try
             {
-                using (var reader = KOTORModSync.Common.RawBinaryReader.FromAuto(source, offset))
+                using (var reader = HoloPatcher.Common.RawBinaryReader.FromAuto(source, offset))
                 {
                     fileFormat = Check(reader.ReadString(4));
                 }

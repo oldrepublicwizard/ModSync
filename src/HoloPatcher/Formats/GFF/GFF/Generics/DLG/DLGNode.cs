@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics.DLG
+namespace HoloPatcher.Resource.Generics.DLG
 {
     /// <summary>
     /// Represents a node in the dialog graph (either DLGEntry or DLGReply).

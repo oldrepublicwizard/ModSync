@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KOTORModSync.Formats.NCS;
+using HoloPatcher.Formats.NCS;
 
-namespace KOTORModSync.Formats.NCS.Optimizers
+namespace HoloPatcher.Formats.NCS.Optimizers
 {
     /// <summary>
     /// Preserves original bytecode/qualifier values from the original NCS file during roundtrip compilation.

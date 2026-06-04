@@ -7,10 +7,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Lexer
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Lexer
 {
     public class Lexer
     {
@@ -38,7 +38,7 @@ namespace KOTORModSync.Formats.NCS.NCSDecomp.Lexer
             {
                 try
                 {
-                    System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("KOTORModSync.Formats.NCS.NCSDecomp.lexer.dat") ?? System.Reflection.Assembly.GetCallingAssembly().GetManifestResourceStream("KOTORModSync.Formats.NCS.NCSDecomp.lexer.dat");
+                    System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("HoloPatcher.Formats.NCS.NCSDecomp.lexer.dat") ?? System.Reflection.Assembly.GetCallingAssembly().GetManifestResourceStream("HoloPatcher.Formats.NCS.NCSDecomp.lexer.dat");
                     if (stream == null)
                     {
                         throw new Exception("The file \"lexer.dat\" is either missing or corrupted.");

@@ -1,11 +1,11 @@
 using System;
-using KOTORModSync;
-using KOTORModSync.Logger;
-using KOTORModSync.Memory;
+using HoloPatcher;
+using HoloPatcher.Logger;
+using HoloPatcher.Memory;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Mods
+namespace HoloPatcher.Mods
 {
 
     /// <summary>

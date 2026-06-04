@@ -4,13 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using KOTORModSync;
-using KOTORModSync.Formats.NCS;
-using KOTORModSync.Logger;
+using HoloPatcher;
+using HoloPatcher.Formats.NCS;
+using HoloPatcher.Logger;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS.Compiler
+namespace HoloPatcher.Formats.NCS.Compiler
 {
 
     /// <summary>

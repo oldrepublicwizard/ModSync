@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics.CNV
+namespace HoloPatcher.Resource.Generics.CNV
 {
     /// <summary>
     /// Represents a node in the conversation graph (either CNVEntry or CNVReply).

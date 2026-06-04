@@ -1,10 +1,10 @@
 using System;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode;
-using KOTORModSync.Formats.NCS.NCSDecomp.Stack;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
+using HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode;
+using HoloPatcher.Formats.NCS.NCSDecomp.Stack;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode
+namespace HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode
 {
     public class AVarDecl : ScriptNode
     {

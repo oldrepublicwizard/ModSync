@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using KOTORModSync.Formats;
+using HoloPatcher.Formats;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.TwoDA
+namespace HoloPatcher.Formats.TwoDA
 {
 
     /// <summary>

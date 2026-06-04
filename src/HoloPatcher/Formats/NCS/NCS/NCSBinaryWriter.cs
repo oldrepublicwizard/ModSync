@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace KOTORModSync.Formats.NCS
+namespace HoloPatcher.Formats.NCS
 {
 
     /// <summary>

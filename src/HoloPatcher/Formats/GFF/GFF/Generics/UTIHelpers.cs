@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Resource;
-using static KOTORModSync.Common.GameExtensions;
-using GFFAuto = KOTORModSync.Formats.GFF.GFFAuto;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Resource;
+using static HoloPatcher.Common.GameExtensions;
+using GFFAuto = HoloPatcher.Formats.GFF.GFFAuto;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/generics/uti.py
     // Original: construct_uti and dismantle_uti functions

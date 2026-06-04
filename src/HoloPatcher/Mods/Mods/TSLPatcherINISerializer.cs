@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Mods.GFF;
-using KOTORModSync.Mods.NCS;
-using KOTORModSync.Mods.SSF;
-using KOTORModSync.Mods.TLK;
-using KOTORModSync.Mods.TwoDA;
-using TargetType = KOTORModSync.Mods.TwoDA.TargetType;
-using KOTORModSync.Common;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Mods.GFF;
+using HoloPatcher.Mods.NCS;
+using HoloPatcher.Mods.SSF;
+using HoloPatcher.Mods.TLK;
+using HoloPatcher.Mods.TwoDA;
+using TargetType = HoloPatcher.Mods.TwoDA.TargetType;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Mods
+namespace HoloPatcher.Mods
 {
     // Matching PyKotor implementation at vendor/PyKotor/Libraries/PyKotor/src/pykotor/tslpatcher/writer.py:91-120
     // Original: def escape_ini_value(value: str) -> str: ...
@@ -808,7 +808,7 @@ namespace KOTORModSync.Mods
             // Serialize ModifySSF modifiers
             foreach (var modifier in modSsf.Modifiers)
             {
-                if (modifier is KOTORModSync.Mods.SSF.ModifySSF modifySsf)
+                if (modifier is HoloPatcher.Mods.SSF.ModifySSF modifySsf)
                 {
                     // Serialize sound name and StrRef token
                     string soundName = modifySsf.Sound.ToString();
@@ -826,15 +826,15 @@ namespace KOTORModSync.Mods
         private string SerializeTokenUsage(object tokenUsage)
         {
             // CRITICAL: This writes the TOKEN REFERENCE (e.g., 'StrRef5'), NOT the resolved value.
-            if (tokenUsage is KOTORModSync.Memory.TokenUsageTLK tlkUsage)
+            if (tokenUsage is HoloPatcher.Memory.TokenUsageTLK tlkUsage)
             {
                 return $"StrRef{tlkUsage.TokenId}";
             }
-            if (tokenUsage is KOTORModSync.Memory.TokenUsage2DA twodaUsage)
+            if (tokenUsage is HoloPatcher.Memory.TokenUsage2DA twodaUsage)
             {
                 return $"2DAMEMORY{twodaUsage.TokenId}";
             }
-            if (tokenUsage is KOTORModSync.Memory.NoTokenUsage noToken)
+            if (tokenUsage is HoloPatcher.Memory.NoTokenUsage noToken)
             {
                 return noToken.Stored;
             }

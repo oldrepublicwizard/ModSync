@@ -7,9 +7,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.SyntaxHighlighting
+namespace HoloPatcher.Formats.NCS.NCSDecomp.SyntaxHighlighting
 {
     /// <summary>
     /// Syntax highlighter patterns and utilities for NCS bytecode output.

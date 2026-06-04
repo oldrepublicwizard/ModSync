@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using KOTORModSync;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     /// <summary>
     /// Stores encounter data.

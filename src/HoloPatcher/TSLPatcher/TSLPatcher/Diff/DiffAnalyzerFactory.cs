@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync.Mods.GFF;
-using KOTORModSync.Mods.SSF;
-using KOTORModSync.Mods.TLK;
-using KOTORModSync.Mods.TwoDA;
+using HoloPatcher.Mods.GFF;
+using HoloPatcher.Mods.SSF;
+using HoloPatcher.Mods.TLK;
+using HoloPatcher.Mods.TwoDA;
 
-namespace KOTORModSync.Diff
+namespace HoloPatcher.Diff
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/tslpatcher/diff/analyzers.py:89-104
     // Original: class DiffAnalyzer(ABC):

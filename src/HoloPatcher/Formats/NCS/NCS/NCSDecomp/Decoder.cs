@@ -1,13 +1,13 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/Decoder.java:20-496
 // Original: public class Decoder
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.IO;
 using System.Numerics;
 using System.Text;
 
 using NumBigInteger = System.Numerics.BigInteger;
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     public class Decoder
     {

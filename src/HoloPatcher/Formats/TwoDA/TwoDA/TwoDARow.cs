@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.TwoDA
+namespace HoloPatcher.Formats.TwoDA
 {
 
     /// <summary>

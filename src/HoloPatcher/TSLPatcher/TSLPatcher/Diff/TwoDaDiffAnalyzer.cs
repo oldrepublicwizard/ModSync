@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KOTORModSync.Formats.TwoDA;
-using KOTORModSync.Mods.TwoDA;
+using HoloPatcher.Formats.TwoDA;
+using HoloPatcher.Mods.TwoDA;
 
-namespace KOTORModSync.Diff
+namespace HoloPatcher.Diff
 {
 
     /// <summary>

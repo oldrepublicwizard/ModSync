@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.TLK
+namespace HoloPatcher.Formats.TLK
 {
 
     /// <summary>

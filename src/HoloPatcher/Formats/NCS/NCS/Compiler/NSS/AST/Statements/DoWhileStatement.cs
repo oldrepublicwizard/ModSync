@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using KOTORModSync.Common.Script;
+using HoloPatcher.Common.Script;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.NCS.Compiler
+namespace HoloPatcher.Formats.NCS.Compiler
 {
 
     /// <summary>

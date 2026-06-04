@@ -1,6 +1,6 @@
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.AST
+namespace HoloPatcher.Formats.NCS.NCSDecomp.AST
 {
     public sealed class ARsaddCommand : PRsaddCommand
     {

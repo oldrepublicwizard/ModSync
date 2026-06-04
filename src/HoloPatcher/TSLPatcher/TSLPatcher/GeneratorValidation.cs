@@ -3,10 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using InstallationClass = KOTORModSync.Installation.Installation;
-using KOTORModSync.Common;
+using InstallationClass = HoloPatcher.Installation.Installation;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.TSLPatcher
+namespace HoloPatcher.TSLPatcher
 {
     /// <summary>
     /// Validation functions for TSLPatcher data generation.

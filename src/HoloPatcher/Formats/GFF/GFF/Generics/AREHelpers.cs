@@ -1,10 +1,10 @@
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Resource;
-using GFFAuto = KOTORModSync.Formats.GFF.GFFAuto;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Resource;
+using GFFAuto = HoloPatcher.Formats.GFF.GFFAuto;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/generics/are.py
     // Original: construct_are and dismantle_are functions

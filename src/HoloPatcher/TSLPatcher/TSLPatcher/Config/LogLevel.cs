@@ -1,4 +1,4 @@
-namespace KOTORModSync.Config
+namespace HoloPatcher.Config
 {
 
     /// <summary>

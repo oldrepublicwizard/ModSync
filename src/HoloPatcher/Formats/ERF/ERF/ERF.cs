@@ -2,12 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Common;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Common;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.ERF
+namespace HoloPatcher.Formats.ERF
 {
 
     /// <summary>

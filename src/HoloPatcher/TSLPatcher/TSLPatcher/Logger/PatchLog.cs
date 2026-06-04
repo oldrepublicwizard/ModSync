@@ -1,6 +1,6 @@
 using System;
 
-namespace KOTORModSync.Logger
+namespace HoloPatcher.Logger
 {
 
     /// <summary>

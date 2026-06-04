@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using KOTORModSync.Formats;
-using KOTORModSync.Resource;
+using HoloPatcher.Formats;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.RIM
+namespace HoloPatcher.Formats.RIM
 {
 
     /// <summary>

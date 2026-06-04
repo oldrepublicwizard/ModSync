@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.GFF
+namespace HoloPatcher.Formats.GFF
 {
 
     /// <summary>

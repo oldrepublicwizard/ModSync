@@ -1,12 +1,12 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/DoGlobalVars.java:24-122
 // Original: public class DoGlobalVars extends MainPass
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using KOTORModSync.Formats.NCS.NCSDecomp.Stack;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp.Stack;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     public class DoGlobalVars : MainPass
     {

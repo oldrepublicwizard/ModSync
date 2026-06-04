@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Installation;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Installation;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Diff
+namespace HoloPatcher.Diff
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/tslpatcher/diff/engine.py:998-1027
     // Original: @dataclass class DiffContext:
