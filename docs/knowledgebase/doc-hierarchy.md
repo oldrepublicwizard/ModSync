@@ -40,3 +40,14 @@ When updating agent guidance:
 4. Add a **solution** doc when the learning should survive beyond one PR.
 
 Do not copy long procedural sections into `AGENTS.md` — link instead.
+
+## Active open PRs (2026-06-03)
+
+`[REPO]` Two merge-ready feature branches ship in parallel — do not combine into one PR.
+
+| Track | Branch | PR | Agent entry |
+|-------|--------|-----|-------------|
+| Wizard validation parity | `feat/wizard-archive-validation-parity` | [#110](https://github.com/th3w1zard1/ModSync/pull/110) | [gui-validation-surfaces.md](gui-validation-surfaces.md) |
+| Godot Holocron Phase 1 | `feat/holocron-erf-nested-open` | [#111](https://github.com/th3w1zard1/ModSync/pull/111) | [godot-holocron-editor.md](godot-holocron-editor.md) |
+
+Branch-specific test filters and routing table: `AGENTS.md` § Parallel open PRs.
