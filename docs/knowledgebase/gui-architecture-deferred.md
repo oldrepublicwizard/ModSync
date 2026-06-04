@@ -55,9 +55,15 @@ Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface refere
 
 ### MainWindow god object
 
-`[REPO]` `MainWindow.axaml.cs` still coordinates editor, downloads, validation orchestration UI, drag-drop, menus, and Getting Started. Further extraction targets: download orchestration, editor hosting, menus — validation **pipeline** work now lives in `LegacyValidationRunner` + `ValidationPipelineDialogMapper`.
+`[REPO]` `MainWindow.axaml.cs` still coordinates editor, downloads, validation orchestration UI, drag-drop, menus, and Getting Started. Further extraction targets: download orchestration, editor hosting, `InitializeTopMenu` — validation **pipeline** work now lives in `LegacyValidationRunner` + `ValidationPipelineDialogMapper`.
 
-**Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/ModSync.GUI/Services/`.
+| Item | Status | Reference |
+|------|--------|-----------|
+| Mod context menu + global flyout → `MenuBuilderService` | Pending merge | plan `072`, PR [#120](https://github.com/th3w1zard1/ModSync/pull/120) |
+| Dead `InstallationService` / `InstructionManagementService` constructions | Pending merge | plan `074`, PR [#122](https://github.com/th3w1zard1/ModSync/pull/122) |
+| Directory picker init/sync → `SettingsService` | Pending merge | plan `075`, PR [#123](https://github.com/th3w1zard1/ModSync/pull/123) |
+
+**Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/ModSync.GUI/Services/`. See [knowledgebase README](README.md) §June 2026 arcs for merge status.
 
 ### Duplicate wizard hosts
 

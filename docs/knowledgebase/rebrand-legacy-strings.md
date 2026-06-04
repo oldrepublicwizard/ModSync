@@ -36,8 +36,20 @@ Expect exactly the four rows in the source inventory table above.
 | `KOTORModSync/telemetry.key` | `TelemetryConfigurationTests.Load_UsesLegacyTelemetryKeyPath_WhenModSyncKeyMissing` |
 | XML root key `KOTORModSync` | `ModComponentSerializationLegacyRootTests` |
 
+## Telemetry setup docs
+
+| Doc | Client-facing alignment | Plan |
+|-----|-------------------------|------|
+| `docs/TELEMETRY_SETUP_GUIDE.md` | `MODSYNC_SIGNING_SECRET`, `~/.config/ModSync` | 068 (merged) |
+| `docs/ModSync_Client_Integration_Guide.md` | `AddService("ModSync")`, dual env vars | 068 (merged) |
+| `docs/GITHUB_SECRET_SETUP.md` | Client dev env examples | 073 (PR #121) |
+
 ## Related plans
 
 - `docs/plans/2026-06-03-065-refactor-rebrand-kotormodsync-to-modsync-plan.md`
 - `docs/plans/2026-06-04-066-refactor-holopatcher-namespace-rebrand-plan.md`
 - `docs/plans/2026-06-04-067-docs-rebrand-closure-plan-footnotes-plan.md`
+- `docs/plans/2026-06-04-068-docs-telemetry-setup-rebrand-alignment-plan.md`
+- `docs/plans/2026-06-04-070-feat-legacy-settings-path-migration-tests-plan.md`
+- `docs/plans/2026-06-04-071-feat-legacy-compat-test-coverage-completion-plan.md`
+- `docs/plans/2026-06-04-073-docs-github-secret-setup-rebrand-alignment-plan.md`
