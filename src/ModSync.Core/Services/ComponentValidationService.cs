@@ -974,11 +974,14 @@ namespace ModSync.Core.Services
                 path = path.Replace("<<modDirectory>>", modDir);
             }
 
-            if (path.Contains("<<kotorDirectory>>", StringComparison.OrdinalIgnoreCase) || path.Contains("<<gameDirectory>>", StringComparison.OrdinalIgnoreCase))
+            if (path.IndexOf("<<kotorDirectory>>", StringComparison.OrdinalIgnoreCase) >= 0
+                || path.IndexOf("<<gameDirectory>>", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 string gameDir = MainConfig.DestinationPath?.FullName ?? "";
-                path = path.Replace("<<kotorDirectory>>", gameDir, StringComparison.OrdinalIgnoreCase)
-                    .Replace("<<gameDirectory>>", gameDir, StringComparison.OrdinalIgnoreCase);
+                path = path.Replace("<<kotorDirectory>>", gameDir)
+                    .Replace("<<KotorDirectory>>", gameDir)
+                    .Replace("<<gameDirectory>>", gameDir)
+                    .Replace("<<GameDirectory>>", gameDir);
             }
 
             return path;
