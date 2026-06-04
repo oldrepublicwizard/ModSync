@@ -108,6 +108,37 @@ namespace ModSync.Tests
         }
 
         [Test]
+        public void Load_UsesLegacyTelemetryKeyPath_WhenModSyncKeyMissing()
+        {
+            string legacyDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "KOTORModSync");
+            string legacyKeyPath = Path.Combine(legacyDirectory, "telemetry.key");
+
+            try
+            {
+                if (File.Exists(_keyFilePath))
+                {
+                    File.Delete(_keyFilePath);
+                }
+
+                Directory.CreateDirectory(legacyDirectory);
+                File.WriteAllText(legacyKeyPath, "legacy-key-value");
+
+                TelemetryConfiguration loaded = TelemetryConfiguration.Load();
+
+                Assert.That(loaded.SigningSecret, Is.EqualTo("legacy-key-value"));
+            }
+            finally
+            {
+                if (File.Exists(legacyKeyPath))
+                {
+                    File.Delete(legacyKeyPath);
+                }
+            }
+        }
+
+        [Test]
         public void SetUserConsent_DisablesTelemetryAndUpdatesSummary()
         {
             var config = new TelemetryConfiguration

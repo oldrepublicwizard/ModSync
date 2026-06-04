@@ -27,6 +27,8 @@ rg -n 'KOTORModSync' --glob '!docs/plans/*'
 
 Expect exactly the four rows in the source inventory table above.
 
+**Automated tests:** `SettingsManagerLegacyPathTests`, `TelemetryConfigurationTests.Load_UsesLegacyTelemetryKeyPath_WhenModSyncKeyMissing`
+
 ## Related plans
 
 - `docs/plans/2026-06-03-065-refactor-rebrand-kotormodsync-to-modsync-plan.md`
