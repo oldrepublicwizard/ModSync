@@ -47,10 +47,11 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Runbook + scripts/agents README merge-closure | Done | plan `055` |
 | Parallel PR merge handoff solution | Done | plan `056` |
 | PR-targeted test scripts (`test_pr110_validation.sh`) | Done | plan `057` |
+| Branch-aware `test_current_open_pr.sh` + AGENTS wiring | Done | plan `058` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`058`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
-**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`057`). Merge **without** Holocron (#111).
+**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`058`). Merge **without** Holocron (#111).
 
 ### Merge checklist — PR #110
 
