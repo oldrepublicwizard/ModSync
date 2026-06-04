@@ -125,6 +125,27 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Write_InvalidJsonPayload_ReturnsError()
+        {
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_write_" + Guid.NewGuid() + ".2da");
+            var raw = RunBridgeRaw("write", tempPath, "--payload", "not json");
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("Invalid JSON").IgnoreCase);
+        }
+
+        [Test]
+        public void Write_UnimplementedFormat_ReturnsError()
+        {
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_write_" + Guid.NewGuid() + ".wav");
+            const string payloadJson = "{\"format\":\"mdl\",\"data\":{}}";
+            var raw = RunBridgeRaw("write", tempPath, "--payload", payloadJson);
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("not implemented").IgnoreCase);
+        }
+
+        [Test]
         public void Read_BinaryFile_ReturnsBase64Payload()
         {
             string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_" + Guid.NewGuid() + ".mdl");

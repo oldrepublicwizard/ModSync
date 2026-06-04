@@ -53,7 +53,8 @@ HolocronToolset ships ~30 specialized PyQt editors. **Phase 0** (#92) and **Phas
 | Copy archive member listing (TSV) | Done (container toolbar) |
 | Copy selected member (`resref.restype`) | Done (container toolbar) |
 | Sorted archive listing (resref, type) | Done |
-| Filter archive members (resref / type; Esc clears) | Done |
+| Filter archive members (resref / type; **Esc** clears) | Done |
+| Open selected member (**Enter** or double-click) | Done (plan 041) |
 | Binary member hex preview (read-only) | Done (via shared text editor) |
 | Refresh listing / extract member to disk | Done (container toolbar; **F5** refresh) |
 | SSF sound-slot editor + bridge write | Done (Phase 1, #109) |
@@ -73,4 +74,4 @@ From repo root:
 dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~KotorFormatBridge"
 ```
 
-Tests skip automatically when PyKotor is not importable (22 tests when PyKotor is available, including probe/read missing-path and archive extract/inject/remove error paths).
+Tests skip automatically when PyKotor is not importable (24 tests when PyKotor is available, including probe/read/write error paths and archive extract/inject/remove operations).
