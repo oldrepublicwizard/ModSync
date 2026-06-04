@@ -1,0 +1,66 @@
+<!--  Copyright 2021-2025 ModSync  -->
+<!--  Licensed under the Business Source License 1.1 (BSL 1.1).  -->
+<!--  See LICENSE.txt file in the project root for full license information.  -->
+<UserControl
+    x:Class="ModSync.Controls.DirectoryPickerControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="120"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+
+    <StackPanel>
+        <!--  Title  -->
+        <TextBlock
+            x:Name="TitleTextBlock"
+            Margin="0,0,0,5"
+            FontWeight="Bold" />
+
+        <!--  Description  -->
+        <TextBlock
+            x:Name="DescriptionTextBlock"
+            Margin="0,0,0,5"
+            TextWrapping="Wrap" />
+
+        <!--  Current Path Display  -->
+        <TextBlock
+            x:Name="CurrentPathDisplay"
+            Margin="10,0,0,5"
+            FontSize="12"
+            FontStyle="Italic"
+            TextWrapping="Wrap" />
+
+        <!--  Input Grid  -->
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+            <!--  TextBox  -->
+            <TextBox
+                x:Name="PathInput"
+                Grid.Row="0"
+                Grid.Column="0"
+                HorizontalAlignment="Stretch"
+                FontSize="10"
+                KeyDown="OnPathInputKeyDown"
+                LostFocus="PathInput_LostFocus"
+                TextChanged="PathInput_TextChanged"
+                TextWrapping="NoWrap" />
+
+            <!--  Browse Button  -->
+            <Button
+                Grid.Row="0"
+                Grid.Column="1"
+                Click="BrowseButton_Click"
+                Content="📁" />
+
+            <!--  ComboBox  -->
+            <ComboBox
+                x:Name="PathSuggestions"
+                Grid.Row="1"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                HorizontalAlignment="Stretch"
+                SelectionChanged="PathSuggestions_SelectionChanged" />
+        </Grid>
+    </StackPanel>
+</UserControl>

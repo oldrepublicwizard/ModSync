@@ -383,14 +383,14 @@ chrome/
 # Telemetry signing secrets (NEVER commit these!)
 **/telemetry.key
 **/EmbeddedSecrets.cs
-KOTORModSync.Core/Services/EmbeddedSecrets.cs
-KOTORModSync.GUI/Services/EmbeddedSecrets.cs
+ModSync.Core/Services/EmbeddedSecrets.cs
+ModSync.GUI/Services/EmbeddedSecrets.cs
 BOLABADEN_TELEMETRY_SETUP.md
 IMPLEMENTATION_SUMMARY.md
 missing_axaml_headers.txt
 missing_headers.txt
 nuldotnet
-KOTORModSync.Core/CLI/README_PROGRESS_DISPLAY.md
+ModSync.Core/CLI/README_PROGRESS_DISPLAY.md
 discord_convo.md
 CHECKPOINT_SYSTEM_GUIDE.md
 FEATURE_USAGE_GUIDE.md
@@ -403,9 +403,9 @@ MODLINK_MIGRATION_SUMMARY.md
 
 # Test temp directories
 test_temp_*
-KOTORModSync.Tests/*_20??-??-??_*.md
+ModSync.Tests/*_20??-??-??_*.md
 test_output*.txt
-KOTORModSync.GUI/dist
+ModSync.GUI/dist
 TestProject/test*.txt
 CANONICAL_SPEC.md
 CODE_CLEANUP_GUIDE.md

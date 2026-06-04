@@ -1,6 +1,6 @@
 # Agent-native architecture audit
 
-`[SYNTH]` Scored review of KOTORModSync against the eight core agent-native principles from Compound Engineering's agent-native architecture framework. `[REPO]` Evidence is from `ModBuildConverter`, `scripts/agents/`, `AGENTS.md`, and headless tests as of 2026-05-24.
+`[SYNTH]` Scored review of ModSync against the eight core agent-native principles from Compound Engineering's agent-native architecture framework. `[REPO]` Evidence is from `ModBuildConverter`, `scripts/agents/`, `AGENTS.md`, and headless tests as of 2026-05-24.
 
 This product is a **desktop mod installer**, not a web agent host. Scores reflect how well **coding agents and headless automation** can operate the repo—not whether end users chat with the app.
 

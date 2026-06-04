@@ -1,0 +1,254 @@
+<!-- Copyright 2021-2025 ModSync -->
+<!-- Licensed under the Business Source License 1.1 (BSL 1.1). -->
+<!-- See LICENSE.txt file in the project root for full license information. -->
+<UserControl
+    x:Class="ModSync.Controls.ModListItem"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:ModSync.Converters"
+    xmlns:core="clr-namespace:ModSync.Core;assembly=ModSync.Core"
+    xmlns:helpers="clr-namespace:ModSync.Helpers"
+    xmlns:ThemeResourceHelper="clr-namespace:ModSync"
+    x:DataType="core:ModComponent">
+
+    <UserControl.Resources>
+        <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
+        <converters:CategoryTooltipConverter x:Key="CategoryTooltipConverter" />
+        <converters:CategoryListDisplayConverter x:Key="CategoryListDisplayConverter" />
+        <converters:ListToVisibilityConverter x:Key="ListToVisibilityConverter" />
+        <converters:TierTooltipConverter x:Key="TierTooltipConverter" />
+        <converters:SpoilerFreeContentConverter x:Key="SpoilerFreeContentConverter" />
+    </UserControl.Resources>
+
+    <Grid Margin="2,1">
+        <!-- Drop indicator line - shown when hovering during drag -->
+        <Border
+            x:Name="DropIndicator"
+            Height="2"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Top"
+            Background="{DynamicResource SystemAccentColor}"
+            CornerRadius="1"
+            IsVisible="False"
+            Opacity="0.7" />
+
+        <Border
+            x:Name="RootBorder"
+            Padding="8,6"
+            BorderThickness="1"
+            Classes="mod-list-item"
+            CornerRadius="4">
+
+            <Grid RowDefinitions="Auto,Auto">
+                <!--  Main mod info (always visible)  -->
+                <Grid x:Name="MainModInfo" Grid.Row="0" RowDefinitions="Auto,Auto">
+                    <!--  Row 0: main info across 6 columns  -->
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
+
+                        <!--  Checkbox  -->
+                        <CheckBox
+                            x:Name="ComponentCheckBox"
+                            Grid.Column="0"
+                            Margin="0,2,8,0"
+                            VerticalAlignment="Top"
+                            IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                            Tag="{Binding}"
+                            ToolTip.Tip="Select this mod for installation" />
+
+                        <!--  Index Number (Editor Mode Only)  -->
+                        <TextBlock
+                            x:Name="IndexTextBlock"
+                            Grid.Column="1"
+                            Margin="0,2,8,0"
+                            VerticalAlignment="Top"
+                            Classes="secondary-text"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            IsVisible="False" />
+
+                        <!--  Name occupies the large cell (can visually use some left space)  -->
+                        <TextBlock
+                            x:Name="NameTextBlock"
+                            Grid.Column="2"
+                            Margin="0,0,0,0"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource SpoilerFreeContentConverter}">
+                                    <Binding Source="{x:Static helpers:PropertyNames.Name}" />
+                                    <Binding Path="." />
+                                    <Binding Path="$parent[Window].SpoilerFreeMode" />
+                                    <Binding Source="{x:Static helpers:PropertyNames.NameSpoilerFree}" />
+                                    <Binding Path="Name" />  <!-- Triggers update when Name changes -->
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+
+                        <!--  Validation Status Icon  -->
+                        <TextBlock
+                            x:Name="ValidationIcon"
+                            Grid.Column="3"
+                            Margin="8,0,8,0"
+                            VerticalAlignment="Top"
+                            FontSize="14"
+                            IsVisible="False" />
+
+                        <!--  Drag Handle (Editor Mode Only)  -->
+                        <TextBlock
+                            x:Name="DragHandle"
+                            Grid.Column="4"
+                            VerticalAlignment="Center"
+                            Classes="mod-list-item-drag-handle"
+                            Cursor="Hand"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            IsVisible="False"
+                            Text="⋮⋮"
+                            ToolTip.Tip="Drag to reorder" />
+
+                        <!--  Download Button  -->
+                        <Button
+                            x:Name="DownloadButton"
+                            Grid.Column="5"
+                            Width="24"
+                            Height="24"
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Click="DownloadButton_Click"
+                            Cursor="Hand"
+                            FontSize="12"
+                            IsVisible="{Binding ResourceRegistry, Converter={StaticResource ListToVisibilityConverter}}"
+                            Tag="{Binding}"
+                            ToolTip.Tip="Download this mod">
+                            <Button.Content>
+                                <TextBlock Text="⬇️" />
+                            </Button.Content>
+                        </Button>
+                    </Grid>
+
+                    <!--  Row 1: badges area exactly under the name column, split 50/50 and touching in the middle  -->
+                    <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                        <Grid Grid.Column="2" ColumnDefinitions="*,*">
+                            <!--  Category (left half)  -->
+                            <Border
+                                x:Name="CategoryBadge"
+                                Grid.Column="0"
+                                Margin="0,0,6,0"
+                                Padding="6,2"
+                                HorizontalAlignment="Stretch"
+                                Classes="mod-list-item-badge category-badge"
+                                CornerRadius="6"
+                                IsVisible="{Binding Category, Converter={StaticResource ListToVisibilityConverter}}">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="10"
+                                    FontWeight="Medium"
+                                    Text="{Binding Category, Converter={StaticResource CategoryListDisplayConverter}}"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="NoWrap"
+                                    ToolTip.Tip="{Binding Category, Converter={StaticResource CategoryTooltipConverter}}" />
+                            </Border>
+
+                            <!--  Tier (right half)  -->
+                            <Border
+                                x:Name="TierBadge"
+                                Grid.Column="1"
+                                Margin="6,0,0,0"
+                                Padding="6,2"
+                                HorizontalAlignment="Stretch"
+                                Classes="mod-list-item-badge tier-badge"
+                                CornerRadius="6"
+                                IsVisible="{Binding Tier, Converter={StaticResource StringNotEmptyConverter}}">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="10"
+                                    FontWeight="Medium"
+                                    Text="{Binding Tier}"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="NoWrap"
+                                    ToolTip.Tip="{Binding Tier, Converter={StaticResource TierTooltipConverter}}" />
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+                <!--  Options Content (only visible when options exist)  -->
+                <ItemsControl
+                    x:Name="OptionsContainer"
+                    Grid.Row="1"
+                    Margin="0,4,0,0"
+                    ItemsSource="{Binding Options}"
+                    IsVisible="{Binding Options, Converter={StaticResource ListToVisibilityConverter}}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                Margin="0,2"
+                                Padding="8,4"
+                                BorderThickness="1"
+                                CornerRadius="3"
+                                Cursor="Hand"
+                                Tag="{Binding}"
+                                PointerPressed="OptionBorder_PointerPressed">
+                                <Border.Styles>
+                                    <Style Selector="Border">
+                                        <Setter Property="Background" Value="Transparent" />
+                                    </Style>
+                                    <Style Selector="Border:pointerover">
+                                        <Setter Property="Background" Value="{DynamicResource ModListItem.HoverBackgroundBrush}" />
+                                    </Style>
+                                </Border.Styles>
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <CheckBox
+                                        Grid.Column="0"
+                                        Margin="0,0,8,0"
+                                        VerticalAlignment="Center"
+                                        IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                        IsCheckedChanged="OnOptionCheckBoxChanged"
+                                        ToolTip.Tip="Select this option"
+                                        Tag="{Binding}" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock
+                                            FontSize="12"
+                                            FontWeight="Medium"
+                                            TextWrapping="Wrap">
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource SpoilerFreeContentConverter}">
+                                                    <Binding Source="{x:Static helpers:PropertyNames.Name}" />
+                                                    <Binding Path="." />
+                                                    <Binding Path="$parent[Window].SpoilerFreeMode" />
+                                                    <Binding Source="{x:Static helpers:PropertyNames.NameSpoilerFree}" />
+                                                    <Binding Path="Name" />
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                        <TextBlock
+                                            FontSize="11"
+                                            IsVisible="{Binding Description, Converter={StaticResource StringNotEmptyConverter}}"
+                                            Opacity="0.8"
+                                            TextWrapping="Wrap">
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource SpoilerFreeContentConverter}">
+                                                    <Binding Source="{x:Static helpers:PropertyNames.Description}" />
+                                                    <Binding Path="." />
+                                                    <Binding Path="$parent[Window].SpoilerFreeMode" />
+                                                    <Binding Source="{x:Static helpers:PropertyNames.DescriptionSpoilerFree}" />
+                                                    <Binding Path="Description" />
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

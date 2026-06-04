@@ -34,7 +34,7 @@ PR #91 delivered round-trip, merge, dry-run-only, and install wiring. Users stil
 
 ### U1. CLI merge auto-generate integration test
 
-**Files:** `src/KOTORModSync.Tests/ModBuildConverterCliIntegrationTests.cs`
+**Files:** `src/ModSync.Tests/ModBuildConverterCliIntegrationTests.cs`
 
 ### U2. Agent script aliases + dry-run warning
 
@@ -47,7 +47,7 @@ PR #91 delivered round-trip, merge, dry-run-only, and install wiring. Users stil
 ## Verification
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj \
   --filter "Name~ModBuildConverterCliIntegrationTests|Name~AutoGenerateLocalCliIntegrationTests|Name~FullBuildMergedDryRunTests|Name~FullBuildMarkdownMergeRoundTripTests|Name~FullBuildSerializationRoundTripTests"
 
 ./scripts/agents/cli_full_build_pipeline.sh --game k1 \

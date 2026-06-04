@@ -30,8 +30,8 @@ Extract `ValidatePage.ApplyPipelineResultToWizardUi` stage switch into `WizardVa
 ### U1. Presenter + ValidatePage + tests
 
 **Files:**
-- New: `src/KOTORModSync.GUI/Services/WizardValidationStagePresenter.cs`
-- Modify: `src/KOTORModSync.GUI/Dialogs/WizardPages/ValidatePage.axaml.cs`
-- New: `src/KOTORModSync.Tests/WizardValidationStagePresenterTests.cs`
+- New: `src/ModSync.GUI/Services/WizardValidationStagePresenter.cs`
+- Modify: `src/ModSync.GUI/Dialogs/WizardPages/ValidatePage.axaml.cs`
+- New: `src/ModSync.Tests/WizardValidationStagePresenterTests.cs`
 
 **Verification:** `dotnet test --filter WizardValidationStagePresenterTests`

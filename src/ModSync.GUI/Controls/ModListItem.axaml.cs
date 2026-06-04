@@ -1,0 +1,1135 @@
+// Copyright 2021-2025 ModSync
+// Licensed under the Business Source License 1.1 (BSL 1.1).
+// See LICENSE.txt file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+
+using ModSync.Core;
+using ModSync.Core.Services.Validation;
+using ModSync.Core.Utility;
+using ModSync.Services;
+
+namespace ModSync.Controls
+{
+    public partial class ModListItem : UserControl
+    {
+
+        private static readonly Dictionary<Guid, string> s_componentErrors = new Dictionary<Guid, string>();
+
+        private ModComponent _previousComponent;
+
+        public static readonly StyledProperty<bool> IsBeingDraggedProperty =
+            AvaloniaProperty.Register<ModListItem, bool>(nameof(IsBeingDragged));
+
+        public static readonly StyledProperty<bool> IsDropTargetProperty =
+            AvaloniaProperty.Register<ModListItem, bool>(nameof(IsDropTarget));
+
+        public bool IsBeingDragged
+        {
+            get => GetValue(IsBeingDraggedProperty);
+            set => SetValue(IsBeingDraggedProperty, value);
+        }
+
+        public bool IsDropTarget
+        {
+            get => GetValue(IsDropTargetProperty);
+            set => SetValue(IsDropTargetProperty, value);
+        }
+
+        public ModListItem()
+        {
+            AvaloniaXamlLoader.Load(this);
+
+            PointerEntered += OnPointerEntered;
+            PointerExited += OnPointerExited;
+
+            DataContextChanged += OnDataContextChanged;
+
+            CheckBox checkbox = this.FindControl<CheckBox>("ComponentCheckBox");
+            if (checkbox != null)
+            {
+                checkbox.IsCheckedChanged += OnCheckBoxChanged;
+            }
+
+            PointerPressed += OnPointerPressed;
+
+            DoubleTapped += OnDoubleTapped;
+
+            TextBlock dragHandle = this.FindControl<TextBlock>("DragHandle");
+            if (dragHandle != null)
+            {
+                dragHandle.PointerPressed += OnDragHandlePressed;
+            }
+
+            Button downloadButton = this.FindControl<Button>("DownloadButton");
+            if (downloadButton != null)
+            {
+                downloadButton.Click += DownloadButton_Click;
+            }
+
+            Grid mainModInfo = this.FindControl<Grid>("MainModInfo");
+            if (mainModInfo is null)
+            {
+                return;
+            }
+
+            mainModInfo.PointerPressed += OnMainModInfoPointerPressed;
+            mainModInfo.DoubleTapped += OnMainModInfoDoubleTapped;
+        }
+
+        private void OnMainModInfoPointerPressed(object sender, PointerPressedEventArgs e)
+        {
+
+            if (e.Source is CheckBox)
+            {
+                return;
+            }
+
+            if (DataContext is ModComponent component && this.FindAncestorOfType<Window>() is MainWindow mainWindow)
+            {
+                mainWindow.SetCurrentModComponent(component);
+            }
+        }
+
+        private void OnMainModInfoDoubleTapped(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+
+            if (e.Source is CheckBox)
+            {
+                return;
+            }
+
+            if (!(DataContext is ModComponent component))
+            {
+                return;
+            }
+
+            component.IsSelected = !component.IsSelected;
+            if (!(this.FindAncestorOfType<Window>() is MainWindow mainWindow))
+            {
+                return;
+            }
+
+            mainWindow.UpdateModCounts();
+            if (component.IsSelected)
+            {
+                mainWindow.ComponentCheckboxChecked(component, new HashSet<ModComponent>());
+            }
+            else
+            {
+                mainWindow.ComponentCheckboxUnchecked(component, new HashSet<ModComponent>());
+            }
+
+            e.Handled = true;
+        }
+
+        private void OnDoubleTapped(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+
+            if (!(DataContext is ModComponent component))
+            {
+                return;
+            }
+
+            component.IsSelected = !component.IsSelected;
+            if (!(this.FindAncestorOfType<Window>() is MainWindow mainWindow))
+            {
+                return;
+            }
+
+            mainWindow.UpdateModCounts();
+            if (component.IsSelected)
+            {
+                mainWindow.ComponentCheckboxChecked(component, new HashSet<ModComponent>());
+            }
+            else
+            {
+                mainWindow.ComponentCheckboxUnchecked(component, new HashSet<ModComponent>());
+            }
+        }
+
+        private void OnDragHandlePressed(object sender, PointerPressedEventArgs e)
+        {
+            if (!(DataContext is ModComponent component) || !(this.FindAncestorOfType<Window>() is MainWindow mainWindow))
+            {
+                return;
+            }
+
+            mainWindow.StartDragComponent(component, e);
+            e.Handled = true;
+        }
+
+        private async void DownloadButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(DataContext is ModComponent component) || !(this.FindAncestorOfType<Window>() is MainWindow))
+            {
+                return;
+            }
+
+            try
+            {
+                await Logger.LogVerboseAsync($"[ModListItem] Download button clicked for: {component.Name}");
+                await DownloadOrchestrationService.DownloadModFromUrlAsync(component.ResourceRegistry.First().Key, component);
+            }
+            catch (Exception ex)
+            {
+                await Logger.LogExceptionAsync(ex, $"Error downloading mod: {component.Name}");
+            }
+        }
+
+        private void OnPointerPressed(object sender, PointerPressedEventArgs e)
+        {
+            Logger.LogVerbose($"[ModListItem] OnPointerPressed: {e.Source}");
+            if (e.Source is TextBlock textBlock && string.Equals(textBlock.Name, "DragHandle", StringComparison.Ordinal))
+            {
+                Logger.LogVerbose($"[ModListItem] DragHandle pressed");
+                return;
+            }
+            if (e.Source is CheckBox)
+            {
+                Logger.LogVerbose($"[ModListItem] CheckBox pressed");
+                return;
+            }
+
+
+            if (
+                DataContext is ModComponent component
+                && this.FindAncestorOfType<Window>() is MainWindow mainWindow
+            )
+            {
+                Logger.LogVerbose($"[ModListItem] Setting current mod component: {component.Name}");
+                mainWindow.SetCurrentModComponent(component);
+            }
+        }
+
+        private void OnCheckBoxChanged(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+
+            if (this.FindAncestorOfType<Window>() is MainWindow mainWindow)
+            {
+                mainWindow.OnComponentCheckBoxChanged(sender, e);
+            }
+        }
+
+        private void OnOptionCheckBoxChanged(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+
+            if (this.FindAncestorOfType<Window>() is MainWindow mainWindow)
+            {
+                mainWindow.OnComponentCheckBoxChanged(sender, e);
+            }
+        }
+
+        private void OnDataContextChanged(object sender, EventArgs e)
+        {
+            if (!(DataContext is ModComponent component))
+            {
+                return;
+            }
+
+            if (_previousComponent != null)
+            {
+                _previousComponent.PropertyChanged -= OnComponentPropertyChanged;
+            }
+
+            _previousComponent = component;
+
+            component.PropertyChanged += OnComponentPropertyChanged;
+
+            UpdateFromModManagementService();
+
+            UpdateTooltip(component);
+
+            SetupOptionSelectionHandlers(component);
+        }
+
+        private void OnComponentPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (string.Equals(e.PropertyName, nameof(ModComponent.IsValidating), StringComparison.Ordinal) && sender is ModComponent component)
+            {
+                UpdateValidationState(component);
+            }
+        }
+
+        private void SetupOptionSelectionHandlers(ModComponent component)
+        {
+            foreach (Option option in component.Options)
+            {
+
+                option.PropertyChanged -= OnOptionSelectionChanged;
+
+                option.PropertyChanged += OnOptionSelectionChanged;
+            }
+        }
+
+        private void OnOptionSelectionChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (string.Equals(e.PropertyName, nameof(Option.IsSelected), StringComparison.Ordinal) && sender is Option option)
+            {
+
+                ItemsControl optionsContainer = this.FindControl<ItemsControl>("OptionsContainer");
+                if (optionsContainer != null)
+                {
+
+                    Control container = optionsContainer.ContainerFromItem(option);
+                    if (container != null)
+                    {
+                        Border border = container.GetVisualDescendants().OfType<Border>().FirstOrDefault();
+                        if (border != null)
+                        {
+                            UpdateOptionBackground(border, option.IsSelected);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void UpdateTooltip(ModComponent component)
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.Post(() => UpdateTooltip(component), DispatcherPriority.Normal);
+                return;
+            }
+
+            TextBlock nameTextBlock = this.FindControl<TextBlock>("NameTextBlock");
+            if (nameTextBlock is null)
+            {
+                return;
+            }
+
+            if (!(this.FindAncestorOfType<Window>() is MainWindow mainWindow))
+            {
+                string basicTooltip = CreateBasicTooltip(component);
+                ToolTip.SetTip(nameTextBlock, basicTooltip);
+                return;
+            }
+
+            bool spoilerFreeMode = mainWindow.SpoilerFreeMode;
+            string tooltip = CreateBasicTooltip(component, spoilerFreeMode);
+            ToolTip.SetTip(nameTextBlock, tooltip);
+
+            UpdateEditorModeVisibility(mainWindow.EditorMode);
+
+            if (!mainWindow.EditorMode)
+            {
+                return;
+            }
+
+            int index = mainWindow.MainConfigInstance?.allComponents.IndexOf(component) ?? -1;
+            if (index >= 0 && this.FindControl<TextBlock>("IndexTextBlock") is TextBlock indexBlock)
+            {
+                indexBlock.Text = $"#{index + 1}";
+            }
+
+            try
+            {
+                string detailedTooltip = CreateRichTooltipAsync(component, spoilerFreeMode);
+                ToolTip.SetTip(nameTextBlock, detailedTooltip);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex, $"Error generating detailed tooltip for {component?.Name}");
+
+            }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]
+        public void UpdateValidationState(ModComponent component)
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.Post(() => UpdateValidationState(component), DispatcherPriority.Normal);
+                return;
+            }
+            if (!(this.FindControl<Border>("RootBorder") is Border border))
+            {
+                return;
+            }
+
+            if (component.IsValidating)
+            {
+                border.Opacity = 0.5;
+
+                return;
+            }
+
+
+            border.Opacity = 1.0;
+
+            if (!component.IsSelected)
+            {
+
+                border.ClearValue(Border.BorderBrushProperty);
+                border.ClearValue(Border.BorderThicknessProperty);
+
+                if (this.FindControl<TextBlock>("ValidationIcon") is TextBlock validationIcon)
+                {
+                    validationIcon.IsVisible = false;
+                }
+
+                return;
+            }
+
+            bool isMissingDownload = !component.IsDownloaded;
+            bool hasErrors = false;
+            var errorReasons = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(component.Name))
+            {
+                hasErrors = true;
+                errorReasons.Add("Missing mod name");
+            }
+
+            if (component.Dependencies.Count > 0 &&
+                this.FindAncestorOfType<Window>() is MainWindow mw1)
+            {
+                List<ModComponent> dependencyComponents = ModComponent.FindComponentsFromGuidList(
+                    component.Dependencies,
+                    mw1.MainConfigInstance.allComponents
+                );
+                foreach (ModComponent dep in dependencyComponents)
+                {
+                    if (dep is null || dep.IsSelected)
+                    {
+                        continue;
+                    }
+
+                    hasErrors = true;
+                    errorReasons.Add($"Requires '{dep.Name}' to be selected");
+                }
+            }
+
+            if (
+                component.Restrictions.Count > 0
+                && this.FindAncestorOfType<Window>() is MainWindow mw2)
+            {
+                List<ModComponent> restrictionComponents = ModComponent.FindComponentsFromGuidList(
+                    component.Restrictions,
+                    mw2.MainConfigInstance.allComponents
+                );
+                foreach (ModComponent restriction in restrictionComponents)
+                {
+                    if (restriction is null || !restriction.IsSelected)
+                    {
+                        continue;
+                    }
+
+                    hasErrors = true;
+                    errorReasons.Add($"Conflicts with '{restriction.Name}' which is selected");
+                }
+            }
+
+            if (component.Instructions.Count == 0)
+            {
+                hasErrors = true;
+                errorReasons.Add("No installation instructions defined");
+            }
+
+            // Check for path validation errors
+            List<string> pathErrors = GetPathValidationErrors(component);
+            if (pathErrors.Count > 0)
+            {
+                hasErrors = true;
+                errorReasons.AddRange(pathErrors);
+            }
+
+            if (
+                component.ResourceRegistry.Count > 0 &&
+                this.FindAncestorOfType<Window>() is MainWindow mw3 &&
+                mw3.EditorMode
+            )
+            {
+                var invalidUrls = new List<string>();
+                foreach (string link in component.ResourceRegistry.Keys)
+                {
+                    if (string.IsNullOrWhiteSpace(link))
+                    {
+                        continue;
+                    }
+
+                    if (!IsValidUrl(link))
+                    {
+                        invalidUrls.Add(link);
+                    }
+                }
+
+                if (invalidUrls.Count > 0)
+                {
+                    hasErrors = true;
+                    errorReasons.Add($"Invalid download URLs: {string.Join(", ", invalidUrls)}");
+                }
+            }
+
+            if (errorReasons.Count > 0)
+            {
+                s_componentErrors[component.Guid] = string.Join("\n", errorReasons);
+            }
+            else
+            {
+                _ = s_componentErrors.Remove(component.Guid);
+            }
+
+            bool shouldShowDownloadWarning = isMissingDownload && MainWindow.HasFetchedDownloads && hasErrors;
+
+            if (hasErrors)
+            {
+
+                border.BorderBrush = ThemeResourceHelper.ModListItemErrorBrush;
+                border.BorderThickness = new Thickness(2);
+            }
+            else if (shouldShowDownloadWarning)
+            {
+
+                border.BorderBrush = ThemeResourceHelper.ModListItemWarningBrush;
+                border.BorderThickness = new Thickness(1.5);
+            }
+            else
+            {
+
+                border.ClearValue(Border.BorderBrushProperty);
+                border.ClearValue(Border.BorderThicknessProperty);
+            }
+
+            UpdateValidationIcon(this.FindControl<TextBlock>("ValidationIcon"), hasErrors, shouldShowDownloadWarning);
+        }
+
+        private static void UpdateValidationIcon(TextBlock validationIconControl, bool hasErrors, bool shouldShowDownloadWarning)
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.Post(() => UpdateValidationIcon(validationIconControl, hasErrors, shouldShowDownloadWarning), DispatcherPriority.Normal);
+                return;
+            }
+            if (validationIconControl is null)
+            {
+                return;
+            }
+
+            if (hasErrors)
+            {
+                validationIconControl.Text = "❌";
+                validationIconControl.Foreground = ThemeResourceHelper.ModListItemErrorBrush;
+                validationIconControl.IsVisible = true;
+                ToolTip.SetTip(validationIconControl, "ModComponent has validation errors");
+            }
+            else if (shouldShowDownloadWarning)
+            {
+                validationIconControl.Text = "⚠️";
+                validationIconControl.Foreground = ThemeResourceHelper.ModListItemWarningBrush;
+                validationIconControl.IsVisible = true;
+                ToolTip.SetTip(validationIconControl, "Mod archive not downloaded");
+            }
+            else
+            {
+                validationIconControl.IsVisible = false;
+            }
+        }
+
+        private void UpdateFromModManagementService()
+        {
+            if (!(DataContext is ModComponent component) || !(this.FindAncestorOfType<Window>() is MainWindow mainWindow))
+            {
+                return;
+            }
+
+            UpdateValidationState(component);
+
+            ContextMenu = mainWindow.BuildContextMenuForComponent(component);
+        }
+
+        private void UpdateEditorModeVisibility(bool isEditorMode)
+        {
+
+            if (this.FindControl<TextBlock>("IndexTextBlock") is TextBlock indexBlock)
+            {
+                indexBlock.IsVisible = isEditorMode;
+            }
+
+            if (this.FindControl<TextBlock>("DragHandle") is TextBlock dragHandle)
+            {
+                dragHandle.IsVisible = isEditorMode;
+            }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]
+        private static string CreateBasicTooltip(ModComponent component, bool spoilerFreeMode = false)
+        {
+            var sb = new System.Text.StringBuilder();
+            string displayName = GetDisplayName(component, spoilerFreeMode);
+            string description;
+            if (spoilerFreeMode)
+            {
+                // Only use custom spoiler-free description if it's provided
+                if (!string.IsNullOrWhiteSpace(component.DescriptionSpoilerFree))
+                {
+                    description = component.DescriptionSpoilerFree;
+                }
+                else
+                {
+                    // Fall back to auto-generated spoiler-free description
+                    description = Converters.SpoilerFreeContentConverter.GenerateSpoilerFreeDescription(component);
+                }
+            }
+            else
+            {
+                description = component.Description;
+            }
+
+            if (!component.IsSelected)
+            {
+
+                _ = sb.Append("📦 ").Append(displayName).AppendLine();
+                if (!string.IsNullOrWhiteSpace(component.Author))
+                {
+                    _ = sb.Append("👤 Author: ").Append(component.Author).AppendLine();
+                }
+
+                if (component.Category.Count > 0)
+                {
+                    _ = sb.Append("🏷️ Category: ").Append(string.Join(", ", component.Category)).AppendLine();
+                }
+
+                if (!string.IsNullOrWhiteSpace(component.Tier))
+                {
+                    _ = sb.Append("⭐ Tier: ").Append(component.Tier).AppendLine();
+                }
+
+                if (!string.IsNullOrWhiteSpace(description))
+                {
+                    string desc = description.Length > 200 ? description.Substring(0, 200) + "..." : description;
+                    _ = sb.Append("📝 ").Append(desc).AppendLine();
+                }
+                return sb.ToString();
+            }
+
+            _ = sb.Append("📦 ").Append(displayName).AppendLine();
+            if (!string.IsNullOrWhiteSpace(component.Author))
+            {
+                _ = sb.Append("👤 Author: ").Append(component.Author).AppendLine();
+            }
+
+            if (component.Category.Count > 0)
+            {
+                _ = sb.Append("🏷️ Category: ").Append(string.Join(", ", component.Category)).AppendLine();
+            }
+
+            if (!string.IsNullOrWhiteSpace(component.Tier))
+            {
+                _ = sb.Append("⭐ Tier: ").Append(component.Tier).AppendLine();
+            }
+
+            bool isMissingDownload = !component.IsDownloaded;
+            _ = s_componentErrors.TryGetValue(component.Guid, out string errorReasons);
+            bool hasErrors = !string.IsNullOrEmpty(errorReasons);
+
+            bool shouldShowDownloadWarning = isMissingDownload && MainWindow.HasFetchedDownloads && hasErrors;
+
+            if (hasErrors || shouldShowDownloadWarning)
+            {
+                _ = sb.AppendLine("⚠️ ISSUES DETECTED ⚠️");
+                _ = sb.AppendLine(new string('─', 40));
+
+                if (shouldShowDownloadWarning)
+                {
+                    _ = sb.AppendLine("❗ Missing Download");
+                    _ = sb.AppendLine("This mod is selected but the archive file is not");
+                    _ = sb.AppendLine("in your mod directory. Please:");
+                    _ = sb.AppendLine("  1. Click 'Fetch Downloads' to auto-download");
+                    _ = sb.AppendLine("  2. Or manually download from the mod links");
+                    if (component.ResourceRegistry.Count > 0)
+                    {
+                        _ = sb.Append("  3. Download Links: ").Append(string.Join(", ", component.ResourceRegistry.Keys)).AppendLine();
+                    }
+
+                    _ = sb.AppendLine();
+                }
+
+                if (hasErrors)
+                {
+                    _ = sb.AppendLine("❌ Configuration Errors:");
+                    string[] errors = errorReasons.Split('\n');
+                    foreach (string error in errors)
+                    {
+                        _ = sb.Append("  • ").Append(error).AppendLine();
+                    }
+                    _ = sb.AppendLine();
+                    _ = sb.AppendLine("How to fix:");
+                    if (errorReasons.Contains("Requires"))
+                    {
+                        _ = sb.AppendLine("  • Enable required dependency mods");
+                    }
+
+                    if (errorReasons.Contains("Conflicts"))
+                    {
+                        _ = sb.AppendLine("  • Disable conflicting mods");
+                    }
+
+                    _ = sb.AppendLine();
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]
+        private static string CreateRichTooltipAsync(ModComponent component, bool spoilerFreeMode = false)
+        {
+            var sb = new System.Text.StringBuilder();
+            string displayName = GetDisplayName(component, spoilerFreeMode);
+            string description;
+            if (spoilerFreeMode)
+            {
+                // Only use custom spoiler-free description if it's provided
+                if (!string.IsNullOrWhiteSpace(component.DescriptionSpoilerFree))
+                {
+                    description = component.DescriptionSpoilerFree;
+                }
+                else
+                {
+                    // Fall back to auto-generated spoiler-free description
+                    description = Converters.SpoilerFreeContentConverter.GenerateSpoilerFreeDescription(component);
+                }
+            }
+            else
+            {
+                description = component.Description;
+            }
+
+            if (!component.IsSelected)
+            {
+
+                _ = sb.Append("📦 ").Append(displayName).AppendLine();
+                if (!string.IsNullOrWhiteSpace(component.Author))
+                {
+                    _ = sb.Append("👤 Author: ").Append(component.Author).AppendLine();
+                }
+
+                if (component.Category.Count > 0)
+                {
+                    _ = sb.Append("🏷️ Category: ");
+                    for (int i = 0; i < component.Category.Count; i++)
+                    {
+                        if (i > 0) sb.Append(", ");
+                        sb.Append(component.Category[i]);
+                    }
+                    sb.AppendLine();
+                }
+
+                if (!string.IsNullOrWhiteSpace(component.Tier))
+                {
+                    _ = sb.Append("⭐ Tier: ").Append(component.Tier).AppendLine();
+                }
+
+                if (!string.IsNullOrWhiteSpace(description))
+                {
+                    string desc = description.Length > 200 ? description.Substring(0, 200) + "..." : description;
+                    _ = sb.Append("📝 ").Append(desc).AppendLine();
+                }
+                return sb.ToString();
+            }
+
+            _ = sb.Append("📦 ").Append(displayName).AppendLine();
+            if (!string.IsNullOrWhiteSpace(component.Author))
+            {
+                _ = sb.Append("👤 Author: ").Append(component.Author).AppendLine();
+            }
+
+            if (component.Category.Count > 0)
+            {
+                _ = sb.Append("🏷️ Category: ");
+                for (int i = 0; i < component.Category.Count; i++)
+                {
+                    if (i > 0) sb.Append(", ");
+                    sb.Append(component.Category[i]);
+                }
+                sb.AppendLine();
+            }
+
+            if (!string.IsNullOrWhiteSpace(component.Tier))
+            {
+                _ = sb.Append("⭐ Tier: ").Append(component.Tier).AppendLine();
+            }
+
+            bool isMissingDownload = !component.IsDownloaded;
+            _ = s_componentErrors.TryGetValue(component.Guid, out string errorReasons);
+            bool hasErrors = !string.IsNullOrEmpty(errorReasons);
+
+            bool shouldShowDownloadWarning = isMissingDownload && MainWindow.HasFetchedDownloads && hasErrors;
+
+            if (hasErrors || shouldShowDownloadWarning)
+            {
+                _ = sb.Append("⚠️ ISSUES DETECTED ⚠️").AppendLine();
+                _ = sb.Append(new string('─', 40)).AppendLine();
+
+                if (shouldShowDownloadWarning)
+                {
+                    _ = sb.Append("❗ Missing Download").AppendLine();
+
+                    MainWindow mainWindow = Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                        ? desktop.MainWindow as MainWindow
+                        : null;
+                    Core.Services.DownloadCacheService downloadCacheService = mainWindow?.DownloadCacheService;
+                    if (downloadCacheService != null && component.ResourceRegistry.Count > 0)
+                    {
+                        var missingUrls = new List<string>();
+                        foreach (string url in component.ResourceRegistry.Keys)
+                        {
+                            if (!Core.Services.DownloadCacheService.IsCached(url))
+                            {
+                                missingUrls.Add(url);
+                            }
+                        }
+
+                        if (missingUrls.Count > 0)
+                        {
+                            _ = sb.AppendLine("Missing cached downloads:");
+                            foreach (string url in missingUrls)
+                            {
+                                _ = sb.Append("  • ").Append(url).AppendLine();
+                            }
+                            _ = sb.AppendLine();
+                        }
+                    }
+
+                    _ = sb.AppendLine("This mod is selected but the download is not cached.");
+                    _ = sb.AppendLine("Please:");
+                    _ = sb.AppendLine("  1. Click 'Fetch Downloads' to auto-download");
+                    _ = sb.AppendLine("  2. Or manually download from the mod links");
+                    if (component.ResourceRegistry.Count > 0)
+                    {
+                        _ = sb.Append("  3. Download Links: ");
+                        int keyIndex = 0;
+                        foreach (string key in component.ResourceRegistry.Keys)
+                        {
+                            if (keyIndex > 0) sb.Append(", ");
+                            sb.Append(key);
+                            keyIndex++;
+                        }
+                        sb.AppendLine();
+                    }
+
+                    _ = sb.AppendLine();
+                }
+
+                if (hasErrors)
+                {
+                    _ = sb.AppendLine("❌ Configuration Errors:");
+                    string[] errors = errorReasons.Split('\n');
+                    foreach (string error in errors)
+                    {
+                        _ = sb.Append("  • ").Append(error).AppendLine();
+                    }
+                    _ = sb.AppendLine();
+                    _ = sb.AppendLine("How to fix:");
+                    if (errorReasons.Contains("Requires"))
+                    {
+                        _ = sb.AppendLine("  • Enable required dependency mods");
+                    }
+
+                    if (errorReasons.Contains("Conflicts"))
+                    {
+                        _ = sb.AppendLine("  • Disable conflicting mods");
+                    }
+
+                    _ = sb.AppendLine();
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                _ = sb.AppendLine($"📝 Description:");
+                string desc = description.Length > 300 ? description.Substring(0, 300) + "..." : description;
+                _ = sb.AppendLine(desc);
+                _ = sb.AppendLine();
+            }
+
+            if (component.ResourceRegistry.Count > 0)
+            {
+                _ = sb.Append("🔗 Download Links (").Append(component.ResourceRegistry.Count).AppendLine("):");
+                var linkNames = component.ResourceRegistry.Keys.ToList();
+                for (int i = 0; i < Math.Min(linkNames.Count, 3); i++)
+                {
+                    _ = sb.Append("  ").Append(i + 1).Append(". ").Append(linkNames[i]).AppendLine();
+                }
+                if (linkNames.Count > 3)
+                {
+                    _ = sb.Append("  ... and ").Append(linkNames.Count - 3).AppendLine(" more");
+                }
+
+                _ = sb.AppendLine();
+            }
+
+            if (component.Dependencies.Count > 0)
+            {
+                _ = sb.Append("🔗 Dependencies (").Append(component.Dependencies.Count).AppendLine("):");
+                foreach (Guid depGuid in component.Dependencies)
+                {
+                    ModComponent depComponent = MainConfig.AllComponents.Find(c => c.Guid == depGuid);
+                    if (!(depComponent is null))
+                    {
+                        string status = depComponent.IsSelected ? "✅" : "❌";
+                        _ = sb.Append("  ").Append(status).Append(' ').Append(depComponent.Name).AppendLine();
+                    }
+                    else
+                    {
+                        _ = sb.Append("  ❓ Unknown dependency (").Append(depGuid).Append(')').AppendLine();
+                    }
+                }
+                _ = sb.AppendLine();
+            }
+
+            if (component.Restrictions.Count > 0)
+            {
+                _ = sb.Append("⚠️ Conflicts (").Append(component.Restrictions.Count).AppendLine("):");
+                foreach (Guid restrictGuid in component.Restrictions)
+                {
+                    ModComponent restrictComponent = MainConfig.AllComponents.Find(c => c.Guid == restrictGuid);
+                    if (!(restrictComponent is null))
+                    {
+                        string status = restrictComponent.IsSelected ? "❌" : "✅";
+                        _ = sb.Append("  ").Append(status).Append(' ').Append(restrictComponent.Name).AppendLine();
+                    }
+                    else
+                    {
+                        _ = sb.Append("  ❓ Unknown conflict (").Append(restrictGuid).Append(')').AppendLine();
+                    }
+                }
+                _ = sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }
+
+        private void OnPointerEntered(object sender, PointerEventArgs e)
+        {
+            if (!(this.FindControl<Border>("RootBorder") is Border border))
+            {
+                return;
+            }
+
+            IBrush currentBrush = border.BorderBrush;
+            border.Tag = currentBrush;
+
+            if (currentBrush is SolidColorBrush solidBrush)
+            {
+                Color color = solidBrush.Color;
+
+                switch (color.R > 200)
+                {
+                    case true when color.G < 150:
+                        border.BorderBrush = ThemeResourceHelper.ModListItemHoverErrorBrush;
+                        break;
+                    case true when color.G > 100 && color.G < 200:
+                        border.BorderBrush = ThemeResourceHelper.ModListItemHoverWarningBrush;
+                        break;
+                    default:
+                        border.BorderBrush = ThemeResourceHelper.ModListItemHoverDefaultBrush;
+                        break;
+                }
+            }
+            else
+            {
+                border.BorderBrush = ThemeResourceHelper.ModListItemHoverDefaultBrush;
+            }
+
+            border.Background = ThemeResourceHelper.ModListItemHoverBackgroundBrush;
+        }
+
+        private void OnPointerExited(object sender, PointerEventArgs e)
+        {
+            if (!(this.FindControl<Border>("RootBorder") is Border border))
+            {
+                return;
+            }
+
+            if (border.Tag is IBrush originalBrush)
+            {
+                border.BorderBrush = originalBrush;
+            }
+            else
+            {
+
+                if (DataContext is ModComponent component)
+                {
+                    UpdateValidationState(component);
+                }
+            }
+
+            border.Background = ThemeResourceHelper.ModListItemDefaultBackgroundBrush;
+        }
+
+        public void SetDraggedState(bool isDragged)
+        {
+            IsBeingDragged = isDragged;
+            if (this.FindControl<Border>("RootBorder") is Border border)
+            {
+                border.Opacity = isDragged ? 0.5 : 1.0;
+            }
+        }
+
+        public void SetDropTargetState(bool isDropTarget)
+        {
+            IsDropTarget = isDropTarget;
+            if (this.FindControl<Border>("DropIndicator") is Border indicator)
+            {
+                indicator.IsVisible = isDropTarget;
+            }
+        }
+
+        private static bool IsValidUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return false;
+            }
+
+            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+            {
+                return false;
+            }
+
+            if (
+                !string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.Ordinal)
+                && !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal)
+            )
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(uri.Host))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private void OptionBorder_PointerPressed(object sender, PointerPressedEventArgs e)
+        {
+
+            e.Handled = true;
+
+            if (sender is Border border && border.Tag is Option option)
+            {
+
+                option.IsSelected = !option.IsSelected;
+
+                UpdateOptionBackground(border, option.IsSelected);
+            }
+        }
+
+        private static void UpdateOptionBackground(Border border, bool isSelected)
+        {
+            if (border is null)
+            {
+                return;
+            }
+
+            border.Background = isSelected
+                ? ThemeResourceHelper.ModListItemHoverBackgroundBrush
+                : Brushes.Transparent;
+        }
+
+        /// <summary>
+        /// Checks PathValidationCache for invalid paths in the component's instructions.
+        /// Returns a list of error messages for any invalid paths found.
+        /// </summary>
+        private static List<string> GetPathValidationErrors(ModComponent component)
+        {
+            var errors = new List<string>();
+
+            if (component == null || component.Instructions == null)
+            {
+                return errors;
+            }
+
+            try
+            {
+                foreach (Instruction instruction in component.Instructions)
+                {
+                    // Check Source paths
+                    if (instruction.Source != null)
+                    {
+                        foreach (string sourcePath in instruction.Source)
+                        {
+                            if (string.IsNullOrWhiteSpace(sourcePath))
+                            {
+                                continue;
+                            }
+
+                            PathValidationResult result = PathValidationCache.GetCachedResult(sourcePath, instruction, component);
+                            if (result != null && !result.IsValid)
+                            {
+                                string message = !string.IsNullOrWhiteSpace(result.StatusMessage)
+                                    ? result.StatusMessage
+                                    : "Invalid source path";
+                                errors.Add($"Source: {message}");
+                            }
+                        }
+                    }
+
+                    // Check Destination path
+                    if (!string.IsNullOrWhiteSpace(instruction.Destination))
+                    {
+                        PathValidationResult result = PathValidationCache.GetCachedResult(instruction.Destination, instruction, component);
+                        if (result != null && !result.IsValid)
+                        {
+                            string message = !string.IsNullOrWhiteSpace(result.StatusMessage)
+                                ? result.StatusMessage
+                                : "Invalid destination path";
+                            errors.Add($"Destination: {message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex, "Error checking path validation");
+            }
+
+            // Return unique errors only (in case multiple instructions have the same issue)
+            return errors.Distinct(StringComparer.Ordinal).ToList();
+        }
+
+        /// <summary>
+        /// Gets the display name for a component based on spoiler-free mode.
+        /// Returns the spoiler-free name if available and mode is enabled,
+        /// otherwise returns the regular name or generates a fallback.
+        /// </summary>
+        private static string GetDisplayName(ModComponent component, bool spoilerFreeMode)
+        {
+            if (component == null)
+            {
+                return "Unknown Mod";
+            }
+
+            if (spoilerFreeMode)
+            {
+                // If spoiler-free name is provided, use it
+                if (!string.IsNullOrWhiteSpace(component.NameSpoilerFree))
+                {
+                    return component.NameSpoilerFree;
+                }
+
+                // Generate automatic spoiler-free name
+                return Converters.SpoilerFreeContentConverter.GenerateAutoName(component);
+            }
+
+            // Return regular name
+            return component.Name ?? "Unnamed Mod";
+        }
+    }
+}

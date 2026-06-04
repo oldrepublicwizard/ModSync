@@ -1,0 +1,108 @@
+<!--  Copyright 2021-2025 ModSync  -->
+<!--  Licensed under the Business Source License 1.1 (BSL 1.1).  -->
+<!--  See LICENSE.txt file in the project root for full license information.  -->
+<UserControl
+    x:Class="ModSync.Dialogs.WizardPages.ModDirectoryPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:ModSync.Controls">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24,16" RowDefinitions="Auto,Auto,*,Auto">
+            <!--  Header Section  -->
+            <Border Grid.Row="0" Padding="24,20" CornerRadius="12" Margin="0,0,0,16">
+                <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock FontSize="24" Text="&#x1F4C1;" />
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Text="Mod Workspace Directory"
+                            VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock
+                        FontSize="14"
+                        Opacity="0.8"
+                        Text="Select a folder where mod files will be downloaded, extracted, and processed"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <!--  Info Cards  -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,16,*" Margin="0,0,0,16">
+                <Border Grid.Column="0" Padding="20,16" CornerRadius="10">
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            Text="&#x1F4E6; What will be stored here?" />
+                        <StackPanel Spacing="6">
+                            <TextBlock FontSize="13" Opacity="0.8" Text="&#x2022; Downloaded mod archives (.zip, .rar, .7z)" />
+                            <TextBlock FontSize="13" Opacity="0.8" Text="&#x2022; Extracted mod files and folders" />
+                            <TextBlock FontSize="13" Opacity="0.8" Text="&#x2022; Temporary installation files" />
+                            <TextBlock FontSize="13" Opacity="0.8" Text="&#x2022; Backup copies before installation" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Padding="20,16" CornerRadius="10">
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            Text="&#x1F4A1; Recommended Setup" />
+                        <StackPanel Spacing="6">
+                            <TextBlock FontSize="13" Opacity="0.8" Text="&#x2022; Choose a drive with plenty of space (20+ GB)" />
+                            <TextBlock FontSize="13" Opacity="0.8" Text="&#x2022; Use a fast drive (SSD preferred)" />
+                            <TextBlock FontSize="13" Opacity="0.8" Text="&#x2022; Example: C:\KOTORMODS or D:\ModWorkspace" />
+                            <TextBlock FontSize="13" Opacity="0.8" Text="&#x2022; Avoid system directories like Windows or Program Files" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!--  Directory Picker  -->
+            <Border Grid.Row="2" Padding="20,16" CornerRadius="10">
+                <StackPanel Spacing="12">
+                    <controls:DirectoryPickerControl
+                        x:Name="SourcePathPicker"
+                        Title="Select Mod Workspace:"
+                        Description="Choose a folder where mod archives will be downloaded and processed"
+                        PickerType="ModDirectory"
+                        Watermark="Click Browse to select a directory or type path manually" />
+
+                    <!--  Validation Feedback  -->
+                    <Border
+                        x:Name="ValidationFeedback"
+                        Padding="16,12"
+                        CornerRadius="8"
+                        IsVisible="False">
+                        <StackPanel Spacing="6">
+                            <TextBlock
+                                x:Name="ValidationTitle"
+                                FontSize="14"
+                                FontWeight="SemiBold" />
+                            <TextBlock
+                                x:Name="ValidationMessage"
+                                FontSize="13"
+                                Opacity="0.9"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!--  Footer Tip  -->
+            <Border Grid.Row="3" Padding="16,12" CornerRadius="8" Margin="0,16,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock FontSize="20" Text="&#x1F6C8;" />
+                    <TextBlock
+                        FontSize="13"
+                        Opacity="0.7"
+                        Text="You can change this location later in Settings if needed"
+                        VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

@@ -41,7 +41,7 @@ During desktop GUI validation, the Output panel header stayed at **"0 lines"** w
 
 - Prefer `ObservableCollection.CollectionChanged` → update header on UI thread rather than only manual `UpdateLineCount()` calls at call sites.
 - Keep `LineCountText` as code-behind target (no new XAML font/style); update from a single handler.
-- Test via Avalonia headless `UserControl` host pattern used elsewhere in `KOTORModSync.Tests`.
+- Test via Avalonia headless `UserControl` host pattern used elsewhere in `ModSync.Tests`.
 
 ---
 
@@ -52,8 +52,8 @@ During desktop GUI validation, the Output panel header stayed at **"0 lines"** w
 **Goal:** Header count always matches bound list.
 
 **Files:**
-- Modify: `src/KOTORModSync.GUI/Controls/EmbeddedLogPanel.axaml.cs`
-- Modify: `src/KOTORModSync.GUI/OutputLogViewModel.cs` (optional `LineCount` property if binding simplifies)
+- Modify: `src/ModSync.GUI/Controls/EmbeddedLogPanel.axaml.cs`
+- Modify: `src/ModSync.GUI/OutputLogViewModel.cs` (optional `LineCount` property if binding simplifies)
 
 **Approach:** Marshal `AppendLogLine` / `ClearLog_Click` body mutations through `Dispatcher.UIThread`; subscribe to `LogLines.CollectionChanged` to refresh header text; call initial count after bulk load in `EnsureLoggerAttached`.
 
@@ -66,7 +66,7 @@ During desktop GUI validation, the Output panel header stayed at **"0 lines"** w
 **Goal:** Prevent regression without desktop automation.
 
 **Files:**
-- Create or modify: `src/KOTORModSync.Tests/HeadlessUITests/EmbeddedLogPanelHeadlessTests.cs`
+- Create or modify: `src/ModSync.Tests/HeadlessUITests/EmbeddedLogPanelHeadlessTests.cs`
 
 **Approach:** Instantiate `EmbeddedLogPanel`, append lines via public/test hook or Logger simulation, assert `LineCountText.Text` matches count.
 

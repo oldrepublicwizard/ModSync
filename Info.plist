@@ -15,7 +15,7 @@
         <key>CFBundleIconFile</key>
         <string>icon53</string>
         <key>CFBundleExecutable</key>
-        <string>KOTORModSync</string>
+        <string>ModSync</string>
         <key>LSApplicationCategoryType</key>
         <string>public.app-category.utilities</string>
     </dict>

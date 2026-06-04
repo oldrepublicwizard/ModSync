@@ -58,7 +58,7 @@ The repo currently sends mixed toolchain signals. Core contributor guidance, the
 
 - `.github/workflows/build-and-test.yml`, `.github/workflows/lint.yml`, `.github/workflows/code-cleanup.yml`, and `.github/workflows/push-integration.yml` already use `9.0.x`, which is the strongest current workflow baseline.
 - `.github/workflows/build-and-release.yml` still sets `DOTNET_VERSION: "8.0.x"` and `DOTNET_VERSION_SHORT: "net8.0"` while publishing modern non-`net48` release targets.
-- `.github/workflows/mod-build-validation.yml` installs `8.0.x` but restores `KOTORModSync.sln /p:TargetFramework=net9.0`, which is internally inconsistent.
+- `.github/workflows/mod-build-validation.yml` installs `8.0.x` but restores `ModSync.sln /p:TargetFramework=net9.0`, which is internally inconsistent.
 - `.github/workflows/dotnet-desktop.yml` still installs `8.0.x` even though current repo guidance says `.NET 9`.
 - `AGENTS.md` and `docs/local_desktop_agent_runbook.md` both describe the active developer baseline as `.NET SDK 9.0.x`.
 - `README.md` still says supported modern builds are "NET8" and lists NET8 as a build prerequisite.

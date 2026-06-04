@@ -1,0 +1,39 @@
+// Copyright 2021-2025 ModSync
+// Licensed under the Business Source License 1.1 (BSL 1.1).
+// See LICENSE.txt file in the project root for full license information.
+
+using System;
+using System.Globalization;
+
+using Avalonia.Data.Converters;
+
+using ModSync.Core.Services.Validation;
+
+namespace ModSync.Converters
+{
+    public partial class ValidationBlockingInstructionTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is PathValidationResult result)
+            {
+                if (result.NeedsModLinkAdded)
+                {
+                    return "📥 Jump to ModLinks";
+                }
+
+                if (result.BlockingInstructionIndex.HasValue)
+                {
+                    return $"⚠️ Jump to Instruction #{result.BlockingInstructionIndex.Value + 1}";
+                }
+            }
+            return "Jump to Error";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+

@@ -1,0 +1,245 @@
+<!-- Copyright 2021-2025 ModSync -->
+<!-- Licensed under the Business Source License 1.1 (BSL 1.1). -->
+<!-- See LICENSE.txt file in the project root for full license information. -->
+<Window
+    x:Class="ModSync.Dialogs.DependencyUnlinkDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="🔗 Dependency Unlink Required"
+    Width="900"
+    Height="600"
+    MinWidth="700"
+    MinHeight="400"
+    Background="{DynamicResource ThemeBackgroundBrush}"
+    ExtendClientAreaChromeHints="NoChrome"
+    ExtendClientAreaTitleBarHeightHint="-1"
+    ExtendClientAreaToDecorationsHint="True"
+    Foreground="{DynamicResource ThemeForegroundBrush}"
+    SystemDecorations="BorderOnly"
+    WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+        <!--  Custom Window Controls  -->
+        <StackPanel
+            Grid.Row="0"
+            Margin="0,8,8,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Orientation="Horizontal"
+            Spacing="0">
+            <Button
+                Width="40"
+                Height="40"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Click="CloseButton_Click"
+                Content="X"
+                FontSize="15" />
+        </StackPanel>
+
+        <!--  Header  -->
+        <Border
+            Grid.Row="0"
+            Padding="20"
+            Background="{DynamicResource ThemeControlHighlightLowBrush}"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            BorderThickness="0,0,0,1">
+            <StackPanel Spacing="10">
+                <TextBlock
+                    FontSize="18"
+                    FontWeight="Bold"
+                    Text="🔗 DEPENDENCY UNLINK REQUIRED" />
+                <TextBlock
+                    Opacity="0.9"
+                    Text="{Binding SummaryText}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    FontStyle="Italic"
+                    Opacity="0.7"
+                    Text="💡 Uncheck components below to remove their dependency on the component you want to delete, then click 'Unlink &amp; Delete' to continue."
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <!--  Main Content  -->
+        <Grid
+            Grid.Row="1"
+            Margin="20"
+            ColumnDefinitions="2*,*">
+            <!--  Dependent Components List  -->
+            <Border
+                Grid.Column="0"
+                Margin="0,0,10,0"
+                Background="{DynamicResource ThemeBackgroundBrush}"
+                BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                BorderThickness="1">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock
+                        Grid.Row="0"
+                        Padding="15,10"
+                        Background="{DynamicResource ThemeControlHighlightLowBrush}"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Text="📋 Dependent Components" />
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl Padding="10" ItemsSource="{Binding DependentComponents}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        Margin="0,5"
+                                        Padding="10"
+                                        DataContext="{Binding .}"
+                                        Background="{Binding BackgroundBrush}"
+                                        BorderBrush="{Binding BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <CheckBox
+                                                Grid.Column="0"
+                                                Margin="0,0,10,0"
+                                                VerticalAlignment="Center"
+                                                IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                                                <TextBlock
+                                                    FontSize="11"
+                                                    Opacity="0.7"
+                                                    Text="{Binding Author}" />
+                                                <TextBlock
+                                                    Margin="0,5,0,0"
+                                                    FontSize="11"
+                                                    Foreground="{Binding DependencyInfoColor}"
+                                                    Text="{Binding DependencyInfo}" />
+                                            </StackPanel>
+
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                FontSize="24"
+                                                Text="{Binding StatusIcon}"
+                                                ToolTip.Tip="{Binding StatusTooltip}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!--  ModComponent to Delete Info  -->
+            <Border
+                Grid.Column="1"
+                Background="{DynamicResource ThemeBackgroundBrush}"
+                BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                BorderThickness="1">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock
+                        Grid.Row="0"
+                        Padding="15,10"
+                        Background="{DynamicResource ThemeControlHighlightLowBrush}"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Text="🗑️ ModComponent to Delete" />
+
+                    <ScrollViewer
+                        Grid.Row="1"
+                        Padding="15"
+                        VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="15">
+                            <Border
+                                Padding="10"
+                                Background="{DynamicResource ThemeControlHighlightLowBrush}"
+                                CornerRadius="4">
+                                <StackPanel>
+                                    <TextBlock
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Text="{Binding ComponentToDelete.Name}" />
+                                    <TextBlock
+                                        Margin="0,5,0,0"
+                                        Opacity="0.7"
+                                        Text="{Binding ComponentToDelete.Author}" />
+                                    <TextBlock
+                                        Margin="0,10,0,0"
+                                        Opacity="0.8"
+                                        Text="{Binding ComponentToDelete.Description}"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+
+                            <Separator />
+
+                            <TextBlock FontWeight="Bold" Text="Quick Actions:" />
+                            <ItemsControl ItemsSource="{Binding QuickActions}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button
+                                            Margin="0,0,0,5"
+                                            Padding="10,8"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Background="{DynamicResource ThemeControlHighlightLowBrush}"
+                                            DataContext="{Binding .}"
+                                            Command="{Binding $parent[Window].ApplyQuickActionCommand}"
+                                            CommandParameter="{Binding}"
+                                            Content="{Binding Text}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <Separator />
+
+                            <TextBlock
+                                Margin="0,10,0,0"
+                                FontWeight="Bold"
+                                Text="Dependency Details:" />
+                            <TextBlock
+                                FontFamily="Consolas"
+                                FontSize="10"
+                                Opacity="0.8"
+                                Text="{Binding DetailedDependencyInfo}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!--  Status Bar  -->
+        <Border
+            Grid.Row="2"
+            Padding="20,10"
+            Background="{DynamicResource ThemeControlHighlightLowBrush}"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            BorderThickness="0,1,0,1">
+            <TextBlock FontStyle="Italic" Text="{Binding StatusText}" />
+        </Border>
+
+        <!--  Buttons  -->
+        <Border
+            Grid.Row="3"
+            Padding="20"
+            Background="{DynamicResource ThemeBackgroundBrush}">
+            <StackPanel
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="10">
+                <Button
+                    Width="150"
+                    Height="35"
+                    Click="UnlinkAndDelete_Click"
+                    Content="🔗 Unlink &amp; Delete"
+                    FontWeight="SemiBold" />
+                <Button
+                    Width="120"
+                    Height="35"
+                    Click="Cancel_Click"
+                    Content="Cancel" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

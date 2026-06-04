@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Setup script for KOTORModSync Telemetry Authentication
+# Setup script for ModSync Telemetry Authentication
 #
 # This script:
 # 1. Generates a secure HMAC signing secret
@@ -16,7 +16,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 SECRET_FILE="${PROJECT_ROOT}/volumes/kotormodsync_signing_secret.txt"
 
 echo "======================================================================"
-echo "KOTORModSync Telemetry Authentication Setup"
+echo "ModSync Telemetry Authentication Setup"
 echo "======================================================================"
 echo ""
 
@@ -96,7 +96,7 @@ echo ""
 echo "1. Copy the signing secret above"
 echo ""
 echo "2. Add to GitHub Actions:"
-echo "   - Go to: https://github.com/YOUR_ORG/KOTORModSync/settings/secrets/actions"
+echo "   - Go to: https://github.com/YOUR_ORG/ModSync/settings/secrets/actions"
 echo "   - New repository secret"
 echo "   - Name: KOTORMODSYNC_SIGNING_SECRET"
 echo "   - Value: (paste secret)"

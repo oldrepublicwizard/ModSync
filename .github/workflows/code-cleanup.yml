@@ -28,24 +28,24 @@ jobs:
         dotnet-version: '9.0.x'
 
     - name: Restore test project
-      run: dotnet restore src/KOTORModSync.Tests/KOTORModSync.Tests.csproj
+      run: dotnet restore src/ModSync.Tests/ModSync.Tests.csproj
 
     - name: Build test project
-      run: dotnet build src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --no-restore --configuration Debug
+      run: dotnet build src/ModSync.Tests/ModSync.Tests.csproj --no-restore --configuration Debug
 
     - name: Run code style verification
       continue-on-error: true
       run: |
         if [ "$RUNNER_OS" = "Windows" ]; then
-          dotnet format src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --verify-no-changes
+          dotnet format src/ModSync.Tests/ModSync.Tests.csproj --verify-no-changes
         else
-          dotnet format src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --verify-no-changes
+          dotnet format src/ModSync.Tests/ModSync.Tests.csproj --verify-no-changes
         fi
 
     - name: Run focused regression tests
       run: |
-        dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --no-build --filter "FullyQualifiedName~InstallCoordinatorTests"
-        dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --no-build --filter "FullyQualifiedName~DownloadQueueHeadlessTests"
+        dotnet test src/ModSync.Tests/ModSync.Tests.csproj --no-build --filter "FullyQualifiedName~InstallCoordinatorTests"
+        dotnet test src/ModSync.Tests/ModSync.Tests.csproj --no-build --filter "FullyQualifiedName~DownloadQueueHeadlessTests"
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -84,10 +84,10 @@ jobs:
         dotnet-version: '9.0.x'
 
     - name: Restore test project
-      run: dotnet restore src/KOTORModSync.Tests/KOTORModSync.Tests.csproj
+      run: dotnet restore src/ModSync.Tests/ModSync.Tests.csproj
 
     - name: Auto-fix code style issues
-      run: dotnet format src/KOTORModSync.Tests/KOTORModSync.Tests.csproj
+      run: dotnet format src/ModSync.Tests/ModSync.Tests.csproj
 
     - name: Check for changes
       id: verify-changed-files

@@ -36,14 +36,14 @@ Serialization, markdown merge, and DryRunValidator tests pass locally, but the C
 ### U1. FullBuildCliPipelineTests
 
 **Goal:** CLI E2E on merged mod-builds full sets.  
-**Files:** `src/KOTORModSync.Tests/FullBuildCliPipelineTests.cs`  
+**Files:** `src/ModSync.Tests/FullBuildCliPipelineTests.cs`  
 **Approach:** Merge TOML+markdown; write temp merged TOML; run validate dry-run-only and convert all formats; assert exit codes and parity.  
 **Test expectation:** New tests pass when `./mod-builds` is present; ignore otherwise.
 
 ### U2. ValidationPipelineParityTests hardening
 
 **Goal:** Stronger assertions on validate/install parity paths.  
-**Files:** `src/KOTORModSync.Tests/ValidationPipelineParityTests.cs`  
+**Files:** `src/ModSync.Tests/ValidationPipelineParityTests.cs`  
 **Test expectation:** Existing + updated tests pass.
 
 ### U3. Agent pipeline smoke
@@ -56,10 +56,10 @@ Serialization, markdown merge, and DryRunValidator tests pass locally, but the C
 ## Verification
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj -c Debug \
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj -c Debug \
   --filter "FullyQualifiedName~FullBuildCliPipelineTests"
 
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj -c Debug \
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj -c Debug \
   --filter "FullyQualifiedName~ValidationPipelineParityTests"
 
 ./scripts/agents/create_template_kotor_install.sh ./tmp/kotor_template ./tmp/mod_downloads

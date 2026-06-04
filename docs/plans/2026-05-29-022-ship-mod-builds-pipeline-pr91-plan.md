@@ -48,13 +48,13 @@ Plans 017–021 delivered round-trip, merge, dry-run, install wiring, and accura
 ### U3. Verification run
 
 **Goal:** Confirm pipeline tests still pass locally.  
-**Files:** `src/KOTORModSync.Tests/KOTORModSync.Tests.csproj`  
+**Files:** `src/ModSync.Tests/ModSync.Tests.csproj`  
 **Approach:** Run filter from plan 021 verification block.  
 **Verification:** Exit code 0.
 
 ## Verification
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj \
   --filter "Name~ModBuildConverterCliIntegrationTests|Name~AutoGenerateLocalCliIntegrationTests|Name~FullBuildMergedDryRunTests|Name~FullBuildMarkdownMergeRoundTripTests|Name~FullBuildSerializationRoundTripTests"
 ```

@@ -34,7 +34,7 @@ Plan 002 centralized dialog-row mapping but left wizard log/result UI with a thi
 ### U1. Public parser + ValidatePage wiring
 
 **Files:**
-- Modify: `src/KOTORModSync.GUI/Services/ValidationPipelineDialogMapper.cs`
-- Modify: `src/KOTORModSync.GUI/Dialogs/WizardPages/ValidatePage.axaml.cs`
+- Modify: `src/ModSync.GUI/Services/ValidationPipelineDialogMapper.cs`
+- Modify: `src/ModSync.GUI/Dialogs/WizardPages/ValidatePage.axaml.cs`
 
 **Verification:** `dotnet test --filter ValidationPipelineDialogMapperTests`

@@ -2,9 +2,9 @@ Business Source License 1.1
 
 Parameters
 
-Licensor:             KOTORModSync
-Licensed Work:        KOTORModSync v2.0.0 and later versions
-                      The Licensed Work is (c) 2021-2025 KOTORModSync
+Licensor:             ModSync
+Licensed Work:        ModSync v2.0.0 and later versions
+                      The Licensed Work is (c) 2021-2025 ModSync
 Additional Use Grant: None
 
 Change Date:          Four years from the date of first public distribution

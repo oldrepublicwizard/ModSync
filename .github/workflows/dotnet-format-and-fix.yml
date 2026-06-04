@@ -15,9 +15,9 @@ jobs:
         dotnet-version: '9.0.x'
     - id: check
       continue-on-error: true
-      run: dotnet format whitespace --verify-no-changes KOTORModSync.sln --include $(git diff --name-only HEAD origin/master | tr '\n' ' ')
+      run: dotnet format whitespace --verify-no-changes ModSync.sln --include $(git diff --name-only HEAD origin/master | tr '\n' ' ')
     - if: steps.check.outcome == 'failure'
-      run: dotnet format whitespace KOTORModSync.sln --include $(git diff --name-only HEAD origin/master | tr '\n' ' ')
+      run: dotnet format whitespace ModSync.sln --include $(git diff --name-only HEAD origin/master | tr '\n' ' ')
     - if: steps.check.outcome == 'failure'
       run: |
         git config user.name "bot"

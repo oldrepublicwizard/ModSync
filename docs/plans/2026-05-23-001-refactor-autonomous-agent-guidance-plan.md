@@ -42,7 +42,7 @@ The repo already documents the right workflows for headless work, GUI/manual val
 ## Scope Boundaries
 
 - No product runtime or UI behavior changes.
-- No changes to generated documentation such as `docs/KOTORModSync_Master.md`.
+- No changes to generated documentation such as `docs/ModSync_Master.md`.
 - No new MCP servers, helper scripts, or IDE tasks unless implementation uncovers a documentation mismatch that must be corrected.
 
 ### Deferred to Follow-Up Work

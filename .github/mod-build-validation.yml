@@ -53,11 +53,11 @@ jobs:
           fetch-depth: 0 # Full history for proper change detection
           path: mod-builds
 
-      - name: Checkout KOTORModSync repository
+      - name: Checkout ModSync repository
         uses: actions/checkout@v4
         with:
-          repository: "th3w1zard1/KOTORModSync"
-          path: KOTORModSync
+          repository: "th3w1zard1/ModSync"
+          path: ModSync
           fetch-depth: 1
 
       - name: Setup .NET
@@ -103,21 +103,21 @@ jobs:
 
       - name: Restore dependencies
         if: steps.hash.outputs.changed == 'true'
-        working-directory: KOTORModSync
+        working-directory: ModSync
         run: dotnet restore
 
-      - name: Build KOTORModSync
+      - name: Build ModSync
         if: steps.hash.outputs.changed == 'true'
-        working-directory: KOTORModSync
+        working-directory: ModSync
         run: dotnet build --configuration Release --no-restore
 
       - name: Parse and convert to TOML
         if: steps.hash.outputs.changed == 'true'
         id: convert
-        working-directory: KOTORModSync
+        working-directory: ModSync
         run: |
           mkdir -p temp_output
-          dotnet run --project KOTORModSync.Core/KOTORModSync.Core.csproj \
+          dotnet run --project ModSync.Core/ModSync.Core.csproj \
             --framework net9.0 \
             --configuration Release \
             -- convert-to-toml \
@@ -128,9 +128,9 @@ jobs:
       - name: Generate documentation
         if: steps.hash.outputs.changed == 'true'
         id: generate
-        working-directory: KOTORModSync
+        working-directory: ModSync
         run: |
-          dotnet run --project KOTORModSync.Core/KOTORModSync.Core.csproj \
+          dotnet run --project ModSync.Core/ModSync.Core.csproj \
             --framework net9.0 \
             --configuration Release \
             -- generate-docs \
@@ -150,8 +150,8 @@ jobs:
         working-directory: mod-builds
         run: |
           # Write TOML to TOMLs directory
-          if [ -f "../KOTORModSync/temp_output/${{ matrix.build.toml_filename }}" ]; then
-            cp "../KOTORModSync/temp_output/${{ matrix.build.toml_filename }}" \
+          if [ -f "../ModSync/temp_output/${{ matrix.build.toml_filename }}" ]; then
+            cp "../ModSync/temp_output/${{ matrix.build.toml_filename }}" \
                "TOMLs/${{ matrix.build.toml_filename }}"
             echo "Updated TOMLs/${{ matrix.build.toml_filename }}"
           fi

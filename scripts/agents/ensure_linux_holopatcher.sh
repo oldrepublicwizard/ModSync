@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-output_dir="${1:-$repo_root/src/KOTORModSync.GUI/bin/Debug/net9.0}"
+output_dir="${1:-$repo_root/src/ModSync.GUI/bin/Debug/net9.0}"
 resources_dir="$output_dir/Resources"
 vendor_linux_patcher="$repo_root/vendor/bin/HoloPatcher_linux"
 target_path="$resources_dir/holopatcher"

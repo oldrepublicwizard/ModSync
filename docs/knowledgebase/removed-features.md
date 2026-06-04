@@ -6,7 +6,7 @@
 
 - **Removed:** `97b00c4`, `93c74e5` — distributed cache infrastructure and MonoTorrent integration.
 - **Still on master:** `DownloadCacheService` and download orchestration (unrelated name; not P2P cache).
-- **Drift:** Do not document `FullyQualifiedName~DistributedCache` test filters; no `DistributedCache*` tests remain under `src/KOTORModSync.Tests/`.
+- **Drift:** Do not document `FullyQualifiedName~DistributedCache` test filters; no `DistributedCache*` tests remain under `src/ModSync.Tests/`.
 - **PR #70** (deobfuscation of removed files) was closed as obsolete.
 
 ## NuGet GitHub Packages feed

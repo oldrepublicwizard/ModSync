@@ -7,8 +7,8 @@ ensure_core_resources_symlink() {
   if [[ -z "$root" ]]; then
     root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
   fi
-  local gui_res="$root/src/KOTORModSync.GUI/bin/Debug/net9.0/Resources"
-  local core_out="$root/src/KOTORModSync.Core/bin/Debug/net9.0"
+  local gui_res="$root/src/ModSync.GUI/bin/Debug/net9.0/Resources"
+  local core_out="$root/src/ModSync.Core/bin/Debug/net9.0"
   if [[ -d "$gui_res" ]]; then
     mkdir -p "$core_out"
     ln -sfn "$gui_res" "$core_out/Resources"

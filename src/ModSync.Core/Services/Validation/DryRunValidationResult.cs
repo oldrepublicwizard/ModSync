@@ -1,0 +1,328 @@
+// Copyright 2021-2025 ModSync
+// Licensed under the Business Source License 1.1 (BSL 1.1).
+// See LICENSE.txt file in the project root for full license information.
+
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+using JetBrains.Annotations;
+
+using ModSync.Core.Services.FileSystem;
+
+namespace ModSync.Core.Services.Validation
+{
+
+
+
+    public class DryRunValidationResult
+    {
+        [NotNull]
+        [ItemNotNull]
+        public List<ValidationIssue> Issues { get; set; } = new List<ValidationIssue>();
+
+        public bool IsValid => !Issues.Exists(i => i.Severity == ValidationSeverity.Error || i.Severity == ValidationSeverity.Critical);
+
+        public bool HasWarnings => Issues.Exists(i => i.Severity == ValidationSeverity.Warning);
+
+        [NotNull]
+        public string GetSummaryMessage()
+        {
+            if (IsValid && !HasWarnings)
+            {
+                return "✓ Dry-run validation passed successfully. All instructions appear to be correct.";
+            }
+
+            var sb = new StringBuilder();
+            int errorCount = Issues.Count(i => i.Severity == ValidationSeverity.Error || i.Severity == ValidationSeverity.Critical);
+            int warningCount = Issues.Count(i => i.Severity == ValidationSeverity.Warning);
+
+            if (errorCount > 0)
+            {
+                _ = sb.Append("✗ Validation failed with ").Append(errorCount).Append(" error(s) and ").Append(warningCount).AppendLine(" warning(s).");
+                _ = sb.AppendLine();
+                _ = sb.AppendLine("The following issues must be resolved before installation:");
+            }
+            else if (warningCount > 0)
+            {
+                _ = sb.Append("⚠ Validation passed with ").Append(warningCount).AppendLine(" warning(s).");
+                _ = sb.AppendLine();
+                _ = sb.AppendLine("You may proceed, but review the following warnings:");
+            }
+
+            return sb.ToString();
+        }
+
+        [NotNull]
+        public string GetEndUserMessage()
+        {
+            var sb = new StringBuilder();
+            _ = sb.AppendLine(GetSummaryMessage());
+            _ = sb.AppendLine();
+
+
+            var componentIssues = Issues
+                .Where(i => i.AffectedComponent != null)
+                .GroupBy(i => i.AffectedComponent)
+                .ToList();
+
+            if (componentIssues.Any())
+            {
+                _ = sb.AppendLine("Issues by component:");
+                _ = sb.AppendLine();
+
+                foreach (IGrouping<ModComponent, ValidationIssue> group in componentIssues)
+                {
+                    ModComponent component = group.Key;
+                    _ = sb.Append("━━━ ").Append(component.Name).AppendLine(" ━━━");
+
+                    foreach (ValidationIssue issue in group)
+                    {
+                        string icon;
+                        if (issue.Severity == ValidationSeverity.Error || issue.Severity == ValidationSeverity.Critical)
+                        {
+                            icon = "✗";
+                        }
+                        else if (issue.Severity == ValidationSeverity.Warning)
+                        {
+                            icon = "⚠";
+                        }
+                        else
+                        {
+                            icon = "ℹ";
+                        }
+
+                        _ = sb.Append(icon).Append(' ').Append(issue.Message).AppendLine();
+
+
+                        string advice = GetEndUserAdvice(issue);
+                        if (!string.IsNullOrEmpty(advice))
+                        {
+                            _ = sb.Append("   → ").Append(advice).AppendLine();
+                        }
+
+                        _ = sb.AppendLine();
+                    }
+                }
+            }
+
+
+            var genericIssues = Issues.Where(i => i.AffectedComponent is null).ToList();
+            if (genericIssues.Any())
+            {
+                _ = sb.AppendLine("━━━ General Issues ━━━");
+                foreach (ValidationIssue issue in genericIssues)
+                {
+                    string icon;
+                    if (issue.Severity == ValidationSeverity.Error || issue.Severity == ValidationSeverity.Critical)
+                    {
+                        icon = "✗";
+                    }
+                    else if (issue.Severity == ValidationSeverity.Warning)
+                    {
+                        icon = "⚠";
+                    }
+                    else
+                    {
+                        icon = "ℹ";
+                    }
+
+                    _ = sb.Append(icon).Append(' ').Append(issue.Message).AppendLine();
+
+                    string advice = GetEndUserAdvice(issue);
+                    if (!string.IsNullOrEmpty(advice))
+                    {
+                        _ = sb.Append("   → ").Append(advice).AppendLine();
+                    }
+
+                    _ = sb.AppendLine();
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        [NotNull]
+        public string GetEditorMessage()
+        {
+            var sb = new StringBuilder();
+            _ = sb.AppendLine(GetSummaryMessage());
+            _ = sb.AppendLine();
+
+
+            var componentIssues = Issues
+                .Where(i => i.AffectedComponent != null)
+                .GroupBy(i => i.AffectedComponent)
+                .ToList();
+
+            if (componentIssues.Any())
+            {
+                foreach (IGrouping<ModComponent, ValidationIssue> group in componentIssues)
+                {
+                    ModComponent component = group.Key;
+                    _ = sb.Append("━━━ ModComponent: ").Append(component.Name).Append(" (GUID: ").Append(component.Guid).AppendLine(") ━━━");
+                    _ = sb.AppendLine();
+
+                    IOrderedEnumerable<IGrouping<int, ValidationIssue>> instructionGroups = group.GroupBy(i => i.InstructionIndex).OrderBy(g => g.Key);
+
+                    foreach (IGrouping<int, ValidationIssue> instrGroup in instructionGroups)
+                    {
+                        if (instrGroup.Key > 0)
+                        {
+                            _ = sb.Append("  Instruction #").Append(instrGroup.Key).Append(':').AppendLine();
+
+                            ValidationIssue firstIssue = instrGroup.First();
+                            if (firstIssue.AffectedInstruction != null)
+                            {
+                                _ = sb.Append("    Action: ").Append(firstIssue.AffectedInstruction.Action).AppendLine();
+                                if (firstIssue.AffectedInstruction.Source.Count != 0)
+                                {
+                                    _ = sb.Append("    Source: ").Append(string.Join(", ", firstIssue.AffectedInstruction.Source)).AppendLine();
+                                }
+                                if (!string.IsNullOrEmpty(firstIssue.AffectedInstruction.Destination))
+                                {
+                                    _ = sb.Append("    Destination: ").Append(firstIssue.AffectedInstruction.Destination).AppendLine();
+                                }
+                            }
+                            _ = sb.AppendLine();
+                        }
+
+                        foreach (ValidationIssue issue in instrGroup)
+                        {
+                            string icon;
+                            if (issue.Severity == ValidationSeverity.Error || issue.Severity == ValidationSeverity.Critical)
+                            {
+                                icon = "✗";
+                            }
+                            else if (issue.Severity == ValidationSeverity.Warning)
+                            {
+                                icon = "⚠";
+                            }
+                            else
+                            {
+                                icon = "ℹ";
+                            }
+
+                            _ = sb.Append("  ").Append(icon).Append(" [").Append(issue.Category).Append("] ").Append(issue.Message).AppendLine();
+
+                            string advice = GetEditorAdvice(issue);
+                            if (!string.IsNullOrEmpty(advice))
+                            {
+                                _ = sb.Append("     → ").Append(advice).AppendLine();
+                            }
+                        }
+
+                        _ = sb.AppendLine();
+                    }
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private static string GetEndUserAdvice([NotNull] ValidationIssue issue)
+        {
+            if (string.Equals(issue.Category, "ArchiveValidation", System.StringComparison.Ordinal) || string.Equals(issue.Category, "ExtractArchive", System.StringComparison.Ordinal))
+            {
+                return "This archive may be missing, corrupted, or incompatible. Try re-downloading it from the mod link.";
+            }
+
+            if ((string.Equals(issue.Category, "MoveFile", System.StringComparison.Ordinal) || string.Equals(issue.Category, "CopyFile", System.StringComparison.Ordinal)) && issue.Message.Contains("does not exist"))
+            {
+                return "Required files are missing. This usually means a previous mod installation step failed, or the mod archive is incomplete.";
+            }
+
+            if ((string.Equals(issue.Category, "MoveFile", System.StringComparison.Ordinal) || string.Equals(issue.Category, "CopyFile", System.StringComparison.Ordinal)) && issue.Message.Contains("already exists"))
+            {
+                return "This file conflict may be expected. If you continue and see errors, try deselecting conflicting mods.";
+            }
+
+            if (string.Equals(issue.Category, "DeleteFile", System.StringComparison.Ordinal))
+            {
+                return "Attempting to delete a file that doesn't exist. This may indicate incorrect instruction order.";
+            }
+
+            if (string.Equals(issue.Category, "ExecuteProcess", System.StringComparison.Ordinal))
+            {
+                return "The required executable is missing. Check if the mod archive was extracted correctly.";
+            }
+
+            if (string.Equals(issue.Category, "FileSystemInitialization", System.StringComparison.Ordinal))
+            {
+                return "Could not verify all files. Ensure you have set the correct mod and KOTOR directories in Settings.";
+            }
+
+            return string.Empty;
+        }
+
+        private static string GetEditorAdvice([NotNull] ValidationIssue issue)
+        {
+            if (string.Equals(issue.Category, "ArchiveValidation", System.StringComparison.Ordinal))
+            {
+                return "Verify the archive path is correct and the file exists in the source directory.";
+            }
+
+            if (string.Equals(issue.Category, "ExtractArchive", System.StringComparison.Ordinal))
+            {
+                return "Check that the archive is valid and not corrupted. Consider using a different archive format.";
+            }
+
+            if ((string.Equals(issue.Category, "MoveFile", System.StringComparison.Ordinal) || string.Equals(issue.Category, "CopyFile", System.StringComparison.Ordinal)) && issue.Message.Contains("does not exist"))
+            {
+                return "Add an Extract instruction before this operation, or verify the source path is correct. Check if the file should come from a previous component's instructions.";
+            }
+
+            if ((string.Equals(issue.Category, "MoveFile", System.StringComparison.Ordinal) || string.Equals(issue.Category, "CopyFile", System.StringComparison.Ordinal)) && issue.Message.Contains("already exists"))
+            {
+                return "Set 'Overwrite' to true if you want to replace the existing file, or reorder instructions to avoid conflicts.";
+            }
+
+            if (string.Equals(issue.Category, "DeleteFile", System.StringComparison.Ordinal))
+            {
+                return "Move this instruction to after the file is created, or remove it if it's unnecessary.";
+            }
+
+            if (string.Equals(issue.Category, "RenameFile", System.StringComparison.Ordinal))
+            {
+                return "Ensure the source file exists at the time this instruction runs. Add Dependencies if this relies on another component.";
+            }
+
+            if (string.Equals(issue.Category, "ExecuteProcess", System.StringComparison.Ordinal))
+            {
+                return "Verify the executable path is correct and the file will exist at execution time.";
+            }
+
+            return "Review the instruction parameters and execution order.";
+        }
+
+        [NotNull]
+        [ItemNotNull]
+        public List<ModComponent> GetAffectedComponents()
+        {
+            return Issues
+                .Where(i => i.AffectedComponent != null &&
+                    (i.Severity == ValidationSeverity.Error || i.Severity == ValidationSeverity.Critical))
+                .Select(i => i.AffectedComponent)
+                .Distinct()
+                .ToList();
+        }
+
+        [NotNull]
+        [ItemNotNull]
+        public List<ModComponent> GetSuggestedComponentsToDisable()
+        {
+
+            List<ModComponent> affectedComponents = GetAffectedComponents();
+            var allSelectedComponents = MainConfig.AllComponents.Where(c => c.IsSelected).ToList();
+
+            return affectedComponents.Where(component =>
+            {
+
+                bool isRequiredDependency = allSelectedComponents.Exists(c =>
+                    c != component && c.Dependencies.Contains(component.Guid));
+
+                return !isRequiredDependency;
+            }).ToList();
+        }
+    }
+}

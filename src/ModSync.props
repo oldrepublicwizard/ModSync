@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <ModSyncVersion>2.0.0-alpha1</ModSyncVersion>
+    <ModSyncAssemblyVersion>2.0.0.0</ModSyncAssemblyVersion>
+    <ModSyncFileVersion>2.0.0.0</ModSyncFileVersion>
+    <Authors>th3w1zard1</Authors>
+    <Company>OldRepublicDevs</Company>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/th3w1zard1/ModSync</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/th3w1zard1/ModSync</PackageProjectUrl>
+  </PropertyGroup>
+</Project>

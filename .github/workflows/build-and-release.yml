@@ -1,4 +1,4 @@
-name: Build and Release KOTORModSync
+name: Build and Release ModSync
 
 # Manual-only release pipeline. Artifacts are always built; GitHub Releases are created
 # only when workflow_dispatch input create_github_release is true.
@@ -20,7 +20,7 @@ on:
 
 env:
   DOTNET_VERSION: "9.0.x"
-  PROJECT_FILE: "src/KOTORModSync.GUI/KOTORModSync.csproj"
+  PROJECT_FILE: "src/ModSync.GUI/ModSync.csproj"
   DOTNET_VERSION_SHORT: "net9.0"  # Specify net9.0 once here, so it's incredibly easy to change to another version globally.
   DOTNET_FRAMEWORK_VERSION_SHORT: "net48"  # Specify net48 once here, so it's incredibly easy to change to another version globally.
 
@@ -40,7 +40,7 @@ jobs:
         id: extract
         shell: pwsh
         run: |
-          $mainConfigPath = "src/KOTORModSync.Core/MainConfig.cs"
+          $mainConfigPath = "src/ModSync.Core/MainConfig.cs"
           $content = Get-Content $mainConfigPath -Raw
 
           if ($content -match 'CurrentVersion\s*=>\s*"([^"]+)"') {
@@ -172,21 +172,21 @@ jobs:
         run: |
           Write-Host "🔐 Injecting telemetry signing secret..."
 
-          $secretFile = "src/KOTORModSync.Core/Services/EmbeddedSecrets.cs"
+          $secretFile = "src/ModSync.Core/Services/EmbeddedSecrets.cs"
           $dir = Split-Path -Parent $secretFile
           if (-not (Test-Path $dir)) {
             New-Item -ItemType Directory -Path $dir -Force | Out-Null
           }
 
           $content = @"
-          // Copyright 2021-2025 KOTORModSync
+          // Copyright 2021-2025 ModSync
           // Licensed under the Business Source License 1.1 (BSL 1.1).
           // See LICENSE.txt file in the project root for full license information.
 
           // AUTO-GENERATED FILE - DO NOT COMMIT
           // Generated: $((Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss UTC"))
 
-          namespace KOTORModSync.Core.Services
+          namespace ModSync.Core.Services
           {
               internal static class EmbeddedSecrets
               {
@@ -200,11 +200,11 @@ jobs:
 
       - name: Restore Dependencies (Windows - MSBuild for .NET Framework 4.8)
         if: runner.os == 'Windows' && matrix.framework == 'DOTNET_FRAMEWORK_VERSION_SHORT'
-        run: msbuild KOTORModSync.sln /t:Restore /p:TargetFramework=${{ matrix.framework == 'DOTNET_FRAMEWORK_VERSION_SHORT' && env.DOTNET_FRAMEWORK_VERSION_SHORT || matrix.framework }} /p:Configuration=Release
+        run: msbuild ModSync.sln /t:Restore /p:TargetFramework=${{ matrix.framework == 'DOTNET_FRAMEWORK_VERSION_SHORT' && env.DOTNET_FRAMEWORK_VERSION_SHORT || matrix.framework }} /p:Configuration=Release
 
       - name: Restore Dependencies (dotnet CLI for .NET 9.0)
         if: matrix.framework == 'DOTNET_VERSION_SHORT'
-        run: dotnet restore KOTORModSync.sln /p:TargetFramework=${{ matrix.framework == 'DOTNET_VERSION_SHORT' && env.DOTNET_VERSION_SHORT || matrix.framework }} /p:Configuration=Release
+        run: dotnet restore ModSync.sln /p:TargetFramework=${{ matrix.framework == 'DOTNET_VERSION_SHORT' && env.DOTNET_VERSION_SHORT || matrix.framework }} /p:Configuration=Release
 
       - name: Publish ${{ matrix.rid }} (Windows - MSBuild for .NET Framework 4.8)
         if: runner.os == 'Windows' && matrix.framework == 'DOTNET_FRAMEWORK_VERSION_SHORT'
@@ -249,7 +249,7 @@ jobs:
           $publishDir = "./publish/${{ matrix.rid }}"
           $version = "${{ needs.determine-version.outputs.version }}"
           $packageRoot = "./package/${{ matrix.rid }}"
-          $packageDir = "$packageRoot/KOTORModSync $version"
+          $packageDir = "$packageRoot/ModSync $version"
 
           Write-Host "📦 Preparing release package for ${{ matrix.rid }} version $version..."
 
@@ -273,8 +273,8 @@ jobs:
           if (Test-Path "LICENSE.txt") {
             Copy-Item "LICENSE.txt" "$packageDir/docs/"
           }
-          if (Test-Path "KOTORModSync - Official Documentation.txt") {
-            Copy-Item "KOTORModSync - Official Documentation.txt" "$packageDir/docs/"
+          if (Test-Path "ModSync - Official Documentation.txt") {
+            Copy-Item "ModSync - Official Documentation.txt" "$packageDir/docs/"
           }
           if (Test-Path "TELEMETRY_SETUP_GUIDE.md") {
             Copy-Item "TELEMETRY_SETUP_GUIDE.md" "$packageDir/docs/"
@@ -289,9 +289,9 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $packageDir = "./package/${{ matrix.rid }}/KOTORModSync ${{ needs.determine-version.outputs.version }}"
+          $packageDir = "./package/${{ matrix.rid }}/ModSync ${{ needs.determine-version.outputs.version }}"
           $version = "${{ needs.determine-version.outputs.version }}"
-          $archiveName = "KOTORModSync-$version-${{ matrix.rid }}.zip"
+          $archiveName = "ModSync-$version-${{ matrix.rid }}.zip"
 
           Write-Host "🗜️ Creating archive: $archiveName"
 
@@ -305,12 +305,12 @@ jobs:
         shell: bash
         run: |
           version="${{ needs.determine-version.outputs.version }}"
-          archive_name="KOTORModSync-$version-${{ matrix.rid }}.zip"
+          archive_name="ModSync-$version-${{ matrix.rid }}.zip"
 
           echo "🗜️ Creating archive: $archive_name"
 
           cd "package/${{ matrix.rid }}"
-          zip -r "../../$archive_name" "KOTORModSync $version"
+          zip -r "../../$archive_name" "ModSync $version"
           cd ../..
 
           echo "✅ Archive created: $archive_name"
@@ -319,8 +319,8 @@ jobs:
       - name: Upload Release Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: KOTORModSync-${{ needs.determine-version.outputs.version }}-${{ matrix.rid }}
-          path: KOTORModSync-${{ needs.determine-version.outputs.version }}-${{ matrix.rid }}.zip
+          name: ModSync-${{ needs.determine-version.outputs.version }}-${{ matrix.rid }}
+          path: ModSync-${{ needs.determine-version.outputs.version }}-${{ matrix.rid }}.zip
           retention-days: 90
           compression-level: 0
 
@@ -328,7 +328,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.create_github_release
         uses: softprops/action-gh-release@v2
         with:
-          files: KOTORModSync-${{ needs.determine-version.outputs.version }}-${{ matrix.rid }}.zip
+          files: ModSync-${{ needs.determine-version.outputs.version }}-${{ matrix.rid }}.zip
           tag_name: ${{ needs.determine-version.outputs.version }}
           fail_on_unmatched_files: false
         env:
@@ -364,7 +364,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
-          pattern: KOTORModSync-${{ needs.determine-version.outputs.version }}-*
+          pattern: ModSync-${{ needs.determine-version.outputs.version }}-*
 
       - name: List Downloaded Artifacts
         run: |
@@ -390,7 +390,7 @@ jobs:
           mkdir -p signatures
 
           # Generate signature for each platform
-          for artifact_dir in artifacts/KOTORModSync-*; do
+          for artifact_dir in artifacts/ModSync-*; do
             if [ -d "$artifact_dir" ]; then
               for zip_file in "$artifact_dir"/*.zip; do
                 if [ -f "$zip_file" ]; then
@@ -428,21 +428,21 @@ jobs:
           <?xml version="1.0" encoding="utf-8"?>
           <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
               <channel>
-                  <title>KOTORModSync Updates</title>
-                  <link>https://github.com/th3w1zard1/KOTORModSync</link>
-                  <description>Update feed for KOTORModSync</description>
+                  <title>ModSync Updates</title>
+                  <link>https://github.com/th3w1zard1/ModSync</link>
+                  <description>Update feed for ModSync</description>
                   <language>en</language>
           EOF
 
           # Add item for each platform
-          for artifact_dir in artifacts/KOTORModSync-*; do
+          for artifact_dir in artifacts/ModSync-*; do
             if [ -d "$artifact_dir" ]; then
               for zip_file in "$artifact_dir"/*.zip; do
                 if [ -f "$zip_file" ]; then
                   filename=$(basename "$zip_file")
                   filesize=$(stat -c%s "$zip_file" 2>/dev/null || stat -f%z "$zip_file")
 
-                  # Extract RID from filename (e.g., win-x64 from KOTORModSync-v1.0.0-win-x64.zip)
+                  # Extract RID from filename (e.g., win-x64 from ModSync-v1.0.0-win-x64.zip)
                   rid=$(echo "$filename" | sed -E 's/.*-([^-]+-[^.]+)\.zip/\1/')
 
                   # Determine OS from RID
@@ -470,10 +470,10 @@ jobs:
                   <!-- $rid -->
                   <item>
                       <title>Version $clean_version ($rid)</title>
-                      <sparkle:releaseNotesLink>https://github.com/th3w1zard1/KOTORModSync/releases/tag/$version</sparkle:releaseNotesLink>
+                      <sparkle:releaseNotesLink>https://github.com/th3w1zard1/ModSync/releases/tag/$version</sparkle:releaseNotesLink>
                       <pubDate>$pub_date</pubDate>
                       <enclosure
-                          url="https://github.com/th3w1zard1/KOTORModSync/releases/download/$version/$filename"
+                          url="https://github.com/th3w1zard1/ModSync/releases/download/$version/$filename"
                           sparkle:version="$clean_version"
                           sparkle:os="$os"
                           length="$filesize"

@@ -23,9 +23,9 @@ mkdir -p "$MOD_DIR"
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 ensure_core_resources_symlink "$ROOT"
 
-dotnet build "$ROOT/src/KOTORModSync.Core/KOTORModSync.Core.csproj" -c Debug -f net9.0 -v q
+dotnet build "$ROOT/src/ModSync.Core/ModSync.Core.csproj" -c Debug -f net9.0 -v q
 
-exec dotnet run --project "$ROOT/src/KOTORModSync.Core/KOTORModSync.Core.csproj" -f net9.0 --no-build -- \
+exec dotnet run --project "$ROOT/src/ModSync.Core/ModSync.Core.csproj" -f net9.0 --no-build -- \
   install -i "$TOML" -g "$GAME_DIR" -s "$MOD_DIR" \
   -d --concurrent \
   --best-effort \

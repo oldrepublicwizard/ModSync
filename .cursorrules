@@ -31,15 +31,15 @@ Instructions MUST use relative paths with placeholders: <<modDirectory>>\filenam
 
 - Treat `.github/copilot-instructions.md`, `AGENTS.md`, and `.cursorrules` as the repo's initial routing layer before asking broad "what should I do?" questions.
 - Install wizard validation UX is documented in `docs/knowledgebase/gui-validation-surfaces.md`. Regression tests: `./scripts/agents/test_pr110_validation.sh`.
-- For repo-root work, `src/KOTORModSync.Core`, `src/KOTORModSync.Tests`, and normal build/test/lint changes, default to the headless .NET workflow. Do not stop to ask which project to inspect first when the task path already answers it.
-- If a task touches `src/KOTORModSync.GUI`, the install wizard, `scripts/agents/`, or full-build validation, default to the documented desktop workflow, helper scripts, and preload args before attempting native file-picker automation.
+- For repo-root work, `src/ModSync.Core`, `src/ModSync.Tests`, and normal build/test/lint changes, default to the headless .NET workflow. Do not stop to ask which project to inspect first when the task path already answers it.
+- If a task touches `src/ModSync.GUI`, the install wizard, `scripts/agents/`, or full-build validation, default to the documented desktop workflow, helper scripts, and preload args before attempting native file-picker automation.
 - If a task touches `telemetry-auth/`, treat it as the Python/Docker sidecar and use that directory's local docs/workflows instead of the Avalonia/.NET path.
 - Only stop or ask when a real prerequisite is missing: no `./mod-builds` for full-build work, no desktop/X11 for required GUI validation, missing credentials/secrets/manual external approval, or conflicting local changes that block a safe edit.
 
 
 ## Testing
 
-- All tests specified in KOTORModSync.Tests, do not create additional projects for any reason.
+- All tests specified in ModSync.Tests, do not create additional projects for any reason.
 
 === TEST NAMING CONVENTIONS ===
 
@@ -63,7 +63,7 @@ Instructions MUST use relative paths with placeholders: <<modDirectory>>\filenam
 # ALWAYS use 600000 to differentiate between 'slightly long tests' and 'long tests'.
 # IF a timelimit is specified as 120000, EXCLUSIVELY ensure FullyQualifiedName refers to a **SINGULAR** test! DO NOT run multiple tests with a timelimit as that defeats the purpose of figuring out how long a singular test takes and whether it meets the criteria where it'd be considered a 'slightly long' test vs a normal test.
 pwsh -Command '& {
-    $proj = ''src/KOTORModSync.Tests/KOTORModSync.Tests.csproj''
+    $proj = ''src/ModSync.Tests/ModSync.Tests.csproj''
     $args = ''test {0} --filter "FullyQualifiedName~<filterable_name_of_test(s)_to_run>"'' -f $proj
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = ''dotnet''

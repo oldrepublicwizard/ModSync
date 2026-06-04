@@ -34,7 +34,7 @@ Close the validation unification slice on `feat/mod-builds-roundtrip-pipeline`: 
 
 ### U1. Environment failure regression test
 
-**Files:** `src/KOTORModSync.Tests/ValidationPipelineParityTests.cs`
+**Files:** `src/ModSync.Tests/ValidationPipelineParityTests.cs`
 
 **Test scenarios:** WizardFull without skip flags, null game/mod paths → not success, no dry-run result.
 
@@ -45,9 +45,9 @@ Close the validation unification slice on `feat/mod-builds-roundtrip-pipeline`: 
 ### U3. Verification
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj -f net9.0 \
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj -f net9.0 \
   --filter "FullyQualifiedName~ValidationPipelineParityTests"
 
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj -f net9.0 \
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj -f net9.0 \
   --filter "Name~ModBuildConverterCliIntegrationTests|Name~AutoGenerateLocalCliIntegrationTests|Name~FullBuildMergedDryRunTests|Name~FullBuildMarkdownMergeRoundTripTests|Name~FullBuildSerializationRoundTripTests"
 ```

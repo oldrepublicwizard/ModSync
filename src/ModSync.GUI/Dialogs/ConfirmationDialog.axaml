@@ -1,0 +1,82 @@
+<!--  Copyright 2021-2025 ModSync  -->
+<!--  Licensed under the Business Source License 1.1 (BSL 1.1).  -->
+<!--  See LICENSE.txt file in the project root for full license information.  -->
+<Window
+    x:Class="ModSync.Dialogs.ConfirmationDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Confirm Action"
+    Width="460"
+    MinWidth="400"
+    MinHeight="200"
+    ExtendClientAreaChromeHints="NoChrome"
+    ExtendClientAreaTitleBarHeightHint="-1"
+    ExtendClientAreaToDecorationsHint="True"
+    SizeToContent="Height"
+    SystemDecorations="BorderOnly"
+    WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="Auto,*">
+        <!--  Dialog content in its own row below the close button  -->
+        <Border
+            x:Name="DialogBorder"
+            Grid.Row="1"
+            Margin="16,0,16,16"
+            Padding="16"
+            CornerRadius="8">
+            <Grid ColumnDefinitions="*" RowDefinitions="*,Auto">
+                <ScrollViewer
+                    Grid.Row="0"
+                    MaxHeight="200"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+                    <TextBlock
+                        x:Name="ConfirmTextBlock"
+                        Text="{Binding ConfirmText, RelativeSource={RelativeSource AncestorType=Window}}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                </ScrollViewer>
+                <StackPanel
+                    Grid.Row="1"
+                    Margin="0,16,0,0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <Button
+                        MinWidth="100"
+                        Click="YesButton_Click"
+                        Content="{Binding YesButtonText, RelativeSource={RelativeSource AncestorType=Window}}"
+                        Tag="Yes"
+                        ToolTip.Tip="{Binding YesButtonTooltip, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Button
+                        MinWidth="100"
+                        Click="NoButton_Click"
+                        Content="{Binding NoButtonText, RelativeSource={RelativeSource AncestorType=Window}}"
+                        Tag="No"
+                        ToolTip.Tip="{Binding NoButtonTooltip, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!--  Custom Window Controls - positioned above text area  -->
+        <StackPanel
+            Grid.Row="0"
+            Margin="8,8,8,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Orientation="Horizontal"
+            Spacing="8">
+            <TextBlock
+                Text="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}"
+                VerticalAlignment="Center" />
+            <Button
+                Width="40"
+                Height="40"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Click="CloseButton_Click"
+                Content="X"
+                ToolTip.Tip="{Binding CloseButtonTooltip, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </StackPanel>
+    </Grid>
+</Window>

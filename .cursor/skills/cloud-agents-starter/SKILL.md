@@ -3,7 +3,7 @@ name: cloud-agents-starter
 description: Minimal runbook for Cloud agents - how to run, test, and configure this codebase. Use when setting up environments, executing tests, or resolving common workflow issues.
 ---
 
-# KOTORModSync Cloud Agents Starter Skill
+# ModSync Cloud Agents Starter Skill
 
 A minimal runbook for Cloud agents covering practical setup, execution, and testing. Organized by codebase area.
 
@@ -35,26 +35,26 @@ git submodule update --init --recursive
 
 ```bash
 # Full solution
-dotnet build KOTORModSync.sln --configuration Debug
+dotnet build ModSync.sln --configuration Debug
 
 # GUI project only
-dotnet build src/KOTORModSync.GUI/KOTORModSync.csproj
+dotnet build src/ModSync.GUI/ModSync.csproj
 
 # Core CLI project only (also usable standalone via dotnet run)
-dotnet build src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0
+dotnet build src/ModSync.Core/ModSync.Core.csproj -f net9.0
 ```
 
 ---
 
-## 3. GUI Application (`src/KOTORModSync.GUI`)
+## 3. GUI Application (`src/ModSync.GUI`)
 
-**Entry point:** `src/KOTORModSync.GUI/Program.cs` (Avalonia UI)
+**Entry point:** `src/ModSync.GUI/Program.cs` (Avalonia UI)
 
 **Cloud agents are headless — do NOT run the GUI.** Use automated tests instead.
 
 For local desktop runs (requires `DISPLAY=:1`):
 ```bash
-dotnet run --project src/KOTORModSync.GUI/KOTORModSync.csproj --configuration Debug --framework net9.0
+dotnet run --project src/ModSync.GUI/ModSync.csproj --configuration Debug --framework net9.0
 ```
 
 **Preload CLI args** (avoid file-picker interaction):
@@ -77,12 +77,12 @@ dotnet run ... -- \
 
 ---
 
-## 4. Core CLI (`src/KOTORModSync.Core`)
+## 4. Core CLI (`src/ModSync.Core`)
 
 **Common verbs:** `convert`, `merge`, `validate`, `install`, `set-nexus-api-key`, `install-python-deps`, `holopatcher`.
 
 ```bash
-dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 -- \
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
   validate -i path/to/instructions.toml
 ```
 
@@ -97,7 +97,7 @@ See [core-cli-reference.md](../../../docs/knowledgebase/core-cli-reference.md) f
 
 ## 5. Testing
 
-**All tests live in one project:** `src/KOTORModSync.Tests/KOTORModSync.Tests.csproj`  
+**All tests live in one project:** `src/ModSync.Tests/ModSync.Tests.csproj`  
 **Do not create additional test projects.**
 
 ### Standard Cloud / headless test run
@@ -108,7 +108,7 @@ See [core-cli-reference.md](../../../docs/knowledgebase/core-cli-reference.md) f
 
 Or explicitly:
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj \
   --filter "FullyQualifiedName!~LongRunning" \
   --configuration Debug
 ```
@@ -119,7 +119,7 @@ dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
 
 ```pwsh
 pwsh -Command '& {
-  $proj = "src/KOTORModSync.Tests/KOTORModSync.Tests.csproj"
+  $proj = "src/ModSync.Tests/ModSync.Tests.csproj"
   $args = "test {0} --filter ""FullyQualifiedName~<TestName>""" -f $proj
   $psi = New-Object System.Diagnostics.ProcessStartInfo
   $psi.FileName = "dotnet"
@@ -195,7 +195,7 @@ dotnet build -c Release /p:DefineConstants="OFFICIAL_BUILD"
 
 **Client signing secret (order of precedence):**
 1. `KOTORMODSYNC_SIGNING_SECRET` env var
-2. `{ApplicationData}/KOTORModSync/telemetry.key`
+2. `{ApplicationData}/ModSync/telemetry.key`
 3. `EmbeddedSecrets.TELEMETRY_SIGNING_KEY` (only when `OFFICIAL_BUILD`; file is gitignored)
 
 **Telemetry consent:** Must be `IsEnabled=true` AND `UserConsented=true` in `telemetry_config.json`. Default is both `false`.
@@ -220,9 +220,9 @@ dotnet build -c Release /p:DefineConstants="OFFICIAL_BUILD"
 
 | Path | Purpose |
 |------|---------|
-| `{ApplicationData}/KOTORModSync/settings.json` | GUI preferences, paths, Nexus API key |
-| `{ApplicationData}/KOTORModSync/telemetry_config.json` | Telemetry options |
-| `{ApplicationData}/KOTORModSync/telemetry.key` | Signing secret fallback |
+| `{ApplicationData}/ModSync/settings.json` | GUI preferences, paths, Nexus API key |
+| `{ApplicationData}/ModSync/telemetry_config.json` | Telemetry options |
+| `{ApplicationData}/ModSync/telemetry.key` | Signing secret fallback |
 | `NuGet.config` | Package sources (nuget.org only) |
 
 ---
@@ -247,10 +247,10 @@ When modifying auth, settings, or telemetry code, keep these invariants:
 | Task | Command |
 |------|---------|
 | Init submodules | `git submodule update --init --recursive` |
-| Build solution | `dotnet build KOTORModSync.sln --configuration Debug` |
-| Run Core CLI | `dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 -- <verb>` |
+| Build solution | `dotnet build ModSync.sln --configuration Debug` |
+| Run Core CLI | `dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- <verb>` |
 | Headless tests (wrapper) | `./scripts/agents/run_headless_tests.sh` |
-| Run standard tests | `dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName!~LongRunning"` |
+| Run standard tests | `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName!~LongRunning"` |
 | CI test subsets | See [ci-test-matrix.md](../../../docs/knowledgebase/ci-test-matrix.md) |
 | Release build (with telemetry) | `dotnet build -c Release /p:DefineConstants="OFFICIAL_BUILD"` |
 

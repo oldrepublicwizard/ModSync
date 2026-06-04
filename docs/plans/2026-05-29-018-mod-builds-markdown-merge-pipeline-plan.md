@@ -49,7 +49,7 @@ Markdown alone does not carry install instructions; merge must prefer **existing
 
 ### U1. Merge round-trip tests
 
-**File:** `src/KOTORModSync.Tests/FullBuildMarkdownMergeRoundTripTests.cs`
+**File:** `src/ModSync.Tests/FullBuildMarkdownMergeRoundTripTests.cs`
 
 ### U2. Agent pipeline script
 
@@ -64,7 +64,7 @@ Markdown alone does not carry install instructions; merge must prefer **existing
 ## Verification
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj \
   --filter "Name~FullBuildMarkdownMergeRoundTripTests|Name~FullBuildSerializationRoundTripTests"
 
 ./scripts/agents/cli_full_build_pipeline.sh --game k1 \

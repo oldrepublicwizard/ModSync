@@ -43,7 +43,7 @@ Runbooks (`docs/local_desktop_agent_runbook.md`) are procedural; parity docs are
 
 - Tier 3 / architecture docs: `MainWindow` decomposition, `WizardHostControl` vs `InstallWizardDialog` duality, validation UI mapper extraction.
 - `editor-mode.md` or GUI editor workflow page.
-- Changes to `AGENTS.md`, `.cursorrules`, or generated maps (`KOTORModSync_Master.md`).
+- Changes to `AGENTS.md`, `.cursorrules`, or generated maps (`ModSync_Master.md`).
 - New automated tests (docs-only slice).
 
 **Out of scope (non-goals)**
@@ -223,10 +223,10 @@ CLI can short-circuit GUI pages but hits the same Core services (`InstallationVa
 |--------|-----|
 | `docs/plans/2026-05-30-001-feat-tier1-knowledgebase-pages-plan.md` | Deferred scope |
 | `docs/knowledgebase/agent-action-parity.md` | Wizard order, parity gaps |
-| `src/KOTORModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` | Page sequence |
-| `src/KOTORModSync.Core/Services/InstallationService.cs` | Install orchestration |
-| `src/KOTORModSync.Core/Services/Download/DownloadHandlerFactory.cs` | Handler order |
-| `src/KOTORModSync.Core/Services/DownloadCacheService.cs` | Cache + resolve/download |
+| `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` | Page sequence |
+| `src/ModSync.Core/Services/InstallationService.cs` | Install orchestration |
+| `src/ModSync.Core/Services/Download/DownloadHandlerFactory.cs` | Handler order |
+| `src/ModSync.Core/Services/DownloadCacheService.cs` | Cache + resolve/download |
 | `docs/local_desktop_agent_runbook.md` | Procedural GUI steps (link only) |
 
 External research skipped — strong local patterns from Tier 1 pages and recent pipeline work (PRs #94–#99).

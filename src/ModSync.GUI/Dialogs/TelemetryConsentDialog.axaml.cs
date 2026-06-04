@@ -1,0 +1,94 @@
+// Copyright 2021-2025 ModSync
+// Licensed under the Business Source License 1.1 (BSL 1.1).
+// See LICENSE.txt file in the project root for full license information.
+
+using System;
+
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
+
+using ModSync.Core;
+using ModSync.Core.Services;
+
+namespace ModSync.Dialogs
+{
+    public partial class TelemetryConsentDialog : Window
+    {
+        public TelemetryConfiguration Configuration { get; private set; }
+        public bool UserAccepted { get; private set; }
+
+        public TelemetryConsentDialog()
+        {
+            InitializeComponent();
+            Configuration = TelemetryConfiguration.Load();
+
+            // Apply current theme
+            ThemeManager.ApplyCurrentToWindow(this);
+        }
+
+        private void EnableButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+
+                Configuration.SetUserConsent(enabled: true);
+                Configuration.CollectUsageData = CollectUsageCheckBox?.IsChecked ?? true;
+                Configuration.CollectPerformanceMetrics = CollectPerformanceCheckBox?.IsChecked ?? true;
+                Configuration.CollectCrashReports = CollectCrashReportsCheckBox?.IsChecked ?? true;
+                Configuration.CollectMachineInfo = CollectMachineInfoCheckBox?.IsChecked ?? false;
+
+                bool localOnly = LocalOnlyRadio?.IsChecked ?? true;
+                Configuration.EnableFileExporter = localOnly;
+                Configuration.EnableOtlpExporter = !localOnly;
+
+                if (!localOnly)
+                {
+
+                    Configuration.OtlpEndpoint = "https://telemetry.kotormodsync.com/v1/traces";
+                }
+
+                Configuration.Save();
+
+                UserAccepted = true;
+                Logger.Log("[Telemetry] User consented to telemetry collection");
+                Close(dialogResult: true);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex, "[Telemetry] Error saving telemetry consent");
+                Close(dialogResult: false);
+            }
+        }
+
+        private void DeclineButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Configuration.SetUserConsent(enabled: false);
+                Configuration.Save();
+
+                UserAccepted = false;
+                Logger.Log("[Telemetry] User declined telemetry collection");
+                Close(dialogResult: false);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex, "[Telemetry] Error saving telemetry decline");
+                Close(dialogResult: false);
+            }
+        }
+
+        public static bool? ShowConsentDialog(Window parent)
+        {
+            bool? result = null;
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var dialog = new TelemetryConsentDialog();
+                _ = dialog.ShowDialog(parent);
+                result = dialog.UserAccepted;
+            }).Wait();
+            return result;
+        }
+    }
+}

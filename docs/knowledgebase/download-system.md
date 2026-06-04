@@ -2,7 +2,7 @@
 
 `[REPO]` How mod archives are resolved and downloaded: per-component URL registry, handler chain, cache service, and GUI vs CLI entry points.
 
-Sources: `src/KOTORModSync.Core/Services/Download/DownloadHandlerFactory.cs`, `src/KOTORModSync.Core/Services/DownloadCacheService.cs`, `src/KOTORModSync.Core/Parsing/MarkdownParser.cs` (ResourceRegistry population), `src/KOTORModSync.GUI/MainWindow.axaml.cs`.
+Sources: `src/ModSync.Core/Services/Download/DownloadHandlerFactory.cs`, `src/ModSync.Core/Services/DownloadCacheService.cs`, `src/ModSync.Core/Parsing/MarkdownParser.cs` (ResourceRegistry population), `src/ModSync.GUI/MainWindow.axaml.cs`.
 
 ## Resource registry
 

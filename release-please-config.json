@@ -3,14 +3,14 @@
   "packages": {
     ".": {
       "release-type": "simple",
-      "package-name": "KOTORModSync",
+      "package-name": "ModSync",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "skip-github-release": true,
       "extra-files": [
         {
           "type": "generic",
-          "path": "src/KOTORModSync.Core/MainConfig.cs",
+          "path": "src/ModSync.Core/MainConfig.cs",
           "glob": false
         },
         {
@@ -27,13 +27,13 @@
         },
         {
           "type": "xml",
-          "path": "src/KOTORModSync.GUI/Info.plist",
+          "path": "src/ModSync.GUI/Info.plist",
           "xpath": "//key[normalize-space(text())='CFBundleShortVersionString']/following-sibling::string[1]",
           "glob": false
         },
         {
           "type": "xml",
-          "path": "src/KOTORModSync.GUI/Info.plist",
+          "path": "src/ModSync.GUI/Info.plist",
           "xpath": "//key[normalize-space(text())='CFBundleVersion']/following-sibling::string[1]",
           "glob": false
         }

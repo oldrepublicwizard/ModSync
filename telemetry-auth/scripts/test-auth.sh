@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Test script for KOTORModSync telemetry authentication
+# Test script for ModSync telemetry authentication
 #
 # Usage:
 #   ./test-kotormodsync-auth.sh [test_type]
@@ -27,7 +27,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo "======================================================================"
-echo "KOTORModSync Authentication Test"
+echo "ModSync Authentication Test"
 echo "======================================================================"
 echo "Endpoint: $OTLP_ENDPOINT"
 echo "Test Type: $TEST_TYPE"

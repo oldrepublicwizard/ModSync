@@ -56,8 +56,8 @@ Optional filter:
 
 # Linux: full validation needs HoloPatcher in Core output Resources (see ensure_linux_holopatcher.sh)
 ./scripts/agents/ensure_linux_holopatcher.sh
-ln -sfn "$PWD/src/KOTORModSync.GUI/bin/Debug/net9.0/Resources" \
-  "$PWD/src/KOTORModSync.Core/bin/Debug/net9.0/Resources"
+ln -sfn "$PWD/src/ModSync.GUI/bin/Debug/net9.0/Resources" \
+  "$PWD/src/ModSync.Core/bin/Debug/net9.0/Resources"
 
 ./scripts/agents/cli_validate.sh \
   --input ./mod-builds/TOMLs/KOTOR1_Full.toml \

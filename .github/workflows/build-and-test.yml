@@ -1,4 +1,4 @@
-name: Build and Test KOTORModSync
+name: Build and Test ModSync
 
 on:
   pull_request:
@@ -13,9 +13,9 @@ permissions:
 
 env:
   DOTNET_VERSION: "9.0.x"
-  CORE_PROJECT: "src/KOTORModSync.Core/KOTORModSync.Core.csproj"
-  GUI_PROJECT: "src/KOTORModSync.GUI/KOTORModSync.csproj"
-  TEST_PROJECT: "src/KOTORModSync.Tests/KOTORModSync.Tests.csproj"
+  CORE_PROJECT: "src/ModSync.Core/ModSync.Core.csproj"
+  GUI_PROJECT: "src/ModSync.GUI/ModSync.csproj"
+  TEST_PROJECT: "src/ModSync.Tests/ModSync.Tests.csproj"
 
 jobs:
   build-and-test:
@@ -42,7 +42,7 @@ jobs:
           }
 
       - name: Restore NuGet Packages (net48)
-        run: msbuild KOTORModSync.sln /t:Restore /p:TargetFramework=net48 /p:Configuration=Release
+        run: msbuild ModSync.sln /t:Restore /p:TargetFramework=net48 /p:Configuration=Release
 
       - name: Restore test project
         run: dotnet restore "${{ env.TEST_PROJECT }}"
@@ -118,11 +118,11 @@ jobs:
           set -euo pipefail
           mkdir -p audit
           dotnet restore "${{ env.GUI_PROJECT }}" -p:Configuration=Release -p:TargetFramework=net9.0
-          cp "${{ github.workspace }}/src/KOTORModSync.GUI/obj/project.assets.json" audit/gui-net9-project.assets.json
+          cp "${{ github.workspace }}/src/ModSync.GUI/obj/project.assets.json" audit/gui-net9-project.assets.json
           dotnet restore "${{ env.GUI_PROJECT }}" -p:Configuration=Release -p:TargetFramework=net48
-          cp "${{ github.workspace }}/src/KOTORModSync.GUI/obj/project.assets.json" audit/gui-net48-project.assets.json
+          cp "${{ github.workspace }}/src/ModSync.GUI/obj/project.assets.json" audit/gui-net48-project.assets.json
           dotnet restore "${{ env.TEST_PROJECT }}"
-          cp "${{ github.workspace }}/src/KOTORModSync.Tests/obj/project.assets.json" audit/tests-project.assets.json
+          cp "${{ github.workspace }}/src/ModSync.Tests/obj/project.assets.json" audit/tests-project.assets.json
 
       - name: Audit GUI and test dependency graphs
         shell: bash

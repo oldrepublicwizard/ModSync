@@ -106,10 +106,10 @@
     <PackageReference Include="Dotnet.Bundle" Version="*" />
   </ItemGroup>
 
-  <!-- Reference the UI library and KOTORModSync -->
+  <!-- Reference the UI library and ModSync GUI (Core types via GUI graph) -->
   <ItemGroup>
-    <ProjectReference Include="..\..\HoloPatcher.UI\HoloPatcher.UI\HoloPatcher.UI.csproj" />
-    <ProjectReference Include="..\..\KOTORModSync\KOTORModSync.csproj" />
+    <ProjectReference Include="..\HoloPatcher.UI\HoloPatcher.UI\HoloPatcher.UI.csproj" />
+    <ProjectReference Include="..\ModSync.GUI\ModSync.csproj" />
   </ItemGroup>
 
 </Project>

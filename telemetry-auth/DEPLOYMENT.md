@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This document describes how to deploy the KOTORModSync Telemetry Authentication Service in various environments.
+This document describes how to deploy the ModSync Telemetry Authentication Service in various environments.
 
 ## Table of Contents
 

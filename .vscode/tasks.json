@@ -16,7 +16,7 @@
       "type": "shell",
       "command": "${workspaceFolder}/scripts/agents/ensure_linux_holopatcher.sh",
       "args": [
-        "${workspaceFolder}/src/KOTORModSync.GUI/bin/Debug/net9.0"
+        "${workspaceFolder}/src/ModSync.GUI/bin/Debug/net9.0"
       ],
       "problemMatcher": []
     },
@@ -68,7 +68,7 @@
       "command": "dotnet",
       "args": [
         "test",
-        "${workspaceFolder}/src/KOTORModSync.Tests/KOTORModSync.Tests.csproj",
+        "${workspaceFolder}/src/ModSync.Tests/ModSync.Tests.csproj",
         "--filter",
         "FullyQualifiedName~MainWindowHeadlessTests"
       ],
@@ -80,7 +80,7 @@
       "command": "dotnet",
       "args": [
         "test",
-        "${workspaceFolder}/src/KOTORModSync.Tests/KOTORModSync.Tests.csproj",
+        "${workspaceFolder}/src/ModSync.Tests/ModSync.Tests.csproj",
         "--filter",
         "FullyQualifiedName~ValidatePageHeadlessTests"
       ],

@@ -174,7 +174,7 @@ fi
 mkdir -p "$(dirname "$output_path")"
 
 run_core() {
-  dotnet run --project "$repo_root/src/KOTORModSync.Core/KOTORModSync.Core.csproj" \
+  dotnet run --project "$repo_root/src/ModSync.Core/ModSync.Core.csproj" \
     -f net9.0 -- "$@"
 }
 
@@ -251,7 +251,7 @@ if [[ "$install" == true ]]; then
     "$repo_root/scripts/agents/ensure_linux_holopatcher.sh" || true
   fi
   echo "Running best-effort install from merged instruction file..."
-  exec dotnet run --project "$repo_root/src/KOTORModSync.Core/KOTORModSync.Core.csproj" -f net9.0 -- \
+  exec dotnet run --project "$repo_root/src/ModSync.Core/ModSync.Core.csproj" -f net9.0 -- \
     install -i "$output_path" -g "$game_dir" -s "$source_dir" \
     -d --concurrent --best-effort --skip-validation --download-timeout-hours 72
 fi

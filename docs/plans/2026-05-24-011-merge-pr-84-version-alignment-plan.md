@@ -48,7 +48,7 @@ Commit plan status updates on `master` after pull.
 ## Verification
 
 - `gh pr view 84` state: MERGED
-- `git show master:src/KOTORModSync.Core/MainConfig.cs` contains `2.1.0`
+- `git show master:src/ModSync.Core/MainConfig.cs` contains `2.1.0`
 - `dotnet test --filter FullyQualifiedName~ReleaseVersionAlignment` on master
 
 ---

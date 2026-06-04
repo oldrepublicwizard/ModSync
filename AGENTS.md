@@ -1,4 +1,4 @@
-# KOTORModSync agent guide
+# ModSync agent guide
 
 This file is the short entry point for agents working on the Avalonia desktop GUI, the install wizard, or full-build flows against `mod-builds`. For step-by-step commands and tooling, read `docs/local_desktop_agent_runbook.md` next.
 
@@ -28,18 +28,18 @@ Start with:
 
 ## Autonomous defaults
 
-- If the task touches `src/KOTORModSync.Core`, `src/KOTORModSync.Tests`, repo-root docs/config, or normal build/test/lint behavior, default to the headless .NET workflow. Do not stop to ask which project to inspect first when the file paths already answer it.
-- If the task touches `src/KOTORModSync.GUI`, the install wizard, `scripts/agents/`, or full-build validation against `mod-builds`, default to this file plus `docs/local_desktop_agent_runbook.md` and the relevant `.cursor/skills/*` guidance.
+- If the task touches `src/ModSync.Core`, `src/ModSync.Tests`, repo-root docs/config, or normal build/test/lint behavior, default to the headless .NET workflow. Do not stop to ask which project to inspect first when the file paths already answer it.
+- If the task touches `src/ModSync.GUI`, the install wizard, `scripts/agents/`, or full-build validation against `mod-builds`, default to this file plus `docs/local_desktop_agent_runbook.md` and the relevant `.cursor/skills/*` guidance.
 - If the task touches `telemetry-auth/`, treat it as the Python/Docker sidecar with its own local docs and workflows rather than routing it through the Avalonia/.NET guidance in this file.
 - Only stop or ask when a real prerequisite is missing: no `./mod-builds` for full-build work, no desktop/X11 session for required GUI validation, missing credentials/secrets/manual external approval, or conflicting local changes that block a safe edit.
 
 ## Project layout
 ```
-KOTORModSync.sln
+ModSync.sln
 src/
-  KOTORModSync.Core/         # Core logic, VFS, instructions, serialization
-  KOTORModSync.GUI/          # Avalonia desktop app
-  KOTORModSync.Tests/        # All automated tests (single project)
+  ModSync.Core/         # Core logic, VFS, instructions, serialization
+  ModSync.GUI/          # Avalonia desktop app
+  ModSync.Tests/        # All automated tests (single project)
   AvRichTextBox/             # Rich text control submodule
   RtfDomParserAvalonia/      # RTF parser submodule
 scripts/
@@ -52,7 +52,7 @@ mod-builds/                  # Clone here: github.com/th3w1zard1/mod-builds
 ## Build
 
 ```bash
-dotnet build KOTORModSync.sln
+dotnet build ModSync.sln
 ```
 
 ## Releases
@@ -66,13 +66,13 @@ Cloud agents run headless (no X11 desktop). The following applies:
 - Run automated tests (`dotnet test`) instead of GUI desktop tests.
 - Do NOT attempt to launch the Avalonia app or use `xdotool`/`xwininfo` — there is no display.
 - GUI changes must still be manually exercised. If you have made GUI changes, request a desktop session or note that GUI validation was skipped.
-- The test project path is `src/KOTORModSync.Tests/KOTORModSync.Tests.csproj`.
+- The test project path is `src/ModSync.Tests/ModSync.Tests.csproj`.
 
 ### Running tests (Cloud / headless)
 
 ```bash
 # Run all non-long-running tests
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj \
   --filter "FullyQualifiedName!~LongRunning"
 ```
 
@@ -80,7 +80,7 @@ Run a single named test with a 120-second timeout to classify duration:
 
 ```pwsh
 pwsh -Command '& {
-  $proj = "src/KOTORModSync.Tests/KOTORModSync.Tests.csproj"
+  $proj = "src/ModSync.Tests/ModSync.Tests.csproj"
   $args = "test {0} --filter ""FullyQualifiedName~<TestName>""" -f $proj
   $psi = New-Object System.Diagnostics.ProcessStartInfo
   $psi.FileName = "dotnet"
@@ -265,7 +265,7 @@ Update all of the following together:
 
 ### Overview
 
-KOTORModSync is a cross-platform multi-mod installer for Star Wars: KOTOR, built with C#/.NET 9.0 and AvaloniaUI. The solution (`KOTORModSync.sln`) contains three projects: `KOTORModSync.Core` (library), `KOTORModSync.GUI` (desktop app), and `KOTORModSync.Tests` (NUnit + xUnit tests).
+ModSync is a cross-platform multi-mod installer for Star Wars: KOTOR, built with C#/.NET 9.0 and AvaloniaUI. The solution (`ModSync.sln`) contains three projects: `ModSync.Core` (library), `ModSync.GUI` (desktop app), and `ModSync.Tests` (NUnit + xUnit tests).
 
 ### Prerequisites (installed via VM snapshot)
 
@@ -276,10 +276,10 @@ KOTORModSync is a cross-platform multi-mod installer for Star Wars: KOTOR, built
 
 ### Build, Test, Lint, Run
 
-- **Build**: `dotnet build KOTORModSync.sln --configuration Debug` from repo root
-- **Run GUI**: `dotnet run --project src/KOTORModSync.GUI/KOTORModSync.csproj --configuration Debug --framework net9.0` (must specify `--framework net9.0` since Debug can multi-target)
-- **Lint**: `dotnet format KOTORModSync.sln --verify-no-changes` (pre-existing formatting diffs exist)
-- **Tests**: See `.cursorrules` for the required PowerShell-based test runner pattern. Quick non-long-running test run: `dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName!~LongRunning" --configuration Debug`
+- **Build**: `dotnet build ModSync.sln --configuration Debug` from repo root
+- **Run GUI**: `dotnet run --project src/ModSync.GUI/ModSync.csproj --configuration Debug --framework net9.0` (must specify `--framework net9.0` since Debug can multi-target)
+- **Lint**: `dotnet format ModSync.sln --verify-no-changes` (pre-existing formatting diffs exist)
+- **Tests**: See `.cursorrules` for the required PowerShell-based test runner pattern. Quick non-long-running test run: `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName!~LongRunning" --configuration Debug`
 
 ### Non-obvious gotchas
 

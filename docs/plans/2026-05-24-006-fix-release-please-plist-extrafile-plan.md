@@ -22,8 +22,8 @@ Restore green **Release Please** workflow on `master` by fixing `release-please-
 ## Requirements
 
 - R1. `release-please-config.json` must not use unsupported `plist` extra-file type.
-- R2. `MainConfig.cs` extra-file path must resolve to `src/KOTORModSync.Core/MainConfig.cs`.
-- R3. macOS bundle metadata paths (`Info.plist`, `src/KOTORModSync.GUI/Info.plist`) remain versioned via supported mechanisms (`generic` extra-files and/or release workflow).
+- R2. `MainConfig.cs` extra-file path must resolve to `src/ModSync.Core/MainConfig.cs`.
+- R3. macOS bundle metadata paths (`Info.plist`, `src/ModSync.GUI/Info.plist`) remain versioned via supported mechanisms (`generic` extra-files and/or release workflow).
 - R4. Local or CI validation confirms Release Please no longer errors on config parse.
 
 ---
@@ -51,4 +51,4 @@ Use `type: xml` with xpath for `CFBundleShortVersionString` and `CFBundleVersion
 ## Verification
 
 - Release Please workflow completes without `unsupported extraFile type: plist`
-- `src/KOTORModSync.Core/MainConfig.cs` path present in extra-files
+- `src/ModSync.Core/MainConfig.cs` path present in extra-files

@@ -22,7 +22,7 @@ PR #76 merged the HoloPatcher Avalonia uplift and blocking CI sibling audit. Pla
 ## Requirements
 
 - R1. Add a **Verification Log** section to `docs/plans/2026-05-24-003-fix-holopatcher-avalonia-dbus-plan.md` with merge commit `7b81c80`, local audit results, and master CI status.
-- R2. Locally confirm `KOTORModSync.sln` and both HoloPatcher sibling csprojs report no vulnerable packages.
+- R2. Locally confirm `ModSync.sln` and both HoloPatcher sibling csprojs report no vulnerable packages.
 - R3. Scope is documentation + verification only — no package or source changes unless audits fail.
 
 ---
@@ -41,6 +41,6 @@ PR #76 merged the HoloPatcher Avalonia uplift and blocking CI sibling audit. Pla
 
 ## Verification
 
-- `dotnet list KOTORModSync.sln package --vulnerable --include-transitive` — clean
+- `dotnet list ModSync.sln package --vulnerable --include-transitive` — clean
 - HoloPatcher sibling restore + list loop — clean
 - Master CI on merge commit — all checks pass

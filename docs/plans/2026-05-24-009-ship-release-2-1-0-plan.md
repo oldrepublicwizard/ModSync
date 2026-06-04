@@ -15,7 +15,7 @@ Merge bot-generated release PR #81 to complete the Release Please pipeline, bump
 
 ## Problem Frame
 
-Release Please automation is green (plans 006–008). PR #81 (`chore(master): release KOTORModSync 2.1.0`) is open with CHANGELOG and version file updates. Issue #78 remains open despite fix in #79.
+Release Please automation is green (plans 006–008). PR #81 (`chore(master): release ModSync 2.1.0`) is open with CHANGELOG and version file updates. Issue #78 remains open despite fix in #79.
 
 ---
 

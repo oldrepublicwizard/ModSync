@@ -22,7 +22,7 @@ Agents working on **mod-builds** full lists typically use `./mod-builds/TOMLs/KO
 
 `[REPO]` Per `.cursorrules`, instruction **Source** and **Destination** paths must:
 
-- **Start with** `<<modDirectory>>` or `<<kotorDirectory>>`
+- **Start with** `<<modDirectory>>` or `<<gameDirectory>>` (legacy alias: `<<kotorDirectory>>`)
 - **Never** use absolute paths (e.g. `C:\Windows`, `/etc`) in instruction definitions
 - Use wildcards (`*`, `?`) only after the placeholder prefix
 

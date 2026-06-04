@@ -4,7 +4,7 @@
 
 **Validation UX:** [gui-validation-surfaces.md](gui-validation-surfaces.md) (shipped in PR #110).
 
-Sources: `src/KOTORModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs`, `src/KOTORModSync.GUI/Dialogs/WizardPages/InstallingPage.axaml.cs`, `src/KOTORModSync.Core/Services/InstallationService.cs`, `src/KOTORModSync.Core/Installation/InstallCoordinator.cs`.
+Sources: `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs`, `src/ModSync.GUI/Dialogs/WizardPages/InstallingPage.axaml.cs`, `src/ModSync.Core/Services/InstallationService.cs`, `src/ModSync.Core/Installation/InstallCoordinator.cs`.
 
 ## Install wizard page order
 

@@ -10,7 +10,7 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
   GITHUB_USER: th3w1zard1
-  GITHUB_REPOSITORY: KOTORModSync
+  GITHUB_REPOSITORY: ModSync
 
 defaults:
   run:
@@ -40,4 +40,4 @@ jobs:
 
     # Whitespace + line endings only (analyzer output is not a formatting gate)
     - name: Run dotnet format (whitespace)
-      run: dotnet format whitespace --verify-no-changes KOTORModSync.sln
+      run: dotnet format whitespace --verify-no-changes ModSync.sln

@@ -623,7 +623,7 @@ dotnet_diagnostic.S3878.severity = none
 
 #### Project-Specific Analyzer Rules ####
 
-# KOTORModSync.GUI: Disable all warnings
+# ModSync.GUI: Disable all warnings
 
 # S6966: Awaitable method should be used
 dotnet_diagnostic.S6966.severity = none
@@ -631,7 +631,7 @@ dotnet_diagnostic.S6966.severity = none
 # Default severity for analyzer diagnostics with category 'Style'
 dotnet_analyzer_diagnostic.category-Style.severity = none
 
-[KOTORModSync.GUI/**/*.cs]
+[ModSync.GUI/**/*.cs]
 dotnet_diagnostic.S1481.severity = none
 dotnet_diagnostic.S4144.severity = none
 dotnet_diagnostic.S125.severity = none
@@ -657,8 +657,8 @@ dotnet_diagnostic.S1118.severity = none
 dotnet_diagnostic.S2953.severity = none
 dotnet_diagnostic.MA0006.severity = none
 
-# KOTORModSync.Core: Disable all warnings
-[KOTORModSync.Core/**/*.cs]
+# ModSync.Core: Disable all warnings
+[ModSync.Core/**/*.cs]
 dotnet_diagnostic.MA0004.severity = none
 dotnet_diagnostic.S2094.severity = none
 dotnet_diagnostic.S1118.severity = none
@@ -696,8 +696,8 @@ dotnet_diagnostic.S6561.severity = none
 dotnet_diagnostic.S1066.severity = none
 dotnet_diagnostic.S5445.severity = none
 
-# KOTORModSync.Tests: Ensure all warnings are disabled
-[KOTORModSync.Tests/**/*.cs]
+# ModSync.Tests: Ensure all warnings are disabled
+[ModSync.Tests/**/*.cs]
 dotnet_diagnostic.S4487.severity = none
 dotnet_diagnostic.S3881.severity = none
 dotnet_diagnostic.S3241.severity = none

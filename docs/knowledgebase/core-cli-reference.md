@@ -1,9 +1,9 @@
 # Core CLI reference (ModBuildConverter)
 
-`[REPO]` The headless entry point is `src/KOTORModSync.Core/Program.cs`, which delegates to `ModBuildConverter.Run`. Invoke from the repo root:
+`[REPO]` The headless entry point is `src/ModSync.Core/Program.cs`, which delegates to `ModBuildConverter.Run`. Invoke from the repo root:
 
 ```bash
-dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 -- <verb> [options]
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- <verb> [options]
 ```
 
 Wrapper: `./scripts/agents/cli_validate.sh` for validation (supports `--use-file-selection`, `--full`, `--dry-run`, `--dry-run-only`, `--game-dir`, `--source-dir`, repeatable `--select`).
@@ -39,15 +39,15 @@ Validate an instruction file. Structural checks work with `-i` alone; environmen
 **Example:**
 
 ```bash
-dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 -- \
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
   validate -i ./mod-builds/TOMLs/KOTOR1_Full.toml \
   -g ./tmp/kotor_template -s ./tmp/mod_downloads --full
 
-dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 -- \
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
   validate -i ./mod-builds/TOMLs/KOTOR1_Full.toml \
   -g ./tmp/kotor_template -s ./tmp/mod_downloads --dry-run
 
-dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 -- \
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
   validate -i ./mod-builds/TOMLs/KOTOR1_Full.toml \
   -g ./tmp/kotor_template -s ./tmp/mod_downloads --dry-run-only
 ```
@@ -116,7 +116,7 @@ Dedicated merge of two instruction sets (`-e` and `-n` required). Supports the s
 **Mod-builds two-source pipeline** (TOML = machine instructions, markdown = human metadata):
 
 ```bash
-dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 -- \
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
   merge \
   --existing ./mod-builds/TOMLs/KOTOR1_Full.toml \
   --incoming ./mod-builds/content/k1/full.md \
@@ -145,11 +145,11 @@ End-to-end (merge → export all formats → VFS dry-run → optional install):
   --install   # best-effort; requires archives or Nexus key for downloads
 ```
 
-**Tests:** With default `KOTORModSync.Tests.runsettings`, prefer `Name~FullBuild` (not `FullyQualifiedName~` with `|`) to run serialization, merge, and dry-run tests together:
+**Tests:** With default `ModSync.Tests.runsettings`, prefer `Name~FullBuild` (not `FullyQualifiedName~` with `|`) to run serialization, merge, and dry-run tests together:
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "Name~FullBuild"
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "Name~AutoGenerateLocal"
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "Name~FullBuild"
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "Name~AutoGenerateLocal"
 ```
 
 `--use-existing-order` is required when existing TOML carries instructions and incoming markdown is metadata-only; otherwise `prefer-existing-instructions` cannot preserve install steps.
@@ -161,7 +161,7 @@ dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "Name~Auto
 Store and optionally validate a Nexus Mods API key.
 
 ```bash
-dotnet run --project src/KOTORModSync.Core/KOTORModSync.Core.csproj -f net9.0 -- \
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
   set-nexus-api-key YOUR_KEY
 ```
 
@@ -193,7 +193,7 @@ Run bundled HoloPatcher with optional arguments.
 
 ## GUI preload args (separate from Core CLI)
 
-`[REPO]` `src/KOTORModSync.GUI/CLIArguments.cs` — Avalonia app only, `--key=value` form:
+`[REPO]` `src/ModSync.GUI/CLIArguments.cs` — Avalonia app only, `--key=value` form:
 
 | Arg | Purpose |
 |-----|---------|

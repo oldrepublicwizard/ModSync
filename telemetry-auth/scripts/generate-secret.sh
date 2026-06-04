@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Generate a cryptographically secure signing secret for KOTORModSync telemetry
+# Generate a cryptographically secure signing secret for ModSync telemetry
 #
 
 set -e
@@ -8,7 +8,7 @@ set -e
 OUTPUT_FILE="${1:-signing_secret.txt}"
 
 echo "======================================================================"
-echo "KOTORModSync Signing Secret Generator"
+echo "ModSync Signing Secret Generator"
 echo "======================================================================"
 echo ""
 
@@ -54,8 +54,8 @@ echo ""
 echo "   2. Test the service:"
 echo "      ./scripts/test-auth.sh valid"
 echo ""
-echo "   3. Add to KOTORModSync GitHub secrets:"
-echo "      https://github.com/YOUR_ORG/KOTORModSync/settings/secrets/actions"
+echo "   3. Add to ModSync GitHub secrets:"
+echo "      https://github.com/YOUR_ORG/ModSync/settings/secrets/actions"
 echo ""
 echo "======================================================================"
 

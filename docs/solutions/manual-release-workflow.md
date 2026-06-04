@@ -1,6 +1,6 @@
 # Manual release workflow
 
-`[REPO]` GitHub Releases are **manual only** for KOTORModSync. Merging to `master` does not publish a release.
+`[REPO]` GitHub Releases are **manual only** for ModSync. Merging to `master` does not publish a release.
 
 ## Why this exists
 
@@ -19,7 +19,7 @@ See [docs/manual-release.md](../manual-release.md) for the full 3-step flow:
 | Step | Command / action |
 |------|------------------|
 | Confirm current version | Read `MainConfig.CurrentVersion` or `.release-please-manifest.json` |
-| Verify alignment test | `dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~ReleaseVersionAlignment"` |
+| Verify alignment test | `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~ReleaseVersionAlignment"` |
 | List releases | `gh release list` |
 | Do **not** | Tag or release from agent commits without explicit user request |
 

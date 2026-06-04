@@ -119,5 +119,5 @@ if [[ "$full_validation" == true || "$dry_run" == true || "$dry_run_only" == tru
   fi
 fi
 
-dotnet run --project "$repo_root/src/KOTORModSync.Core/KOTORModSync.Core.csproj" \
+dotnet run --project "$repo_root/src/ModSync.Core/ModSync.Core.csproj" \
   -f net9.0 -- "${cmd[@]}"
