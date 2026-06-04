@@ -27,8 +27,9 @@ No shared implementation files between the feature arcs — either PR can merge 
 Use merge commits (not a single combined PR):
 
 ```bash
-gh pr merge 110 --merge
-# rebase feat/holocron-erf-nested-open onto default, re-run verify_open_pr_ready.sh, then:
+./scripts/agents/merge_open_prs.sh          # dry-run sequence
+./scripts/agents/merge_open_prs.sh --execute   # merge #110 after verify (wizard branch)
+# then rebase feat/holocron-erf-nested-open onto origin/master, verify, push, and:
 gh pr merge 111 --merge
 ```
 
@@ -39,7 +40,7 @@ gh pr merge 111 --merge
    ```bash
    git fetch origin
    git checkout feat/<remaining-branch>
-   git rebase origin/<default-branch>
+   git rebase origin/master
    ```
 
 2. Resolve **documentation-only** conflicts by keeping the merged default for shared agent docs (`AGENTS.md`, `doc-hierarchy.md`, `docs/knowledgebase/README.md`) and re-applying any track-specific KB if needed.

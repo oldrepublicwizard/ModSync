@@ -50,15 +50,16 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Branch-aware `test_current_open_pr.sh` + AGENTS wiring | Done | plan `058` |
 | `verify_open_pr_ready.sh` (tests + `gh pr checks`) | Done | plan `059` |
 | KB quick commands + merge handoff `gh pr merge` | Done | plan `060` |
+| `merge_open_prs.sh` (dry-run / `--execute` for #110) | Done | plan `061` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`060`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`061`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
-**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`060`). Merge **without** Holocron (#111). Agent tooling frozen — prefer merge over further doc-only LFG slices.
+**PR #110** — merge-ready (plans `012`, `021`–`061`). Use `./scripts/agents/merge_open_prs.sh --execute` on this branch when ready. Merge **without** bundling Holocron (#111).
 
 ### Merge checklist — PR #110
 
-1. Run `./scripts/agents/verify_open_pr_ready.sh` on this branch (or confirm CI green on [PR #110](https://github.com/th3w1zard1/ModSync/pull/110)).
-2. Merge to default branch; do not squash Holocron work into this PR.
+1. `./scripts/agents/merge_open_prs.sh` (dry-run) then `./scripts/agents/merge_open_prs.sh --execute` to merge [PR #110](https://github.com/th3w1zard1/ModSync/pull/110).
+2. Do not squash Holocron work into this PR.
 3. Post-merge: follow [parallel-pr-merge-handoff-2026-06-03.md](../solutions/parallel-pr-merge-handoff-2026-06-03.md) if #111 is still open.
 
 **PR #111** — separate track: [godot-holocron-editor.md](godot-holocron-editor.md) (not the install wizard).

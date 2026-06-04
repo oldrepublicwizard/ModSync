@@ -36,6 +36,7 @@ Godot UI work is not covered by these scripts — open `tools/godot-holocron/pro
 | `test_pr111_holocron_bridge.sh` | PR #111: `KotorFormatBridgeCliTests` |
 | `test_current_open_pr.sh` | Detect branch → run #110 or #111 script |
 | `verify_open_pr_ready.sh` | `test_current_open_pr` + `gh pr checks` for #110 / #111 |
+| `merge_open_prs.sh` | Dry-run merge sequence; `--execute` merges #110 after verify |
 | `mcp_filesystem.sh` | MCP filesystem server scoped to repo |
 | `mcp_playwright.sh` | MCP Playwright server |
 | `mcp_desktop_commander.sh` | MCP Desktop Commander |
