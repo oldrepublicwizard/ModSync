@@ -117,7 +117,9 @@ rg -n 'KOTORModSync' --glob '!docs/plans/*'  # expect zero
 - macOS bundle ID `com.th3w1zard1.modsync`
 - `<<gameDirectory>>` test coverage
 
-**Intentionally unchanged:** HoloPatcher `KOTORModSync.*` namespaces; `telemetry.kotormodsync.com` DNS; GitHub secret name `KOTORMODSYNC_SIGNING_SECRET`; DeadlyStream permalink slug.
+**Completed in plan 066 (PR #114):** HoloPatcher `KOTORModSync.*` namespaces → `HoloPatcher.*`.
+
+**Intentionally unchanged:** `telemetry.kotormodsync.com` DNS; GitHub secret name `KOTORMODSYNC_SIGNING_SECRET`; DeadlyStream permalink slug; legacy `%AppData%/KOTORModSync` read paths (see [rebrand-legacy-strings.md](../knowledgebase/rebrand-legacy-strings.md)).
 
 ## Out of scope
 

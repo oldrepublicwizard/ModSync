@@ -59,6 +59,7 @@ Use these when citing findings in plans, PRs, or audits:
 - [Removed features](removed-features.md) — distributed cache, stale test filters, deprecated skills
 - [Drift audit 2026-05-24](drift-audit-2026-05-24.md) — research snapshot and fixes applied
 - [telemetry-auth routing](telemetry-auth-routing.md) — sidecar scope and env vars
+- [Rebrand legacy strings](rebrand-legacy-strings.md) — intentional `KOTORModSync` survivors after plan 065/066
 
 ### Runbooks (procedural)
 
