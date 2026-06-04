@@ -39,10 +39,17 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Merge-ready arc closure through plan `047` | Done | plan `047` |
 | Presenter/mapper test commands in validation surfaces KB | Done | plan `048` |
 | Install lifecycle → ValidatePage UX cross-link | Done | plan `049` |
+| Push sync + merge checklist (plans 048–049) | Done | plan `050` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`049`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`050`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
-**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`048`). Do not bundle with Holocron.
+**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`050`). Merge **without** Holocron (#111).
+
+### Merge checklist — PR #110
+
+1. Confirm CI green on [PR #110](https://github.com/th3w1zard1/ModSync/pull/110).
+2. Merge to default branch; do not squash Holocron work into this PR.
+3. Post-merge: run `WizardValidationStagePresenter` + `ValidationPipelineDialogMapper` tests if touching validation UI again.
 
 **PR #111** — separate track: [godot-holocron-editor.md](godot-holocron-editor.md) (not the install wizard).
 

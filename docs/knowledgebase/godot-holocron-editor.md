@@ -14,9 +14,15 @@
 ## Active delivery
 
 - **Branch:** `feat/holocron-erf-nested-open`
-- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`048`)
+- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`050`)
 - **Not in:** Install wizard / `ValidatePage` work (PR #110)
 - **Status:** Merge-ready for Phase 1; Phase 2 editors (TPC/WAV/MDL/DLG) deferred per `docs/plans/2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md`
+
+### Merge checklist — PR #111
+
+1. Confirm CI green on [PR #111](https://github.com/th3w1zard1/ModSync/pull/111).
+2. Merge **after or independently of** PR #110 — no shared validation wizard files.
+3. Post-merge Phase 2: start from `docs/plans/2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md`.
 
 ## Bridge tests
 
@@ -25,6 +31,8 @@ dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQual
 ```
 
 Skips when PyKotor is not importable. Fixture: `src/KOTORModSync.Tests/Fixtures/kotor/sample.mod`.
+
+**Read payload shapes:** Flat files (e.g. `.2da`) return `format: twoda` with row data and no `resources` array. Archives (`.mod`) return `format: erf` with a `resources` listing.
 
 ## Container editor UX
 
