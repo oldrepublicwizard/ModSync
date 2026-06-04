@@ -73,4 +73,4 @@ From repo root:
 dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~KotorFormatBridge"
 ```
 
-Tests skip automatically when PyKotor is not importable (20 tests when PyKotor is available, including archive extract/inject/remove error paths).
+Tests skip automatically when PyKotor is not importable (22 tests when PyKotor is available, including probe/read missing-path and archive extract/inject/remove error paths).

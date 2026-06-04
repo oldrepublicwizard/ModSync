@@ -105,6 +105,26 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Probe_MissingPath_ReturnsError()
+        {
+            string missingPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_missing_" + Guid.NewGuid() + ".2da");
+            var raw = RunBridgeRaw("probe", missingPath);
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
+        }
+
+        [Test]
+        public void Read_MissingPath_ReturnsError()
+        {
+            string missingPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_missing_" + Guid.NewGuid() + ".2da");
+            var raw = RunBridgeRaw("read", missingPath);
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
+        }
+
+        [Test]
         public void Read_BinaryFile_ReturnsBase64Payload()
         {
             string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_" + Guid.NewGuid() + ".mdl");

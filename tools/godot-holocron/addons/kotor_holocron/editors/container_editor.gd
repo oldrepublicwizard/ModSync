@@ -22,6 +22,7 @@ func _ready() -> void:
 	_table.set_column_title(2, "size")
 	_table.item_activated.connect(_on_item_activated)
 	_table.item_selected.connect(_on_item_selected)
+	_table.gui_input.connect(_on_table_gui_input)
 	var refresh_shortcut := Shortcut.new()
 	var f5 := InputEventKey.new()
 	f5.keycode = KEY_F5
@@ -373,6 +374,17 @@ func _execute_remove_member(resref: String, restype: String) -> void:
 
 	_status.text = "Removed %s.%s from archive" % [resref, restype]
 	_refresh_listing()
+
+
+func _on_table_gui_input(event: InputEvent) -> void:
+	if not event is InputEventKey:
+		return
+	var key_event := event as InputEventKey
+	if not key_event.pressed or key_event.echo:
+		return
+	if key_event.keycode != KEY_ENTER and key_event.keycode != KEY_KP_ENTER:
+		return
+	_on_item_activated()
 
 
 func _on_item_activated() -> void:
