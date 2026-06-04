@@ -15,6 +15,55 @@
 
 Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 KB closure).
 
+### PR #110 extension (wizard + dialog parity, same branch)
+
+| Item | Status | Reference |
+|------|--------|-----------|
+| Archive / Install Order / Dry-run wizard result cards | Done | plans `021`–`022` |
+| Shared `ApplyPrefixedStageMessageCards` | Done | plan `023` |
+| Conflicts wizard summaries + pipeline counts | Done | plan `024` |
+| Dialog mapper stage aggregates (Conflicts, archives) | Done | plan `025` |
+| Environment / Install Order prefixed dialog rows | Done | plan `026` |
+| ValidatePage **Copy report** | Done | plan `027` |
+| Auto-expand validation log on errors/warnings | Done | plan `029` |
+| Scroll + highlight first issue result card | Done | plans `033`, `035` |
+| Scroll validation log to first issue line | Done | plan `036` |
+| Go to first issue button + expand log on focus | Done | plans `037`, `038` |
+| Reset results/log scroll on re-validation | Done | plans `039`, `040` |
+| Flush log queue before focus/scroll to first issue | Done | plan `041` |
+| Validation surfaces KB (focus/copy/log UX) | Done | plan `042` |
+| Copy report flushes log queue inside report builder | Done | plan `043` |
+| Go to first issue tooltip + Holocron KB cross-link | Done | plan `044` |
+| Agent index links (AGENTS.md, knowledgebase README) | Done | plan `045` |
+| Validation pipeline → ValidatePage UX cross-link | Done | plan `046` |
+| Merge-ready arc closure through plan `047` | Done | plan `047` |
+| Presenter/mapper test commands in validation surfaces KB | Done | plan `048` |
+| Install lifecycle → ValidatePage UX cross-link | Done | plan `049` |
+| Push sync + merge checklist (plans 048–049) | Done | plan `050` |
+| Agent parallel-PR routing + Holocron KB validation sync | Done | plan `051` |
+| Doc-hierarchy + copilot-instructions active PR routing | Done | plan `052` |
+| Knowledgebase index merge-closure pointers | Done | plan `053` |
+| Agent-parity + CI matrix PR test filters | Done | plan `054` |
+| Runbook + scripts/agents README merge-closure | Done | plan `055` |
+| Parallel PR merge handoff solution | Done | plan `056` |
+| PR-targeted test scripts (`test_pr110_validation.sh`) | Done | plan `057` |
+| Branch-aware `test_current_open_pr.sh` + AGENTS wiring | Done | plan `058` |
+| `verify_open_pr_ready.sh` (tests + `gh pr checks`) | Done | plan `059` |
+| KB quick commands + merge handoff `gh pr merge` | Done | plan `060` |
+| `merge_open_prs.sh` (dry-run / `--execute` for #110) | Done | plan `061` |
+
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`061`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+
+**PR #110** — merge-ready (plans `012`, `021`–`061`). Use `./scripts/agents/merge_open_prs.sh --execute` on this branch when ready. Merge **without** bundling Holocron (#111).
+
+### Merge checklist — PR #110
+
+1. `./scripts/agents/merge_open_prs.sh` (dry-run) then `./scripts/agents/merge_open_prs.sh --execute` to merge [PR #110](https://github.com/th3w1zard1/ModSync/pull/110).
+2. Do not squash Holocron work into this PR.
+3. Post-merge: follow [parallel-pr-merge-handoff-2026-06-03.md](../solutions/parallel-pr-merge-handoff-2026-06-03.md) if #111 is still open.
+
+**PR #111** — separate track: [godot-holocron-editor.md](godot-holocron-editor.md) (not the install wizard).
+
 ## Deferred — high impact
 
 ### MainWindow god object
@@ -41,13 +90,14 @@ Both register similar page sequences. Consolidation requires UX decisions (modal
 | Widescreen install batch API | Dynamic pages after base install; GUI-only progress surfaces `[UI]` |
 | Download status depth | Some status UI is GUI-only; headless tests use cache/orchestration APIs — [download-system.md](download-system.md) |
 | `EmbeddedLogPanel` | Line-count fix landed (#99); further output UX is cosmetic |
-| Archive `ERROR:` wizard result cards | Dialog mapper lists archive errors; wizard logs only — optional UX parity |
+| Archive `ERROR:` wizard result cards | Done (PR #110) — wizard + `ValidationPipelineDialogMapper` parity |
+| ValidatePage copy report / log UX | Done (PR #110) — see [gui-validation-surfaces.md](gui-validation-surfaces.md) |
 
 ## Deferred — separate product track
 
 | Topic | Notes |
 |-------|--------|
-| Godot Holocron editor plugin | Open PR #92 (`feat/godot-holocron-editor-plugin`); not part of KOTORModSync install wizard work |
+| Godot Holocron editor plugin | PR #111 — see [godot-holocron-editor.md](godot-holocron-editor.md); separate from install wizard |
 
 ## Suggested PR sizing
 

@@ -21,7 +21,7 @@ Agents re-discovered the Core CLI and wizard order on every task.
 | Routing | `AGENTS.md`, `.github/copilot-instructions.md` | Headless vs GUI vs telemetry-auth; wizard control names |
 | Index + audits | `docs/knowledgebase/` | Parity matrix, CLI reference, scored audit |
 | Procedures | `docs/local_desktop_agent_runbook.md` | Step-by-step desktop/full-build |
-| Learnings | `docs/solutions/` | Why releases are manual; how to edit guidance |
+| Learnings | `docs/solutions/` | Why releases are manual; how to edit guidance; [parallel PR merge handoff](parallel-pr-merge-handoff-2026-06-03.md) |
 | Plans | `docs/plans/` | Dated implementation intent |
 | Shortcuts | `.cursor/skills/*` | Cursor-specific quick paths |
 

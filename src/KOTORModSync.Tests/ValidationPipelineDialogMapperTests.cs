@@ -53,20 +53,142 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void AddPipelineStageIssues_EnvironmentFailure_WithPrefixedMessage_AddsParsedIssueOnly()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var environment = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.Environment,
+                Passed = false,
+                Summary = "HoloPatcher missing",
+            };
+            environment.Messages.Add("ERROR: HoloPatcher missing");
+            pipelineResult.Stages.Add(environment);
+
+            var modIssues = new List<DialogValidationIssue>();
+            ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
+
+            Assert.That(modIssues, Has.Count.EqualTo(1));
+            Assert.That(modIssues[0].ModName, Is.EqualTo("Unknown"));
+            Assert.That(modIssues[0].IssueType, Is.EqualTo("Environment"));
+            Assert.That(modIssues[0].Description, Is.EqualTo("HoloPatcher missing"));
+        }
+
+        [Test]
+        public void AddPipelineStageIssues_InstallOrderFailure_AddsPrefixedAndAggregateIssues()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var order = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.InstallOrder,
+                Passed = false,
+                Summary = "Circular dependency: Mod A -> Mod B",
+            };
+            order.Messages.Add("ERROR: Circular dependency detected");
+            pipelineResult.Stages.Add(order);
+
+            var modIssues = new List<DialogValidationIssue>();
+            ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
+
+            Assert.That(modIssues, Has.Count.EqualTo(2));
+            Assert.That(modIssues[0].ModName, Is.EqualTo("Unknown"));
+            Assert.That(modIssues[0].IssueType, Is.EqualTo("InstallOrder"));
+            Assert.That(modIssues[1].ModName, Is.EqualTo("Install Order"));
+        }
+
+        [Test]
+        public void AddPipelineStageIssues_ArchiveError_ParsesModName()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var archives = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.ComponentValidation,
+                Passed = false,
+                Summary = "1 component error(s)",
+            };
+            archives.Messages.Add("ERROR: Test Mod: missing archive");
+            pipelineResult.Stages.Add(archives);
+
+            var modIssues = new List<DialogValidationIssue>();
+            ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
+
+            Assert.That(modIssues, Has.Count.EqualTo(2));
+            Assert.That(modIssues[0].ModName, Is.EqualTo("Test Mod"));
+            Assert.That(modIssues[0].Icon, Is.EqualTo("✗"));
+            Assert.That(modIssues[0].IssueType, Is.EqualTo("ArchiveValidation"));
+            Assert.That(modIssues[1].ModName, Is.EqualTo("Archive Validation"));
+            Assert.That(modIssues[1].Description, Is.EqualTo("1 component error(s)"));
+        }
+
+        [Test]
+        public void AddPipelineStageIssues_ArchiveWarning_ParsesModName()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var archives = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.ComponentValidation,
+                Passed = true,
+                HasWarnings = true,
+                Summary = "1 warning(s)",
+            };
+            archives.Messages.Add("WARNING: Mod B: stale archive");
+            pipelineResult.Stages.Add(archives);
+
+            var modIssues = new List<DialogValidationIssue>();
+            ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
+
+            Assert.That(modIssues, Has.Count.EqualTo(2));
+            Assert.That(modIssues[0].ModName, Is.EqualTo("Mod B"));
+            Assert.That(modIssues[0].Icon, Is.EqualTo("⚠"));
+            Assert.That(modIssues[1].ModName, Is.EqualTo("Archive Validation"));
+            Assert.That(modIssues[1].Description, Is.EqualTo("1 warning(s)"));
+        }
+
+        [Test]
         public void AddPipelineStageIssues_ConflictWarning_ParsesModName()
         {
             var pipelineResult = new ValidationPipelineResult();
-            var conflicts = new ValidationPipelineStageResult { Stage = ValidationPipelineStage.Conflicts, Passed = true };
+            var conflicts = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.Conflicts,
+                Passed = true,
+                HasWarnings = true,
+                Summary = "1 dependency warning(s)",
+            };
             conflicts.Messages.Add("WARNING: Mod A: conflicts with Mod B");
             pipelineResult.Stages.Add(conflicts);
 
             var modIssues = new List<DialogValidationIssue>();
             ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
 
-            Assert.That(modIssues, Has.Count.EqualTo(1));
+            Assert.That(modIssues, Has.Count.EqualTo(2));
             Assert.That(modIssues[0].ModName, Is.EqualTo("Mod A"));
             Assert.That(modIssues[0].Icon, Is.EqualTo("⚠"));
-            Assert.That(modIssues[0].IssueType, Is.EqualTo("Conflict"));
+            Assert.That(modIssues[1].ModName, Is.EqualTo("Conflicts"));
+            Assert.That(modIssues[1].Description, Is.EqualTo("1 dependency warning(s)"));
+        }
+
+        [Test]
+        public void AddPipelineStageIssues_ConflictFailure_AddsModAndAggregateIssues()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var conflicts = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.Conflicts,
+                Passed = false,
+                Summary = "1 restriction conflict(s)",
+            };
+            conflicts.Messages.Add("ERROR: Mod X: incompatible with: Mod Y");
+            pipelineResult.Stages.Add(conflicts);
+
+            var modIssues = new List<DialogValidationIssue>();
+            ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
+
+            Assert.That(modIssues, Has.Count.EqualTo(2));
+            Assert.That(modIssues[0].ModName, Is.EqualTo("Mod X"));
+            Assert.That(modIssues[0].Icon, Is.EqualTo("✗"));
+            Assert.That(modIssues[1].ModName, Is.EqualTo("Conflicts"));
+            Assert.That(modIssues[1].IssueType, Is.EqualTo("Conflict"));
         }
 
         [Test]

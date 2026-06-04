@@ -55,7 +55,7 @@
                 IsVisible="False"
                 Padding="12">
                 <Expander.Header>
-                    <Grid ColumnDefinitions="*,Auto">
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto">
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
                             <TextBlock
                                 x:Name="LogHeaderText"
@@ -68,8 +68,24 @@
                                 Opacity="0.7"
                                 Text="" />
                         </StackPanel>
-                        <TextBlock
+                        <Button
+                            x:Name="GoToFirstIssueButton"
                             Grid.Column="1"
+                            Margin="0,0,8,0"
+                            Padding="10,4"
+                            Content="Go to first issue"
+                            IsVisible="False"
+                            ToolTip.Tip="Expand the log, flush pending lines, and scroll to the first error or warning in the log and results" />
+                        <Button
+                            x:Name="CopyReportButton"
+                            Grid.Column="2"
+                            Margin="0,0,8,0"
+                            Padding="10,4"
+                            Content="Copy report"
+                            IsVisible="False"
+                            ToolTip.Tip="Copy validation results and log to the clipboard" />
+                        <TextBlock
+                            Grid.Column="3"
                             FontSize="11"
                             Opacity="0.6"
                             Text="Click to expand" />
@@ -98,7 +114,10 @@
 
         <!--  Results Area  -->
         <Border Grid.Row="2" Padding="12" CornerRadius="8">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer
+                x:Name="ResultsScrollViewer"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Disabled">
                 <StackPanel x:Name="ResultsPanel" Spacing="10" />
             </ScrollViewer>
         </Border>

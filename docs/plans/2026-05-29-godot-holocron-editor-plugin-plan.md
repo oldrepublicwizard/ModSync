@@ -1,7 +1,7 @@
 # Plan: Godot Holocron Editor Plugin (KOTOR File Editing)
 
 **Date:** 2026-05-29  
-**Status:** Phase 0 in progress  
+**Status:** Phase 0–1 shipped (#92, #109); Phase 2+ planned  
 **Ideation:** `docs/ideation/2026-05-29-godot-holocron-editor-plugin.md`  
 **Reference:** [OpenKotOR/HolocronToolset](https://github.com/OpenKotOR/HolocronToolset)
 
@@ -184,8 +184,8 @@ src/KOTORModSync.Tests/
 
 ## Success criteria (Phase 0)
 
-- [ ] `python tools/godot-holocron/bridge/kotor_format_bridge.py probe <file>` works for 2DA/GFF
-- [ ] Round-trip 2DA via bridge preserves data (automated test)
-- [ ] Godot plugin loads; opens and saves `.2da` and `.utc` (GFF) from file dialog
-- [ ] `resource_types.gd` documents all Holocron editor targets with phase tags
-- [ ] README in `tools/godot-holocron/` with setup steps
+- [x] `python tools/godot-holocron/bridge/kotor_format_bridge.py probe <file>` works for 2DA/GFF
+- [x] Round-trip 2DA via bridge preserves data (automated test)
+- [x] Godot plugin loads; opens and saves `.2da` and `.utc` (GFF) from file dialog
+- [x] `resource_types.gd` documents all Holocron editor targets with phase tags
+- [x] README in `tools/godot-holocron/` with setup steps

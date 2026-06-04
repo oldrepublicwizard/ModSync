@@ -80,6 +80,6 @@ Pattern: follow `twoda_editor.gd` / `KotorResourceEditorBase`.
 
 ## Success criteria
 
-- [ ] TLK opens in table editor and saves round-trip via bridge (automated when PyKotor present).
-- [ ] ERF/RIM show resource list in container editor.
-- [ ] README reflects Phase 1 partial completion.
+- [x] TLK opens in table editor and saves round-trip via bridge (automated when PyKotor present).
+- [x] ERF/RIM show resource list in container editor.
+- [x] README reflects Phase 1 partial completion.
