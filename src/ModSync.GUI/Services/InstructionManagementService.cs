@@ -9,7 +9,7 @@ using ModSync.Core;
 namespace ModSync.Services
 {
 
-    public class InstructionManagementService
+    public static class InstructionManagementService
     {
 
         public static void CreateInstruction(ModComponent component, int index)

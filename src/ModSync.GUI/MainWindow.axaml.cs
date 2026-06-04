@@ -351,7 +351,6 @@ namespace ModSync
                 Logger.Initialize();
 
                 // Initialize core services first before any UI operations
-                _ = new InstallationService();
 
                 ModManagementService = new ModManagementService(MainConfigInstance);
                 ModManagementService.ModOperationCompleted += OnModOperationCompleted;
@@ -373,7 +372,6 @@ namespace ModSync
                 UpdateMenuVisibility();
                 InitializeDirectoryPickers();
                 InitializeModListBox();
-                _ = new InstructionManagementService();
                 _selectionService = new SelectionService(MainConfigInstance);
                 _fileSystemService = new FileSystemService();
                 _componentSelectionService = new ComponentSelectionService(MainConfigInstance);
