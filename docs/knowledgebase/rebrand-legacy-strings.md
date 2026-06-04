@@ -27,7 +27,14 @@ rg -n 'KOTORModSync' --glob '!docs/plans/*'
 
 Expect exactly the four rows in the source inventory table above.
 
-**Automated tests:** `SettingsManagerLegacyPathTests`, `TelemetryConfigurationTests.Load_UsesLegacyTelemetryKeyPath_WhenModSyncKeyMissing`
+**Automated tests:**
+
+| Legacy surface | Test |
+|----------------|------|
+| `KOTORModSync/settings.json` | `SettingsManagerLegacyPathTests` |
+| `KOTORModSync/telemetry_config.json` | `TelemetryConfigurationTests.Load_UsesLegacyTelemetryConfigPath_WhenModSyncConfigMissing` |
+| `KOTORModSync/telemetry.key` | `TelemetryConfigurationTests.Load_UsesLegacyTelemetryKeyPath_WhenModSyncKeyMissing` |
+| XML root key `KOTORModSync` | `ModComponentSerializationLegacyRootTests` |
 
 ## Related plans
 

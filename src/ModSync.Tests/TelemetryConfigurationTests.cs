@@ -108,6 +108,52 @@ namespace ModSync.Tests
         }
 
         [Test]
+        public void Load_UsesLegacyTelemetryConfigPath_WhenModSyncConfigMissing()
+        {
+            string legacyDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "KOTORModSync");
+            string legacyConfigPath = Path.Combine(legacyDirectory, "telemetry_config.json");
+
+            try
+            {
+                if (File.Exists(_configFilePath))
+                {
+                    File.Delete(_configFilePath);
+                }
+
+                Directory.CreateDirectory(legacyDirectory);
+                File.WriteAllText(
+                    legacyConfigPath,
+                    """
+                    {
+                      "enabled": true,
+                      "user_consented": true,
+                      "enable_prometheus_exporter": true,
+                      "prometheus_port": 9555
+                    }
+                    """);
+
+                TelemetryConfiguration loaded = TelemetryConfiguration.Load();
+
+                Assert.Multiple(() =>
+                {
+                    Assert.That(loaded.IsEnabled, Is.True);
+                    Assert.That(loaded.UserConsented, Is.True);
+                    Assert.That(loaded.EnablePrometheusExporter, Is.True);
+                    Assert.That(loaded.PrometheusPort, Is.EqualTo(9555));
+                });
+            }
+            finally
+            {
+                if (File.Exists(legacyConfigPath))
+                {
+                    File.Delete(legacyConfigPath);
+                }
+            }
+        }
+
+        [Test]
         public void Load_UsesLegacyTelemetryKeyPath_WhenModSyncKeyMissing()
         {
             string legacyDirectory = Path.Combine(
