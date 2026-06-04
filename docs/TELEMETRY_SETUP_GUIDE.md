@@ -43,12 +43,12 @@ OpenTelemetry Collector → Prometheus
 ModSync loads the signing secret from three sources:
 
 1. **Environment Variable** (highest priority)
-   - Variable: `KOTORMODSYNC_SIGNING_SECRET`
+   - Variable: `MODSYNC_SIGNING_SECRET` (legacy fallback: `KOTORMODSYNC_SIGNING_SECRET`)
    - Use case: CI/CD pipelines, developer testing
 
 2. **Local Config File**
-   - Windows: `%AppData%\ModSync\telemetry.key`
-   - Linux/Mac: `~/.config/kotormodsync/telemetry.key`
+   - Windows: `%AppData%\ModSync\telemetry.key` (legacy: `%AppData%\KOTORModSync\telemetry.key`)
+   - Linux/Mac: `~/.config/ModSync/telemetry.key` (legacy: `~/.config/KOTORModSync/telemetry.key`)
    - Use case: Developer local testing
 
 3. **Embedded Secret** (only in official builds)
@@ -101,13 +101,15 @@ Developers can build and run ModSync **without any telemetry setup**. The app wi
 
 **Windows (PowerShell):**
 ```powershell
-$env:KOTORMODSYNC_SIGNING_SECRET = "dev-secret-key-here"
+$env:MODSYNC_SIGNING_SECRET = "dev-secret-key-here"
 ```
 
 **Linux/Mac:**
 ```bash
-export KOTORMODSYNC_SIGNING_SECRET="dev-secret-key-here"
+export MODSYNC_SIGNING_SECRET="dev-secret-key-here"
 ```
+
+(`KOTORMODSYNC_SIGNING_SECRET` is still accepted as a legacy fallback.)
 
 #### Option 2: Config File
 
@@ -119,9 +121,11 @@ echo "dev-secret-key-here" > "$env:APPDATA\ModSync\telemetry.key"
 
 **Linux/Mac:**
 ```bash
-mkdir -p ~/.config/kotormodsync
-echo "dev-secret-key-here" > ~/.config/kotormodsync/telemetry.key
+mkdir -p ~/.config/ModSync
+echo "dev-secret-key-here" > ~/.config/ModSync/telemetry.key
 ```
+
+Pre-rebrand installs may still have `~/.config/KOTORModSync/telemetry.key`; ModSync reads that path when the `ModSync` file is absent. See [rebrand-legacy-strings.md](knowledgebase/rebrand-legacy-strings.md).
 
 **Important:** Use a **different** dev secret, not the production secret. This allows filtering dev telemetry in Grafana.
 
@@ -253,7 +257,7 @@ Expected log output:
 
 **Windows:**
 ```powershell
-$env:KOTORMODSYNC_SIGNING_SECRET = "6ea4413f4db73407b07c3faccac817031f5210f80bde02e94b61c512de6b9d90"
+$env:MODSYNC_SIGNING_SECRET = "6ea4413f4db73407b07c3faccac817031f5210f80bde02e94b61c512de6b9d90"
 dotnet run --project ModSync.GUI
 ```
 
