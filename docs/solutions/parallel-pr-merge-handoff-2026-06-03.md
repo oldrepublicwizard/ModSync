@@ -1,5 +1,7 @@
 # Parallel PR merge handoff (#110 + #111)
 
+**Status (2026-06-04):** PR [#110](https://github.com/th3w1zard1/ModSync/pull/110) **merged**. PR [#111](https://github.com/th3w1zard1/ModSync/pull/111): branch merged `origin/master` locally (plan `062`); push + `gh pr merge 111` pending CI on updated branch.
+
 `[REPO]` Durable steps for landing the two merge-ready feature branches without bundling them. Routing context: [doc-hierarchy.md](../knowledgebase/doc-hierarchy.md#active-open-prs-2026-06-03), test filters in [ci-test-matrix.md](../knowledgebase/ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs).
 
 ## Branches

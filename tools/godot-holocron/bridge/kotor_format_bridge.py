@@ -2,9 +2,12 @@
 """JSON CLI bridge between Godot and PyKotor for KOTOR resource I/O.
 
 Commands (stdout is always JSON on success):
-  probe <path>
+  probe <path>  # includes editor_kind for Holocron routing
   read <path> [--game k1|k2]
   write <path> --payload <json-string|@file>
+  extract <archive> --resref NAME --restype EXT --output <path>
+  inject <archive> --resref NAME --restype EXT --source <path>
+  remove <archive> --resref NAME --restype EXT
   installations
   supported-types
 """
@@ -25,11 +28,11 @@ warnings.filterwarnings("ignore")
 try:
     from pykotor.common.misc import Game
     from pykotor.extract.file import ResourceIdentifier
-    from pykotor.resource.formats.erf.erf_auto import read_erf
+    from pykotor.resource.formats.erf.erf_auto import read_erf, write_erf
     from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
     from pykotor.resource.formats.gff.gff_data import GFF
     from pykotor.resource.formats.ncs.ncs_auto import read_ncs
-    from pykotor.resource.formats.rim.rim_auto import read_rim
+    from pykotor.resource.formats.rim.rim_auto import read_rim, write_rim
     from pykotor.resource.formats.ssf.ssf_auto import read_ssf, write_ssf
     from pykotor.resource.formats.ssf.ssf_data import SSF
     from pykotor.resource.formats.tlk.tlk_auto import read_tlk, write_tlk
@@ -61,6 +64,55 @@ TEXT_EXTENSIONS = {
     "mdlascii",
     "mdx",
 }
+
+GFF_EXTENSIONS = {
+    "gff",
+    "utc",
+    "utd",
+    "ute",
+    "uti",
+    "utm",
+    "utp",
+    "uts",
+    "utt",
+    "utw",
+    "are",
+    "dlg",
+    "fac",
+    "git",
+    "ifo",
+    "jrl",
+    "gui",
+    "pth",
+}
+
+CONTAINER_EXTENSIONS = {"erf", "mod", "sav", "rim"}
+
+TLK_EXTENSIONS = {"tlk", "fmh", "fml"}
+
+BINARY_EXTENSIONS = {"wav", "bwm", "mdl", "mdx", "tpc", "tga", "ltr", "lip"}
+
+
+def _editor_kind_for_extension(ext: str, category: str | None = None) -> str:
+    """Holocron editor routing key; mirrors addons/kotor_holocron/resource_types.gd."""
+    key = ext.lower().lstrip(".")
+    if key == "2da":
+        return "twoda"
+    if key in CONTAINER_EXTENSIONS:
+        return "erf"
+    if key in GFF_EXTENSIONS or (category or "").upper() == "GFF":
+        return "gff"
+    if key in TLK_EXTENSIONS:
+        return "tlk"
+    if key == "ssf":
+        return "ssf"
+    if key in TEXT_EXTENSIONS:
+        return "text"
+    if key == "ncs":
+        return "ncs"
+    if key in BINARY_EXTENSIONS:
+        return "binary"
+    return "unsupported"
 
 
 def _emit(payload: dict[str, Any], code: int = 0) -> None:
@@ -104,6 +156,7 @@ def cmd_probe(path_str: str) -> None:
             "extension": restype.extension,
             "category": restype.category,
             "resource_type": restype.name,
+            "editor_kind": _editor_kind_for_extension(restype.extension, restype.category),
             "size": path.stat().st_size,
         }
     )
@@ -155,6 +208,129 @@ def _read_erf(path: Path) -> dict[str, Any]:
             }
         )
     return {"format": "erf", "resources": resources}
+
+
+def _open_container(path: Path):
+    ext = path.suffix.lower().lstrip(".")
+    if ext == "rim":
+        return read_rim(path)
+    return read_erf(path)
+
+
+def _write_container(archive: Path, container) -> None:
+    _resname, archive_restype = _identify(archive)
+    ext = archive.suffix.lower().lstrip(".")
+    try:
+        if ext == "rim":
+            write_rim(container, archive, ResourceType.RIM)
+        else:
+            write_erf(container, archive, archive_restype)
+    except Exception as exc:
+        _fail(f"Failed to write archive {archive}: {exc}")
+
+
+def cmd_extract(archive_str: str, resref: str, restype_ext: str, output_str: str) -> None:
+    archive = _resolve_path(archive_str)
+    try:
+        container = _open_container(archive)
+    except Exception as exc:
+        _fail(f"Failed to open archive {archive}: {exc}")
+
+    try:
+        restype = ResourceType.from_extension(restype_ext.lower().lstrip("."))
+    except Exception as exc:
+        _fail(f"Unknown resource type '{restype_ext}': {exc}")
+
+    try:
+        data = container.get_data(resref, restype)
+    except Exception as exc:
+        _fail(f"Extract failed: {exc}")
+
+    if not data:
+        _fail(f"Resource '{resref}.{restype.extension}' not found in {archive.name}")
+
+    output = Path(output_str).expanduser()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_bytes(data)
+
+    _emit(
+        {
+            "ok": True,
+            "archive": str(archive),
+            "resref": resref,
+            "restype": restype.extension,
+            "output": str(output.resolve()),
+            "bytes": len(data),
+        }
+    )
+
+
+def cmd_inject(archive_str: str, resref: str, restype_ext: str, source_str: str) -> None:
+    archive = _resolve_path(archive_str)
+    source = _resolve_path(source_str)
+    try:
+        container = _open_container(archive)
+    except Exception as exc:
+        _fail(f"Failed to open archive {archive}: {exc}")
+
+    try:
+        restype = ResourceType.from_extension(restype_ext.lower().lstrip("."))
+    except Exception as exc:
+        _fail(f"Unknown resource type '{restype_ext}': {exc}")
+
+    data = source.read_bytes()
+    if not data:
+        _fail(f"Source file is empty: {source}")
+
+    try:
+        container.set_data(resref, restype, data)
+    except Exception as exc:
+        _fail(f"Inject failed: {exc}")
+
+    _write_container(archive, container)
+
+    _emit(
+        {
+            "ok": True,
+            "archive": str(archive),
+            "resref": resref,
+            "restype": restype.extension,
+            "source": str(source.resolve()),
+            "bytes": len(data),
+        }
+    )
+
+
+def cmd_remove(archive_str: str, resref: str, restype_ext: str) -> None:
+    archive = _resolve_path(archive_str)
+    try:
+        container = _open_container(archive)
+    except Exception as exc:
+        _fail(f"Failed to open archive {archive}: {exc}")
+
+    try:
+        restype = ResourceType.from_extension(restype_ext.lower().lstrip("."))
+    except Exception as exc:
+        _fail(f"Unknown resource type '{restype_ext}': {exc}")
+
+    if not container.has(resref, restype):
+        _fail(f"Resource '{resref}.{restype.extension}' not found in {archive.name}")
+
+    try:
+        container.remove(resref, restype)
+    except Exception as exc:
+        _fail(f"Remove failed: {exc}")
+
+    _write_container(archive, container)
+
+    _emit(
+        {
+            "ok": True,
+            "archive": str(archive),
+            "resref": resref,
+            "restype": restype.extension,
+        }
+    )
 
 
 def _read_rim(path: Path) -> dict[str, Any]:
@@ -356,6 +532,23 @@ def main() -> None:
     p_write.add_argument("path")
     p_write.add_argument("--payload", required=True, help="JSON string or @file.json")
 
+    p_extract = sub.add_parser("extract")
+    p_extract.add_argument("archive")
+    p_extract.add_argument("--resref", required=True)
+    p_extract.add_argument("--restype", required=True, help="Resource extension, e.g. 2da, utc")
+    p_extract.add_argument("--output", required=True)
+
+    p_inject = sub.add_parser("inject")
+    p_inject.add_argument("archive")
+    p_inject.add_argument("--resref", required=True)
+    p_inject.add_argument("--restype", required=True)
+    p_inject.add_argument("--source", required=True)
+
+    p_remove = sub.add_parser("remove")
+    p_remove.add_argument("archive")
+    p_remove.add_argument("--resref", required=True)
+    p_remove.add_argument("--restype", required=True)
+
     sub.add_parser("installations")
     sub.add_parser("supported-types")
 
@@ -370,6 +563,12 @@ def main() -> None:
         if payload.startswith("@"):
             payload = Path(payload[1:]).read_text(encoding="utf-8")
         cmd_write(args.path, payload)
+    elif args.command == "extract":
+        cmd_extract(args.archive, args.resref, args.restype, args.output)
+    elif args.command == "inject":
+        cmd_inject(args.archive, args.resref, args.restype, args.source)
+    elif args.command == "remove":
+        cmd_remove(args.archive, args.resref, args.restype)
     elif args.command == "installations":
         cmd_installations()
     elif args.command == "supported-types":

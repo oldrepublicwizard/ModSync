@@ -1,6 +1,8 @@
 # GUI validation surfaces
 
-`[REPO]` How the Avalonia app presents `InstallationValidationPipeline` results after PRs #103–#104. Core pipeline behavior is in [validation-pipeline.md](validation-pipeline.md).
+`[REPO]` Wizard validation UX is delivered on branch `feat/wizard-archive-validation-parity` ([PR #110](https://github.com/th3w1zard1/ModSync/pull/110)). This page is synced here so agents on the Holocron branch ([PR #111](https://github.com/th3w1zard1/ModSync/pull/111)) do not rely on stale “log only” archive notes. Edit validation behavior on the wizard branch, then re-sync if both PRs are still open.
+
+How the Avalonia app presents `InstallationValidationPipeline` results after PRs #103–#104. Core pipeline behavior is in [validation-pipeline.md](validation-pipeline.md).
 
 ## Shared mapper
 
@@ -70,8 +72,10 @@ Prefer the **install wizard** for documented full-build flows ([install-lifecycl
 ## Automated tests
 
 ```bash
-./scripts/agents/verify_open_pr_ready.sh
-# or: ./scripts/agents/test_pr110_validation.sh
+./scripts/agents/test_pr110_validation.sh
+# or:
+dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~WizardValidationStagePresenter"
+dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~ValidationPipelineDialogMapper"
 ```
 
 ## Debugging order

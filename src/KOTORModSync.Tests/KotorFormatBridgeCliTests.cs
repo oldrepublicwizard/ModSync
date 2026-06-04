@@ -39,6 +39,12 @@ namespace KOTORModSync.Tests
                 "..", "..", "..",
                 "Fixtures", "kotor", "sample.ssf"));
 
+        private static string SampleModPath =>
+            Path.GetFullPath(Path.Combine(
+                TestContext.CurrentContext.TestDirectory,
+                "..", "..", "..",
+                "Fixtures", "kotor", "sample.mod"));
+
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
@@ -60,6 +66,111 @@ namespace KOTORModSync.Tests
             Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
             Assert.That(result.GetProperty("extension").GetString(), Is.EqualTo("2da"));
             Assert.That(result.GetProperty("resource_type").GetString(), Is.EqualTo("TwoDA"));
+            Assert.That(result.GetProperty("editor_kind").GetString(), Is.EqualTo("twoda"));
+        }
+
+        [Test]
+        public void Probe_UnsupportedResource_ReturnsUnsupportedEditorKind()
+        {
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_" + Guid.NewGuid() + ".res");
+            try
+            {
+                File.WriteAllBytes(tempPath, new byte[] { 0, 1 });
+
+                var result = RunBridge("probe", tempPath);
+                Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(result.GetProperty("editor_kind").GetString(), Is.EqualTo("unsupported"));
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+        }
+
+        [Test]
+        public void Probe_SampleMod_ReturnsArchiveEditorKind()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            var result = RunBridge("probe", SampleModPath);
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            Assert.That(result.GetProperty("extension").GetString(), Is.EqualTo("mod"));
+            Assert.That(result.GetProperty("editor_kind").GetString(), Is.EqualTo("erf"));
+        }
+
+        [Test]
+        public void Probe_MissingPath_ReturnsError()
+        {
+            string missingPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_missing_" + Guid.NewGuid() + ".2da");
+            var raw = RunBridgeRaw("probe", missingPath);
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
+        }
+
+        [Test]
+        public void Read_MissingPath_ReturnsError()
+        {
+            string missingPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_missing_" + Guid.NewGuid() + ".2da");
+            var raw = RunBridgeRaw("read", missingPath);
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
+        }
+
+        [Test]
+        public void Write_InvalidJsonPayload_ReturnsError()
+        {
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_write_" + Guid.NewGuid() + ".2da");
+            var raw = RunBridgeRaw("write", tempPath, "--payload", "not json");
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("Invalid JSON").IgnoreCase);
+        }
+
+        [Test]
+        public void Write_UnimplementedFormat_ReturnsError()
+        {
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_write_" + Guid.NewGuid() + ".wav");
+            const string payloadJson = "{\"format\":\"mdl\",\"data\":{}}";
+            var raw = RunBridgeRaw("write", tempPath, "--payload", payloadJson);
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("not implemented").IgnoreCase);
+        }
+
+        [Test]
+        public void Read_BinaryFile_ReturnsBase64Payload()
+        {
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_" + Guid.NewGuid() + ".mdl");
+            try
+            {
+                File.WriteAllBytes(tempPath, new byte[] { 0x41, 0x42, 0x00, 0xFF });
+
+                var probe = RunBridge("probe", tempPath);
+                Assert.That(probe.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(probe.GetProperty("editor_kind").GetString(), Is.EqualTo("binary"));
+
+                var result = RunBridge("read", tempPath);
+                Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+                var payload = result.GetProperty("payload");
+                Assert.That(payload.GetProperty("format").GetString(), Is.EqualTo("binary"));
+                Assert.That(payload.GetProperty("size").GetInt32(), Is.EqualTo(4));
+                Assert.That(payload.GetProperty("base64").GetString(), Is.Not.Empty);
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
         }
 
         [Test]
@@ -71,6 +182,16 @@ namespace KOTORModSync.Tests
             Assert.That(payload.GetProperty("format").GetString(), Is.EqualTo("twoda"));
             var rows = payload.GetProperty("data").GetProperty("rows");
             Assert.That(rows.GetArrayLength(), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Read_SampleTwoDa_ReturnsTwodaPayloadNotArchiveList()
+        {
+            var result = RunBridge("read", SampleTwoDaPath);
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            var payload = result.GetProperty("payload");
+            Assert.That(payload.GetProperty("format").GetString(), Is.EqualTo("twoda"));
+            Assert.That(payload.TryGetProperty("resources", out _), Is.False);
         }
 
         [Test]
@@ -108,6 +229,14 @@ namespace KOTORModSync.Tests
             var result = RunBridge("supported-types");
             Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
             Assert.That(result.GetProperty("types").GetArrayLength(), Is.GreaterThan(10));
+        }
+
+        [Test]
+        public void Installations_ReturnsOk()
+        {
+            var result = RunBridge("installations");
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            Assert.That(result.GetProperty("installations").ValueKind, Is.EqualTo(JsonValueKind.Array));
         }
 
         [Test]
@@ -174,6 +303,528 @@ namespace KOTORModSync.Tests
                 if (File.Exists(tempPath))
                 {
                     File.Delete(tempPath);
+                }
+            }
+        }
+
+        [Test]
+        public void Extract_SampleMod_EmbeddedTwoDa_MatchesDirectRead()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                var extractResult = RunBridge(
+                    "extract",
+                    SampleModPath,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--output",
+                    tempPath);
+                Assert.That(extractResult.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(extractResult.GetProperty("bytes").GetInt32(), Is.GreaterThan(0));
+                Assert.That(File.Exists(tempPath), Is.True);
+
+                var directRead = RunBridge("read", SampleTwoDaPath);
+                var extractedRead = RunBridge("read", tempPath);
+                Assert.That(extractedRead.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(
+                    extractedRead.GetProperty("payload").GetProperty("data").GetProperty("rows").GetArrayLength(),
+                    Is.EqualTo(
+                        directRead.GetProperty("payload").GetProperty("data").GetProperty("rows").GetArrayLength()));
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+        }
+
+        [Test]
+        public void Extract_SampleMod_ReturnsBytesInResponse()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                var extractResult = RunBridge(
+                    "extract",
+                    SampleModPath,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--output",
+                    tempPath);
+                Assert.That(extractResult.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(extractResult.GetProperty("bytes").GetInt32(), Is.GreaterThan(0));
+                Assert.That(extractResult.GetProperty("output").GetString(), Is.EqualTo(tempPath));
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+        }
+
+        [Test]
+        public void Probe_ExtractedTwoDa_ReturnsTwodaEditorKind()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string tempPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                var extractResult = RunBridge(
+                    "extract",
+                    SampleModPath,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--output",
+                    tempPath);
+                Assert.That(extractResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var probe = RunBridge("probe", tempPath);
+                Assert.That(probe.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(probe.GetProperty("extension").GetString(), Is.EqualTo("2da"));
+                Assert.That(probe.GetProperty("editor_kind").GetString(), Is.EqualTo("twoda"));
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+        }
+
+        [Test]
+        public void Extract_MissingArchive_ReturnsError()
+        {
+            string missingArchive = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            string outputPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            var raw = RunBridgeRaw(
+                "extract",
+                missingArchive,
+                "--resref",
+                "test2da",
+                "--restype",
+                "2da",
+                "--output",
+                outputPath);
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
+        }
+
+        [Test]
+        public void Extract_MissingMember_ReturnsError()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string outputPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                var raw = RunBridgeRaw(
+                    "extract",
+                    SampleModPath,
+                    "--resref",
+                    "not_in_archive",
+                    "--restype",
+                    "2da",
+                    "--output",
+                    outputPath);
+                Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+                Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+                Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("not found"));
+            }
+            finally
+            {
+                if (File.Exists(outputPath))
+                {
+                    File.Delete(outputPath);
+                }
+            }
+        }
+
+        [Test]
+        public void Inject_MissingArchive_ReturnsError()
+        {
+            string missingArchive = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            string sourcePath = Path.Combine(Path.GetTempPath(), "kotor_bridge_src_" + Guid.NewGuid() + ".2da");
+            if (File.Exists(SampleTwoDaPath))
+            {
+                File.Copy(SampleTwoDaPath, sourcePath);
+            }
+            else
+            {
+                File.WriteAllText(sourcePath, "placeholder");
+            }
+
+            try
+            {
+                var raw = RunBridgeRaw(
+                    "inject",
+                    missingArchive,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--source",
+                    sourcePath);
+                Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+                Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+                Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
+            }
+            finally
+            {
+                if (File.Exists(sourcePath))
+                {
+                    File.Delete(sourcePath);
+                }
+            }
+        }
+
+        [Test]
+        public void Inject_MissingSource_ReturnsError()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            string missingSource = Path.Combine(Path.GetTempPath(), "kotor_bridge_missing_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+
+                var raw = RunBridgeRaw(
+                    "inject",
+                    archiveCopy,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--source",
+                    missingSource);
+                Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+                Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+                Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
+                }
+            }
+        }
+
+        [Test]
+        public void Read_SampleMod_ReturnsResourceList()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            var result = RunBridge("read", SampleModPath);
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            var payload = result.GetProperty("payload");
+            Assert.That(payload.GetProperty("format").GetString(), Is.EqualTo("erf"));
+            var resources = payload.GetProperty("resources");
+            Assert.That(resources.GetArrayLength(), Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void Read_SampleMod_ResourcesIncludeTest2da()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            var result = RunBridge("read", SampleModPath);
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            var resources = result.GetProperty("payload").GetProperty("resources");
+            bool found = false;
+            for (int i = 0; i < resources.GetArrayLength(); i++)
+            {
+                var entry = resources[i];
+                if (entry.GetProperty("resref").GetString() == "test2da"
+                    && string.Equals(entry.GetProperty("restype").GetString(), "2da", StringComparison.OrdinalIgnoreCase))
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            Assert.That(found, Is.True, "sample.mod fixture should list embedded test2da.2da");
+        }
+
+        [Test]
+        public void Inject_ReplacesMemberInArchiveCopy()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            string extractPath = Path.Combine(Path.GetTempPath(), "kotor_bridge_extract_" + Guid.NewGuid() + ".2da");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+
+                var injectResult = RunBridge(
+                    "inject",
+                    archiveCopy,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--source",
+                    SampleTwoDaPath);
+                Assert.That(injectResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var extractResult = RunBridge(
+                    "extract",
+                    archiveCopy,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--output",
+                    extractPath);
+                Assert.That(extractResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var directRead = RunBridge("read", SampleTwoDaPath);
+                var extractedRead = RunBridge("read", extractPath);
+                Assert.That(
+                    extractedRead.GetProperty("payload").GetProperty("data").GetProperty("rows").GetArrayLength(),
+                    Is.EqualTo(
+                        directRead.GetProperty("payload").GetProperty("data").GetProperty("rows").GetArrayLength()));
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
+                }
+
+                if (File.Exists(extractPath))
+                {
+                    File.Delete(extractPath);
+                }
+            }
+        }
+
+        [Test]
+        public void Remove_DeletesMemberFromArchiveCopy()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+
+                var removeResult = RunBridge(
+                    "remove",
+                    archiveCopy,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da");
+                Assert.That(removeResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var readResult = RunBridge("read", archiveCopy);
+                Assert.That(readResult.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(
+                    readResult.GetProperty("payload").GetProperty("resources").GetArrayLength(),
+                    Is.EqualTo(0));
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
+                }
+            }
+        }
+
+        [Test]
+        public void Remove_MissingArchive_ReturnsError()
+        {
+            string missingArchive = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            var raw = RunBridgeRaw(
+                "remove",
+                missingArchive,
+                "--resref",
+                "test2da",
+                "--restype",
+                "2da");
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
+        }
+
+        [Test]
+        public void Remove_MissingMember_ReturnsError()
+        {
+            if (!File.Exists(SampleModPath))
+            {
+                Assert.Ignore($"Fixture not found at {SampleModPath}");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+
+                var raw = RunBridgeRaw(
+                    "remove",
+                    archiveCopy,
+                    "--resref",
+                    "not_in_archive",
+                    "--restype",
+                    "2da");
+                Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+                Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+                Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("not found"));
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
+                }
+            }
+        }
+
+        [Test]
+        public void Add_AppendsNewMemberToArchiveCopy()
+        {
+            if (!File.Exists(SampleModPath) || !File.Exists(SampleTwoDaPath))
+            {
+                Assert.Ignore("Holocron fixtures not found");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+
+                var injectResult = RunBridge(
+                    "inject",
+                    archiveCopy,
+                    "--resref",
+                    "extra2da",
+                    "--restype",
+                    "2da",
+                    "--source",
+                    SampleTwoDaPath);
+                Assert.That(injectResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var readResult = RunBridge("read", archiveCopy);
+                Assert.That(readResult.GetProperty("ok").GetBoolean(), Is.True);
+                Assert.That(
+                    readResult.GetProperty("payload").GetProperty("resources").GetArrayLength(),
+                    Is.EqualTo(2));
+
+                bool foundExtra = false;
+                foreach (JsonElement resource in readResult.GetProperty("payload").GetProperty("resources").EnumerateArray())
+                {
+                    if (resource.GetProperty("resref").GetString() == "extra2da")
+                    {
+                        foundExtra = true;
+                        break;
+                    }
+                }
+
+                Assert.That(foundExtra, Is.True);
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
+                }
+            }
+        }
+
+        [Test]
+        public void Inject_UpdatesResourceListingSize()
+        {
+            if (!File.Exists(SampleModPath) || !File.Exists(SampleTwoDaPath))
+            {
+                Assert.Ignore("Holocron fixtures not found");
+            }
+
+            string archiveCopy = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            try
+            {
+                File.Copy(SampleModPath, archiveCopy);
+                long expectedSize = new FileInfo(SampleTwoDaPath).Length;
+
+                var injectResult = RunBridge(
+                    "inject",
+                    archiveCopy,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--source",
+                    SampleTwoDaPath);
+                Assert.That(injectResult.GetProperty("ok").GetBoolean(), Is.True);
+
+                var readResult = RunBridge("read", archiveCopy);
+                Assert.That(readResult.GetProperty("ok").GetBoolean(), Is.True);
+                int? listingSize = null;
+                foreach (JsonElement resource in readResult.GetProperty("payload").GetProperty("resources").EnumerateArray())
+                {
+                    if (resource.GetProperty("resref").GetString() == "test2da"
+                        && resource.GetProperty("restype").GetString() == "2da")
+                    {
+                        listingSize = resource.GetProperty("size").GetInt32();
+                        break;
+                    }
+                }
+
+                Assert.That(listingSize, Is.Not.Null);
+                Assert.That(listingSize!.Value, Is.EqualTo(expectedSize));
+            }
+            finally
+            {
+                if (File.Exists(archiveCopy))
+                {
+                    File.Delete(archiveCopy);
                 }
             }
         }

@@ -52,7 +52,7 @@ Runs the **full** test project (minus `LongRunning` suffix if any exist). Longer
 | [#110](https://github.com/th3w1zard1/ModSync/pull/110) | same | `FullyQualifiedName~ValidationPipelineDialogMapper` |
 | [#111](https://github.com/th3w1zard1/ModSync/pull/111) | `feat/holocron-erf-nested-open` | `FullyQualifiedName~KotorFormatBridgeCliTests` |
 
-Holocron tests skip when PyKotor is not importable. Wrappers: `./scripts/agents/test_pr110_validation.sh`, `./scripts/agents/test_pr111_holocron_bridge.sh`. See [agent-action-parity.md](agent-action-parity.md).
+Holocron tests skip when PyKotor is not importable. Wrappers: `./scripts/agents/test_current_open_pr.sh` (branch-aware), or `test_pr110_validation.sh` / `test_pr111_holocron_bridge.sh`. See [agent-action-parity.md](agent-action-parity.md).
 
 ## Related
 

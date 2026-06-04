@@ -14,8 +14,8 @@
 ## Active delivery
 
 - **Branch:** `feat/holocron-erf-nested-open`
-- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`050`)
-- **Not in:** Install wizard / `ValidatePage` work (PR #110)
+- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`061`)
+- **Not in:** Install wizard / `ValidatePage` work (merged via PR #110)
 - **Status:** Merge-ready for Phase 1; Phase 2 editors (TPC/WAV/MDL/DLG) deferred per `docs/plans/2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md`
 
 ### Merge checklist — PR #111
@@ -23,11 +23,14 @@
 1. Confirm CI green on [PR #111](https://github.com/th3w1zard1/ModSync/pull/111).
 2. Merge **after or independently of** PR #110 — no shared validation wizard files.
 3. Post-merge Phase 2: start from `docs/plans/2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md`.
+4. Pre-merge: `./scripts/agents/verify_open_pr_ready.sh` (or `test_current_open_pr.sh`; see [ci-test-matrix.md](ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs)).
+5. Validation wizard UX merged in PR #110 — see [gui-validation-surfaces.md](gui-validation-surfaces.md).
+6. PR #110 merged 2026-06-04; rebase this branch on `origin/master` before merge — [parallel-pr-merge-handoff-2026-06-03.md](../solutions/parallel-pr-merge-handoff-2026-06-03.md).
 
 ## Bridge tests
 
 ```bash
-./scripts/agents/test_pr111_holocron_bridge.sh
+./scripts/agents/test_current_open_pr.sh
 ```
 
 Skips when PyKotor is not importable. Fixture: `src/KOTORModSync.Tests/Fixtures/kotor/sample.mod`.
