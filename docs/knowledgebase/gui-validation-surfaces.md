@@ -55,7 +55,7 @@
 
 A new **Run Validation** resets scroll position on both the results panel and the log (plans 039–040).
 
-**Copy report** flushes the log queue before building clipboard text (`--- Results ---` cards plus `--- Log ---` body).
+**Copy report** flushes the log queue before building clipboard text (`--- Results ---` cards plus `--- Log ---` body). `BuildValidationReportText()` also calls `FlushLogQueue()` so the `--- Log ---` section stays complete if the report is built outside the button handler (plan 043).
 
 ## Legacy MainWindow validate
 

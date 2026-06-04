@@ -75,7 +75,7 @@
                             Padding="10,4"
                             Content="Go to first issue"
                             IsVisible="False"
-                            ToolTip.Tip="Scroll to the first error or warning in the log and results" />
+                            ToolTip.Tip="Expand the log, flush pending lines, and scroll to the first error or warning in the log and results" />
                         <Button
                             x:Name="CopyReportButton"
                             Grid.Column="2"

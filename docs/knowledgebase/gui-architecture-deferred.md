@@ -33,8 +33,13 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Flush log queue before focus/scroll to first issue | Done | plan `041` |
 | Validation surfaces KB (focus/copy/log UX) | Done | plan `042` |
 | Copy report flushes log queue inside report builder | Done | plan `043` |
+| Go to first issue tooltip + Holocron KB cross-link | Done | plan `044` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`043`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md). **PR #110** is merge-ready for the validation parity arc; Holocron archive track is **PR #111** (not the install wizard).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`044`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+
+**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`044`). Do not bundle with Holocron.
+
+**PR #111** — separate track: [godot-holocron-editor.md](godot-holocron-editor.md) (not the install wizard).
 
 ## Deferred — high impact
 
@@ -69,7 +74,7 @@ Both register similar page sequences. Consolidation requires UX decisions (modal
 
 | Topic | Notes |
 |-------|--------|
-| Godot Holocron editor plugin | Open PR #111 (`feat/holocron-erf-nested-open`); separate from KOTORModSync install wizard work |
+| Godot Holocron editor plugin | PR #111 — see [godot-holocron-editor.md](godot-holocron-editor.md); separate from install wizard |
 
 ## Suggested PR sizing
 
