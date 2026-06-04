@@ -4,16 +4,9 @@ This runbook is for local LLM agents running outside Cursor Cloud in a real desk
 
 It captures the workflow that was actually exercised against this repo's Avalonia GUI on Linux.
 
-## Open PR scope (2026-06-03)
+## Scope
 
-`[REPO]` Do not mix work across these merge-ready branches:
-
-| PR | Scope | This runbook applies? |
-|----|--------|----------------------|
-| [#110](https://github.com/th3w1zard1/ModSync/pull/110) | Install wizard **ValidatePage** / validation UI | **Yes** — desktop wizard flows below |
-| [#111](https://github.com/th3w1zard1/ModSync/pull/111) | Godot Holocron (`tools/godot-holocron/`) | **No** — use [godot-holocron-editor.md](knowledgebase/godot-holocron-editor.md) |
-
-Headless filters before merge: [ci-test-matrix.md](knowledgebase/ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs). Routing table: `AGENTS.md` § Parallel open PRs.
+`[REPO]` This runbook covers the Avalonia install wizard and desktop GUI — especially **ValidatePage** / validation UI ([gui-validation-surfaces.md](knowledgebase/gui-validation-surfaces.md)). Headless regression: `./scripts/agents/test_pr110_validation.sh` ([ci-test-matrix.md](knowledgebase/ci-test-matrix.md#pr-targeted-local-filters-wizard-validation)).
 
 ## Goal
 

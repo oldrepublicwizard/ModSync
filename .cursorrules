@@ -30,7 +30,7 @@ Instructions MUST use relative paths with placeholders: <<modDirectory>>\filenam
 === AUTONOMOUS EXECUTION DEFAULTS ===
 
 - Treat `.github/copilot-instructions.md`, `AGENTS.md`, and `.cursorrules` as the repo's initial routing layer before asking broad "what should I do?" questions.
-- Open merge-ready PRs #110 (wizard validation) and #111 (Godot Holocron) are separate tracks — see `AGENTS.md` § Parallel open PRs before editing GUI validation or `tools/godot-holocron/`. Pre-merge on a feature branch: `./scripts/agents/verify_open_pr_ready.sh`.
+- Install wizard validation UX is documented in `docs/knowledgebase/gui-validation-surfaces.md`. Regression tests: `./scripts/agents/test_pr110_validation.sh`.
 - For repo-root work, `src/KOTORModSync.Core`, `src/KOTORModSync.Tests`, and normal build/test/lint changes, default to the headless .NET workflow. Do not stop to ask which project to inspect first when the task path already answers it.
 - If a task touches `src/KOTORModSync.GUI`, the install wizard, `scripts/agents/`, or full-build validation, default to the documented desktop workflow, helper scripts, and preload args before attempting native file-picker automation.
 - If a task touches `telemetry-auth/`, treat it as the Python/Docker sidecar and use that directory's local docs/workflows instead of the Avalonia/.NET path.

@@ -29,7 +29,7 @@ PRs #103–#107 unified pipeline parsing for conflicts and dry-run summaries. `g
 
 **In scope:** Presenter, mapper, tests, KB.
 
-**Deferred:** Per-issue dry-run rows on ValidatePage; MainWindow decomposition; Holocron ERF extract/inject (Phase 1+).
+**Deferred:** Per-issue dry-run rows on ValidatePage; MainWindow decomposition.
 
 ## Assumptions
 

@@ -56,19 +56,11 @@ Wizard order from `src/KOTORModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` an
 | VFS validation | `VirtualFileSystemDryRunValidationTests` | Dry-run matches VFS rules |
 | Wizard UI | `WizardFlowHeadlessTests` | Page flow without full desktop |
 | Wizard validation UX | `WizardValidationStagePresenter`, `ValidationPipelineDialogMapper` | Stage cards / dialog mapper parity ([PR #110](https://github.com/th3w1zard1/ModSync/pull/110)) |
-| Godot Holocron bridge | `KotorFormatBridgeCliTests` | PyKotor CLI bridge (skips without PyKotor; [PR #111](https://github.com/th3w1zard1/ModSync/pull/111)) |
 | Version alignment | `ReleaseVersionAlignmentTests` | Release metadata consistency |
 
-## Separate product tracks (open PRs)
+## ValidatePage presentation (shipped)
 
-`[REPO]` Not part of the install wizard parity table above.
-
-| Track | PR | Agent path | Parity |
-|-------|-----|------------|--------|
-| **ValidatePage presentation** (copy report, focus UX) | [#110](https://github.com/th3w1zard1/ModSync/pull/110) | Desktop wizard `[UI]`; stage logic via `WizardValidationStagePresenterTests` | Partial — headless covers presenter, not Avalonia layout |
-| **Godot Holocron editor** | [#111](https://github.com/th3w1zard1/ModSync/pull/111) | Godot 4 + `tools/godot-holocron/bridge/kotor_format_bridge.py`; see [godot-holocron-editor.md](godot-holocron-editor.md) | Partial — `KotorFormatBridgeCliTests` only; Godot UI is `[UI]` |
-
-Merge #110 and #111 independently. Routing: `AGENTS.md` § Parallel open PRs.
+`[REPO]` PR [#110](https://github.com/th3w1zard1/ModSync/pull/110) — desktop wizard `[UI]`; stage logic via `WizardValidationStagePresenterTests` and `ValidationPipelineDialogMapperTests`. See [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
 ## Gaps to respect in plans
 

@@ -42,17 +42,16 @@ Runs the **full** test project (minus `LongRunning` suffix if any exist). Longer
 | `run_headless_tests.sh` matches CI | **No** — local is wider |
 | Green CI + green local script = strong signal | **Yes** — run both before large merges |
 
-## PR-targeted local filters (merge-ready open PRs)
+## PR-targeted local filters (wizard validation)
 
-`[REPO]` CI does not run these filters as a dedicated job; run locally before merging the matching PR.
+`[REPO]` CI does not run these filters as a dedicated job; run locally after validation UI changes.
 
-| PR | Branch | Filter |
-|----|--------|--------|
-| [#110](https://github.com/th3w1zard1/ModSync/pull/110) | `feat/wizard-archive-validation-parity` | `FullyQualifiedName~WizardValidationStagePresenter` |
-| [#110](https://github.com/th3w1zard1/ModSync/pull/110) | same | `FullyQualifiedName~ValidationPipelineDialogMapper` |
-| [#111](https://github.com/th3w1zard1/ModSync/pull/111) | `feat/holocron-erf-nested-open` | `FullyQualifiedName~KotorFormatBridgeCliTests` |
+| Area | Filter |
+|------|--------|
+| Wizard stage presenter | `FullyQualifiedName~WizardValidationStagePresenter` |
+| Validation dialog mapper | `FullyQualifiedName~ValidationPipelineDialogMapper` |
 
-Holocron tests skip when PyKotor is not importable. Wrappers: `./scripts/agents/test_current_open_pr.sh` (branch-aware), or `test_pr110_validation.sh` / `test_pr111_holocron_bridge.sh`. See [agent-action-parity.md](agent-action-parity.md).
+Wrapper: `./scripts/agents/test_pr110_validation.sh`. See [agent-action-parity.md](agent-action-parity.md).
 
 ## Related
 
