@@ -37,10 +37,11 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Agent index links (AGENTS.md, knowledgebase README) | Done | plan `045` |
 | Validation pipeline → ValidatePage UX cross-link | Done | plan `046` |
 | Merge-ready arc closure through plan `047` | Done | plan `047` |
+| Presenter/mapper test commands in validation surfaces KB | Done | plan `048` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`047`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`048`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
-**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`047`). Do not bundle with Holocron.
+**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`048`). Do not bundle with Holocron.
 
 **PR #111** — separate track: [godot-holocron-editor.md](godot-holocron-editor.md) (not the install wizard).
 

@@ -37,7 +37,7 @@
 
 **Unified (PR #104+):** Conflicts, Install Order, ComponentValidation, and Environment failure (`ERROR:` from `RunEnvironmentStageAsync`) use `ApplyPrefixedStageMessageCards` → `TryParsePrefixedStageMessage` so wizard cards match the dialog mapper. Environment keeps the `❌ Environment Error` summary card only when no prefixed message lines were added.
 
-**Wizard stage UI:** `WizardValidationStagePresenter.ApplyStages` (`src/KOTORModSync.GUI/Services/WizardValidationStagePresenter.cs`) — log lines + `AddResult` cards for each pipeline stage. `ValidatePage` passes `AppendLog` / `AddResult` delegates.
+**Wizard stage UI:** `WizardValidationStagePresenter.ApplyStages` (`src/KOTORModSync.GUI/Services/WizardValidationStagePresenter.cs`) — log lines + `AddResult` cards for each pipeline stage. `ValidatePage` passes `AppendLog` / `AddResult` delegates. Headless coverage: `WizardValidationStagePresenterTests` in `KOTORModSync.Tests`.
 
 **Unified (archive parity):** ComponentValidation `ERROR:` and `WARNING:` lines produce wizard result cards via the same `TryParsePrefixedStageMessage` rules as `ValidationDialog` archive rows. Failed or warning archive stages also add aggregate `Archive Validation` summary cards.
 
@@ -66,6 +66,13 @@ A new **Run Validation** resets scroll position on both the results panel and th
 **Dialog prefixed lines:** Environment and Install Order parse `ERROR:`/`WARNING:` messages like other stages; Environment skips the duplicate aggregate row when a prefixed `ERROR:` line was already mapped (pipeline emits `ERROR: {summary}` on failure).
 
 Prefer the **install wizard** for documented full-build flows ([install-lifecycle.md](install-lifecycle.md), `AGENTS.md`).
+
+## Automated tests
+
+```bash
+dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~WizardValidationStagePresenter"
+dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~ValidationPipelineDialogMapper"
+```
 
 ## Debugging order
 
