@@ -67,13 +67,13 @@ func _sorted_resources() -> Array:
 func _update_status_line() -> void:
 	var visible := _sorted_resources().size()
 	if _filter_query != "":
-		_status.text = "%s — showing %d of %d (double-click to open)" % [
+		_status.text = "%s — showing %d of %d (Enter or double-click to open)" % [
 			_format.to_upper(),
 			visible,
 			_resources.size(),
 		]
 	else:
-		_status.text = "%s — %d resources (double-click to open)" % [_format.to_upper(), _resources.size()]
+		_status.text = "%s — %d resources (Enter or double-click to open)" % [_format.to_upper(), _resources.size()]
 
 
 func _on_filter_changed(new_text: String) -> void:
@@ -102,7 +102,7 @@ func _on_item_selected() -> void:
 	if resref == "" or restype == "":
 		_update_status_line()
 		return
-	_status.text = "%s.%s (%s bytes) — double-click to open" % [resref, restype, size]
+	_status.text = "%s.%s (%s bytes) — Enter or double-click to open" % [resref, restype, size]
 
 
 func _rebuild_tree() -> void:

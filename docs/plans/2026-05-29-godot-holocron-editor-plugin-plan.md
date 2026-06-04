@@ -1,7 +1,7 @@
 # Plan: Godot Holocron Editor Plugin (KOTOR File Editing)
 
 **Date:** 2026-05-29  
-**Status:** Phase 0 in progress  
+**Status:** Phase 0–1 foundation complete on branch `feat/holocron-erf-nested-open` (PR #111); Phase 2+ (MDL/TPC/DLG) deferred  
 **Ideation:** `docs/ideation/2026-05-29-godot-holocron-editor-plugin.md`  
 **Reference:** [OpenKotOR/HolocronToolset](https://github.com/OpenKotOR/HolocronToolset)
 

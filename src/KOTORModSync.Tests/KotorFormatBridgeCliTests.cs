@@ -390,6 +390,44 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Inject_MissingArchive_ReturnsError()
+        {
+            string missingArchive = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            string sourcePath = Path.Combine(Path.GetTempPath(), "kotor_bridge_src_" + Guid.NewGuid() + ".2da");
+            if (File.Exists(SampleTwoDaPath))
+            {
+                File.Copy(SampleTwoDaPath, sourcePath);
+            }
+            else
+            {
+                File.WriteAllText(sourcePath, "placeholder");
+            }
+
+            try
+            {
+                var raw = RunBridgeRaw(
+                    "inject",
+                    missingArchive,
+                    "--resref",
+                    "test2da",
+                    "--restype",
+                    "2da",
+                    "--source",
+                    sourcePath);
+                Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+                Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+                Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
+            }
+            finally
+            {
+                if (File.Exists(sourcePath))
+                {
+                    File.Delete(sourcePath);
+                }
+            }
+        }
+
+        [Test]
         public void Inject_MissingSource_ReturnsError()
         {
             if (!File.Exists(SampleModPath))
@@ -531,6 +569,22 @@ namespace KOTORModSync.Tests
                     File.Delete(archiveCopy);
                 }
             }
+        }
+
+        [Test]
+        public void Remove_MissingArchive_ReturnsError()
+        {
+            string missingArchive = Path.Combine(Path.GetTempPath(), "kotor_bridge_mod_" + Guid.NewGuid() + ".mod");
+            var raw = RunBridgeRaw(
+                "remove",
+                missingArchive,
+                "--resref",
+                "test2da",
+                "--restype",
+                "2da");
+            Assert.That(raw.ExitCode, Is.Not.EqualTo(0));
+            Assert.That(raw.Json.GetProperty("ok").GetBoolean(), Is.False);
+            Assert.That(raw.Json.GetProperty("error").GetString(), Does.Contain("does not exist").IgnoreCase);
         }
 
         [Test]
