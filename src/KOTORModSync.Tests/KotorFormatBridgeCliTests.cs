@@ -185,6 +185,16 @@ namespace KOTORModSync.Tests
         }
 
         [Test]
+        public void Read_SampleTwoDa_ReturnsTwodaPayloadNotArchiveList()
+        {
+            var result = RunBridge("read", SampleTwoDaPath);
+            Assert.That(result.GetProperty("ok").GetBoolean(), Is.True);
+            var payload = result.GetProperty("payload");
+            Assert.That(payload.GetProperty("format").GetString(), Is.EqualTo("twoda"));
+            Assert.That(payload.TryGetProperty("resources", out _), Is.False);
+        }
+
+        [Test]
         public void Write_RoundTripsSampleTwoDa()
         {
             var readResult = RunBridge("read", SampleTwoDaPath);
