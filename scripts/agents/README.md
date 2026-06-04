@@ -7,6 +7,24 @@
 - .NET 9 SDK on `PATH`
 - For GUI scripts: X11 `DISPLAY`, `mod-builds` clone, template dirs (see below)
 
+## Open PRs — targeted tests (2026-06-03)
+
+`[REPO]` Before merging, run the filter for the branch you touched (see [ci-test-matrix.md](../../docs/knowledgebase/ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs)):
+
+```bash
+# PR #110 — wizard validation parity
+dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+  --filter "FullyQualifiedName~WizardValidationStagePresenter"
+dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+  --filter "FullyQualifiedName~ValidationPipelineDialogMapper"
+
+# PR #111 — Godot Holocron bridge (skips without PyKotor)
+dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
+  --filter "FullyQualifiedName~KotorFormatBridgeCliTests"
+```
+
+Godot UI work is not covered by these scripts — open `tools/godot-holocron/project.godot` in Godot 4.3+.
+
 ## Catalog
 
 | Script | Purpose |

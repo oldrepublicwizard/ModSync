@@ -44,10 +44,11 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Doc-hierarchy + copilot-instructions active PR routing | Done | plan `052` |
 | Knowledgebase index merge-closure pointers | Done | plan `053` |
 | Agent-parity + CI matrix PR test filters | Done | plan `054` |
+| Runbook + scripts/agents README merge-closure | Done | plan `055` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`054`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`055`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
-**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`054`). Merge **without** Holocron (#111).
+**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`055`). Merge **without** Holocron (#111).
 
 ### Merge checklist — PR #110
 
