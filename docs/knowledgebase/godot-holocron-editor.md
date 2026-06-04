@@ -14,7 +14,7 @@
 ## Active delivery
 
 - **Branch:** `feat/holocron-erf-nested-open`
-- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`056`)
+- **PR:** #111 — Phase 1 archive browser, nested open/save-back, bridge tests (plans `013`–`057`)
 - **Not in:** Install wizard / `ValidatePage` work (PR #110)
 - **Status:** Merge-ready for Phase 1; Phase 2 editors (TPC/WAV/MDL/DLG) deferred per `docs/plans/2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md`
 
@@ -30,7 +30,7 @@
 ## Bridge tests
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~KotorFormatBridgeCliTests"
+./scripts/agents/test_pr111_holocron_bridge.sh
 ```
 
 Skips when PyKotor is not importable. Fixture: `src/KOTORModSync.Tests/Fixtures/kotor/sample.mod`.

@@ -82,7 +82,7 @@ Full Holocron parity is a **multi-phase program** tracked in `docs/plans/2026-05
 From repo root:
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~KotorFormatBridge"
+./scripts/agents/test_pr111_holocron_bridge.sh
 ```
 
 Tests skip automatically when PyKotor is not importable (32 tests when PyKotor is available, including probe/read/write/installations and archive extract/inject/remove error paths).
