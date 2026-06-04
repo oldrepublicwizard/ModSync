@@ -93,6 +93,8 @@ Branch filters and routing: `AGENTS.md` § Parallel open PRs · [doc-hierarchy.m
 
 **Merge handoff:** [parallel-pr-merge-handoff-2026-06-03.md](../solutions/parallel-pr-merge-handoff-2026-06-03.md) (order, rebase, post-merge).
 
+**Pre-merge (feature branch):** `./scripts/agents/verify_open_pr_ready.sh` — local PR tests + `gh pr checks`. Agent tooling arc frozen at plan `060` (no further doc-only LFG slices required).
+
 ### Always-on rules (do not duplicate here)
 
 - `.cursorrules` — path sandboxing, VFS, test naming, Avalonia gotchas
@@ -102,6 +104,9 @@ Branch filters and routing: `AGENTS.md` § Parallel open PRs · [doc-hierarchy.m
 ## Quick commands
 
 ```bash
+# Open PRs #110 / #111 — on matching feature branch
+./scripts/agents/verify_open_pr_ready.sh
+
 # Standard non-long-running tests
 ./scripts/agents/run_headless_tests.sh
 

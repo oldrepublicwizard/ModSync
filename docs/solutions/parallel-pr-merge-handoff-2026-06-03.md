@@ -14,13 +14,23 @@ No shared implementation files between the feature arcs — either PR can merge 
 ## Pre-merge (both PRs)
 
 1. On the feature branch, run `./scripts/agents/verify_open_pr_ready.sh` (local tests + `gh pr checks`), or separately confirm CI green and run `test_current_open_pr.sh`.
-3. Do not squash Holocron commits into #110 or validation commits into #111.
+2. Do not squash Holocron commits into #110 or validation commits into #111.
 
 ## Merge order
 
 **Recommended:** Merge **#110** first, then **#111** (validation docs are authoritative on the wizard branch; Holocron branch carries a synced copy of `gui-validation-surfaces.md` for agent routing only).
 
 **Alternate:** Merge **#111** first if Holocron is higher priority — no code conflict expected; only `docs/` overlap possible.
+
+### GitHub merge (maintainer)
+
+Use merge commits (not a single combined PR):
+
+```bash
+gh pr merge 110 --merge
+# rebase feat/holocron-erf-nested-open onto default, re-run verify_open_pr_ready.sh, then:
+gh pr merge 111 --merge
+```
 
 ## After the first merge
 
@@ -38,7 +48,7 @@ No shared implementation files between the feature arcs — either PR can merge 
 
 ## After both merge
 
-- Close plan arc `012`–`059` / `013`–`059` — agent tooling complete; no further LFG doc slices required for merge readiness.
+- Close plan arc `012`–`060` / `013`–`060` — agent tooling frozen; no further LFG doc-only slices required for merge readiness.
 - Holocron Phase 2: new branch from default per [2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md](../plans/2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md).
 - Wizard structural debt: [gui-architecture-deferred.md](../knowledgebase/gui-architecture-deferred.md) (MainWindow split, wizard hosts) — separate future PRs.
 
