@@ -1,6 +1,6 @@
 ﻿# ModSync — Complete Reference Documentation
 
-> **STALE SNAPSHOT — do not use for agent routing or current setup.** Prefer `AGENTS.md`, `docs/local_desktop_agent_runbook.md`, and `docs/knowledgebase/README.md`. This file may contain outdated NuGet, test, and workflow claims from 2026-04-14.
+> **STALE SNAPSHOT — do not use for agent routing or current setup.** Prefer `AGENTS.md`, `docs/local_desktop_agent_runbook.md`, and `docs/knowledgebase/README.md`. This file may contain outdated NuGet, test, and workflow claims from 2026-04-14. Post-2026 rebrand: client paths/env vars may still show legacy names in embedded excerpts — see `docs/knowledgebase/rebrand-legacy-strings.md` and canonical `docs/TELEMETRY_SETUP_GUIDE.md`.
 
 > **Auto-generated** 2026-04-14.
 > Authoritative single-file merge of every companion documentation artifact.
@@ -71,7 +71,7 @@ This is why I created ModSync - an installer creator in C# to automate and simpl
 Mod creators work really hard on their mods. It's the least we can do to install them and use them, right? However, who wants to reinstall to vanilla and spend several hours reinstalling mods, just to add 1 or 2 extra mods on top of it?
 Other mod managers I've tried were either too difficult to configure, require significant changes to a hard-to-understand configuration file, or only provided limited functionality for defining new mods. KOTOR mods definitely can have complex dependency relationships with each other in regard to compatibility, due to the nature of TSLPatcher and KOTOR itself.
 
-### Enter KOTORMODSync
+### Enter ModSync
 
 ![image](https://github.com/th3w1zard1/ModSync/assets/2219836/1d3afdbb-24cf-428b-93e1-37b61f48aa20)
 
@@ -100,7 +100,7 @@ See <https://pastebin.com/7gML3zCJ> for a quick explanation of those fields. See
 ## FAQ
 
 - Q: This app is saying 'failed to validate some components'...
-- A: Check the logs/output window/console window, find the archive it's complaining about (it's highlighted bold in red). Either download the archive so kotormodsync can find it, or deselect the mod in the app so it won't be considered for install.
+- A: Check the logs/output window/console window, find the archive it's complaining about (it's highlighted bold in red). Either download the archive so ModSync can find it, or deselect the mod in the app so it won't be considered for install.
 - Q: I get an error saying the holopatcher binary failed to execute. how to fix?
 - A: The most common reason is your AV is blocking it, but check your log file for more information.
 - Q: I've created my own mod, will you add it to the ModSync project?
@@ -216,7 +216,7 @@ See [LICENSE.txt](LICENSE.txt) for full details.
 
 - [Introduction](#introduction)
   - [The Problem](#the-problem)
-  - [ModSync's Solution](#kotormodsyncs-solution)
+  - [ModSync's Solution](#modsyncs-solution)
 - [Install Process](#install-process)
 - [Config File Structure](#config-file-structure)
   - [GUIDs](#guids)
@@ -10510,7 +10510,8 @@ namespace ModSync.Telemetry
             // 3. Embedded in official builds (GitHub Actions secret)
             
             // Try environment variable first
-            string secret = Environment.GetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET");
+            string secret = Environment.GetEnvironmentVariable("MODSYNC_SIGNING_SECRET")
+                ?? Environment.GetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET");
             if (!string.IsNullOrEmpty(secret))
             {
                 return secret;
@@ -10547,7 +10548,7 @@ namespace ModSync.Telemetry
         {
             // Configure resource attributes
             var resourceBuilder = ResourceBuilder.CreateDefault()
-                .AddService("kotormodsync")
+                .AddService("ModSync")
                 .AddAttributes(new[]
                 {
                     new KeyValuePair<string, object>("session.id", _sessionId),
@@ -10774,10 +10775,10 @@ Developers who want telemetry in their local builds:
 
 ```bash
 # Windows (PowerShell)
-$env:KOTORMODSYNC_SIGNING_SECRET = "dev-secret-key-here"
+$env:MODSYNC_SIGNING_SECRET = "dev-secret-key-here"
 
 # Linux/Mac
-export KOTORMODSYNC_SIGNING_SECRET="dev-secret-key-here"
+export MODSYNC_SIGNING_SECRET="dev-secret-key-here"
 ```
 
 **Option 2: Config File**
@@ -10788,8 +10789,8 @@ mkdir "$env:APPDATA\ModSync"
 echo "dev-secret-key-here" > "$env:APPDATA\ModSync\telemetry.key"
 
 # Linux/Mac
-mkdir -p ~/.config/kotormodsync
-echo "dev-secret-key-here" > ~/.config/kotormodsync/telemetry.key
+mkdir -p ~/.config/ModSync
+echo "dev-secret-key-here" > ~/.config/ModSync/telemetry.key
 ```
 
 **Recommendation:** Use a **different** dev secret for local development, not the production secret. This way, you can filter dev telemetry in Grafana.
@@ -10922,7 +10923,7 @@ If the secret is compromised or you want to rotate it:
 
 ## Questions?
 
-- **Server setup:** See `docs/KOTORMODSYNC_TELEMETRY_SETUP.md`
+- **Server setup:** See `docs/TELEMETRY_SETUP_GUIDE.md`
 - **Quick start:** See `docs/OTLP_QUICKSTART.md`
 - **Auth service logs:** `docker compose logs -f kotormodsync-auth`
 
@@ -10979,12 +10980,12 @@ OpenTelemetry Collector → Prometheus
 ModSync loads the signing secret from three sources:
 
 1. **Environment Variable** (highest priority)
-   - Variable: `KOTORMODSYNC_SIGNING_SECRET`
+   - Variable: `MODSYNC_SIGNING_SECRET` (legacy: `KOTORMODSYNC_SIGNING_SECRET`)
    - Use case: CI/CD pipelines, developer testing
 
 2. **Local Config File**
    - Windows: `%AppData%\ModSync\telemetry.key`
-   - Linux/Mac: `~/.config/kotormodsync/telemetry.key`
+   - Linux/Mac: `~/.config/ModSync/telemetry.key`
    - Use case: Developer local testing
 
 3. **Embedded Secret** (only in official builds)
@@ -11037,12 +11038,12 @@ Developers can build and run ModSync **without any telemetry setup**. The app wi
 
 **Windows (PowerShell):**
 ```powershell
-$env:KOTORMODSYNC_SIGNING_SECRET = "dev-secret-key-here"
+$env:MODSYNC_SIGNING_SECRET = "dev-secret-key-here"
 ```
 
 **Linux/Mac:**
 ```bash
-export KOTORMODSYNC_SIGNING_SECRET="dev-secret-key-here"
+export MODSYNC_SIGNING_SECRET="dev-secret-key-here"
 ```
 
 #### Option 2: Config File
@@ -11055,8 +11056,8 @@ echo "dev-secret-key-here" > "$env:APPDATA\ModSync\telemetry.key"
 
 **Linux/Mac:**
 ```bash
-mkdir -p ~/.config/kotormodsync
-echo "dev-secret-key-here" > ~/.config/kotormodsync/telemetry.key
+mkdir -p ~/.config/ModSync
+echo "dev-secret-key-here" > ~/.config/ModSync/telemetry.key
 ```
 
 **Important:** Use a **different** dev secret, not the production secret. This allows filtering dev telemetry in Grafana.
@@ -11189,7 +11190,7 @@ Expected log output:
 
 **Windows:**
 ```powershell
-$env:KOTORMODSYNC_SIGNING_SECRET = "6ea4413f4db73407b07c3faccac817031f5210f80bde02e94b61c512de6b9d90"
+$env:MODSYNC_SIGNING_SECRET = "6ea4413f4db73407b07c3faccac817031f5210f80bde02e94b61c512de6b9d90"
 dotnet run --project ModSync.GUI
 ```
 
@@ -12482,7 +12483,7 @@ This is why I created ModSync - an installer creator in C# to automate and simpl
 Mod creators work really hard on their mods. It's the least we can do to install them and use them, right? However, who wants to reinstall to vanilla and spend several hours reinstalling mods, just to add 1 or 2 extra mods on top of it?
 Other mod managers I've tried were either too difficult to configure, require significant changes to a hard-to-understand configuration file, or only provided limited functionality for defining new mods. KOTOR mods definitely can have complex dependency relationships with each other in regard to compatibility, due to the nature of TSLPatcher and KOTOR itself.
 
-### Enter KOTORMODSync
+### Enter ModSync
 
 ![image](https://github.com/th3w1zard1/ModSync/assets/2219836/1d3afdbb-24cf-428b-93e1-37b61f48aa20)
 
@@ -12511,7 +12512,7 @@ See <https://pastebin.com/7gML3zCJ> for a quick explanation of those fields. See
 ## FAQ
 
 - Q: This app is saying 'failed to validate some components'...
-- A: Check the logs/output window/console window, find the archive it's complaining about (it's highlighted bold in red). Either download the archive so kotormodsync can find it, or deselect the mod in the app so it won't be considered for install.
+- A: Check the logs/output window/console window, find the archive it's complaining about (it's highlighted bold in red). Either download the archive so ModSync can find it, or deselect the mod in the app so it won't be considered for install.
 - Q: I get an error saying the holopatcher binary failed to execute. how to fix?
 - A: The most common reason is your AV is blocking it, but check your log file for more information.
 - Q: I've created my own mod, will you add it to the ModSync project?
@@ -12627,7 +12628,7 @@ See [LICENSE.txt](LICENSE.txt) for full details.
 
 - [Introduction](#introduction)
   - [The Problem](#the-problem)
-  - [ModSync's Solution](#kotormodsyncs-solution)
+  - [ModSync's Solution](#modsyncs-solution)
 - [Install Process](#install-process)
 - [Config File Structure](#config-file-structure)
   - [GUIDs](#guids)
@@ -22921,7 +22922,8 @@ namespace ModSync.Telemetry
             // 3. Embedded in official builds (GitHub Actions secret)
             
             // Try environment variable first
-            string secret = Environment.GetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET");
+            string secret = Environment.GetEnvironmentVariable("MODSYNC_SIGNING_SECRET")
+                ?? Environment.GetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET");
             if (!string.IsNullOrEmpty(secret))
             {
                 return secret;
@@ -22958,7 +22960,7 @@ namespace ModSync.Telemetry
         {
             // Configure resource attributes
             var resourceBuilder = ResourceBuilder.CreateDefault()
-                .AddService("kotormodsync")
+                .AddService("ModSync")
                 .AddAttributes(new[]
                 {
                     new KeyValuePair<string, object>("session.id", _sessionId),
@@ -23185,10 +23187,10 @@ Developers who want telemetry in their local builds:
 
 ```bash
 # Windows (PowerShell)
-$env:KOTORMODSYNC_SIGNING_SECRET = "dev-secret-key-here"
+$env:MODSYNC_SIGNING_SECRET = "dev-secret-key-here"
 
 # Linux/Mac
-export KOTORMODSYNC_SIGNING_SECRET="dev-secret-key-here"
+export MODSYNC_SIGNING_SECRET="dev-secret-key-here"
 ```
 
 **Option 2: Config File**
@@ -23199,8 +23201,8 @@ mkdir "$env:APPDATA\ModSync"
 echo "dev-secret-key-here" > "$env:APPDATA\ModSync\telemetry.key"
 
 # Linux/Mac
-mkdir -p ~/.config/kotormodsync
-echo "dev-secret-key-here" > ~/.config/kotormodsync/telemetry.key
+mkdir -p ~/.config/ModSync
+echo "dev-secret-key-here" > ~/.config/ModSync/telemetry.key
 ```
 
 **Recommendation:** Use a **different** dev secret for local development, not the production secret. This way, you can filter dev telemetry in Grafana.
@@ -23333,7 +23335,7 @@ If the secret is compromised or you want to rotate it:
 
 ## Questions?
 
-- **Server setup:** See `docs/KOTORMODSYNC_TELEMETRY_SETUP.md`
+- **Server setup:** See `docs/TELEMETRY_SETUP_GUIDE.md`
 - **Quick start:** See `docs/OTLP_QUICKSTART.md`
 - **Auth service logs:** `docker compose logs -f kotormodsync-auth`
 
@@ -23390,12 +23392,12 @@ OpenTelemetry Collector → Prometheus
 ModSync loads the signing secret from three sources:
 
 1. **Environment Variable** (highest priority)
-   - Variable: `KOTORMODSYNC_SIGNING_SECRET`
+   - Variable: `MODSYNC_SIGNING_SECRET` (legacy: `KOTORMODSYNC_SIGNING_SECRET`)
    - Use case: CI/CD pipelines, developer testing
 
 2. **Local Config File**
    - Windows: `%AppData%\ModSync\telemetry.key`
-   - Linux/Mac: `~/.config/kotormodsync/telemetry.key`
+   - Linux/Mac: `~/.config/ModSync/telemetry.key`
    - Use case: Developer local testing
 
 3. **Embedded Secret** (only in official builds)
@@ -23448,12 +23450,12 @@ Developers can build and run ModSync **without any telemetry setup**. The app wi
 
 **Windows (PowerShell):**
 ```powershell
-$env:KOTORMODSYNC_SIGNING_SECRET = "dev-secret-key-here"
+$env:MODSYNC_SIGNING_SECRET = "dev-secret-key-here"
 ```
 
 **Linux/Mac:**
 ```bash
-export KOTORMODSYNC_SIGNING_SECRET="dev-secret-key-here"
+export MODSYNC_SIGNING_SECRET="dev-secret-key-here"
 ```
 
 #### Option 2: Config File
@@ -23466,8 +23468,8 @@ echo "dev-secret-key-here" > "$env:APPDATA\ModSync\telemetry.key"
 
 **Linux/Mac:**
 ```bash
-mkdir -p ~/.config/kotormodsync
-echo "dev-secret-key-here" > ~/.config/kotormodsync/telemetry.key
+mkdir -p ~/.config/ModSync
+echo "dev-secret-key-here" > ~/.config/ModSync/telemetry.key
 ```
 
 **Important:** Use a **different** dev secret, not the production secret. This allows filtering dev telemetry in Grafana.
@@ -23600,7 +23602,7 @@ Expected log output:
 
 **Windows:**
 ```powershell
-$env:KOTORMODSYNC_SIGNING_SECRET = "6ea4413f4db73407b07c3faccac817031f5210f80bde02e94b61c512de6b9d90"
+$env:MODSYNC_SIGNING_SECRET = "6ea4413f4db73407b07c3faccac817031f5210f80bde02e94b61c512de6b9d90"
 dotnet run --project ModSync.GUI
 ```
 
