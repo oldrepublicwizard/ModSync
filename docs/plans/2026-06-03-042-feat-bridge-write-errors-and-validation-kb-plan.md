@@ -17,10 +17,10 @@ Holocron bridge `write` failure paths (bad JSON, unsupported format) lack regres
 
 ## Holocron (PR #111)
 
-- [ ] `Write_InvalidJsonPayload_ReturnsError`
-- [ ] `Write_UnimplementedFormat_ReturnsError` (valid 2da path, payload `format` that bridge rejects)
-- [ ] README: container keyboard shortcuts (Enter open, Esc filter, F5 refresh)
-- [ ] Test count note 22 → 24
+- [x] `Write_InvalidJsonPayload_ReturnsError`
+- [x] `Write_UnimplementedFormat_ReturnsError`
+- [x] README: container keyboard shortcuts (Enter open, Esc filter, F5 refresh)
+- [x] Test count note 22 → 24
 
 **Files:** `src/KOTORModSync.Tests/KotorFormatBridgeCliTests.cs`, `tools/godot-holocron/README.md`
 
