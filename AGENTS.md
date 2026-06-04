@@ -15,7 +15,14 @@ For broad repo tasks, start with `.github/copilot-instructions.md` for the short
 
 **Knowledgebase (canonical index):** [docs/knowledgebase/README.md](docs/knowledgebase/README.md) — agent-native audit, CLI reference, action parity, and links to runbooks/scripts.
 
-For **install wizard `ValidatePage`** behavior (stage cards, copy report, go-to-first-issue), read [docs/knowledgebase/gui-validation-surfaces.md](docs/knowledgebase/gui-validation-surfaces.md) before editing validation UI (PR #110 track). Godot Holocron is a separate plugin — [docs/knowledgebase/godot-holocron-editor.md](docs/knowledgebase/godot-holocron-editor.md) (PR #111).
+### Parallel open PRs (do not bundle)
+
+| Track | Branch | PR | Tests |
+|-------|--------|-----|-------|
+| Install wizard validation parity | `feat/wizard-archive-validation-parity` | [#110](https://github.com/th3w1zard1/ModSync/pull/110) | `FullyQualifiedName~WizardValidationStagePresenter` or `ValidationPipelineDialogMapper` |
+| Godot Holocron Phase 1 | `feat/holocron-erf-nested-open` | [#111](https://github.com/th3w1zard1/ModSync/pull/111) | `FullyQualifiedName~KotorFormatBridgeCliTests` |
+
+For **install wizard `ValidatePage`** behavior (stage cards, copy report, go-to-first-issue), read [docs/knowledgebase/gui-validation-surfaces.md](docs/knowledgebase/gui-validation-surfaces.md) before editing validation UI. Godot Holocron is a separate plugin — [docs/knowledgebase/godot-holocron-editor.md](docs/knowledgebase/godot-holocron-editor.md).
 
 Start with:
 

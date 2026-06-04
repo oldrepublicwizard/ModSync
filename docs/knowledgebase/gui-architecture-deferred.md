@@ -40,10 +40,11 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Presenter/mapper test commands in validation surfaces KB | Done | plan `048` |
 | Install lifecycle → ValidatePage UX cross-link | Done | plan `049` |
 | Push sync + merge checklist (plans 048–049) | Done | plan `050` |
+| Agent parallel-PR routing + Holocron KB validation sync | Done | plan `051` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`050`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`051`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
-**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`050`). Merge **without** Holocron (#111).
+**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`051`). Merge **without** Holocron (#111).
 
 ### Merge checklist — PR #110
 

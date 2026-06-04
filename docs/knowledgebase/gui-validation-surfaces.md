@@ -86,3 +86,4 @@ dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQual
 - [validation-pipeline.md](validation-pipeline.md) — stages and CLI flags
 - [gui-architecture-deferred.md](gui-architecture-deferred.md) — larger GUI refactors not done here
 - [agent-action-parity.md](agent-action-parity.md) — CLI vs GUI capabilities
+- [godot-holocron-editor.md](godot-holocron-editor.md) — separate Godot track ([PR #111](https://github.com/th3w1zard1/ModSync/pull/111))
