@@ -2,6 +2,8 @@
 
 `[REPO]` End-to-end install flow: install wizard page order, Core install orchestration, Git checkpoints, widescreen follow-up, and CLI parity. Validation is documented separately in [validation-pipeline.md](validation-pipeline.md).
 
+**Open PR note:** Wizard validation UX changes belong on [#110](https://github.com/th3w1zard1/ModSync/pull/110) only — not the Godot Holocron track ([#111](https://github.com/th3w1zard1/ModSync/pull/111)). See [parallel-pr-merge-handoff-2026-06-03.md](../solutions/parallel-pr-merge-handoff-2026-06-03.md).
+
 Sources: `src/KOTORModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs`, `src/KOTORModSync.GUI/Dialogs/WizardPages/InstallingPage.axaml.cs`, `src/KOTORModSync.Core/Services/InstallationService.cs`, `src/KOTORModSync.Core/Installation/InstallCoordinator.cs`.
 
 ## Install wizard page order
@@ -18,7 +20,7 @@ Sources: `src/KOTORModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs`, `src/KOTOR
 | 6 | `AspyrNoticePage` | K2/TSL when `aspyrExclusiveWarningContent` is set |
 | 7 | `ModSelectionPage` | Always |
 | 8 | `DownloadsExplainPage` | Always (downloads may continue in background) |
-| 9 | `ValidatePage` | Always — uses `InstallationValidationPipeline` / `WizardFull` |
+| 9 | `ValidatePage` | Always — `InstallationValidationPipeline` / `WizardFull`; UI details in [gui-validation-surfaces.md](gui-validation-surfaces.md) |
 | 10 | `InstallStartPage` | Always |
 | 11 | `InstallingPage` | Always — calls `InstallationService.InstallAllSelectedComponentsAsync` |
 | 12 | `BaseInstallCompletePage` | Always |
@@ -70,7 +72,7 @@ flowchart TD
 4. On success: optional **Git checkpoint** commit via `CheckpointService.CreateCheckpointAsync`; checkpoint manager persists component state.
 5. On failure: behavior depends on **`MainConfig`** continue flags (see below).
 
-**Pre-install validation** (wizard **ValidatePage** or default CLI `install`) uses **`InstallationValidationPipeline`** with VFS dry-run — that is **not** the same code path as step 3. Do not treat a passing validate as proof that real HoloPatcher or disk edge cases are covered.
+**Pre-install validation** (wizard **ValidatePage** or default CLI `install`) uses **`InstallationValidationPipeline`** with VFS dry-run — that is **not** the same code path as step 3. Do not treat a passing validate as proof that real HoloPatcher or disk edge cases are covered. For ValidatePage result cards, copy report, and go-to-first-issue behavior, see [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
 ## Checkpoints
 

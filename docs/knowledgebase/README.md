@@ -91,6 +91,8 @@ Use these when citing findings in plans, PRs, or audits:
 
 Branch filters and routing: `AGENTS.md` § Parallel open PRs · [doc-hierarchy.md](doc-hierarchy.md#active-open-prs-2026-06-03).
 
+**Merge handoff:** [parallel-pr-merge-handoff-2026-06-03.md](../solutions/parallel-pr-merge-handoff-2026-06-03.md) (order, rebase, post-merge).
+
 ### Always-on rules (do not duplicate here)
 
 - `.cursorrules` — path sandboxing, VFS, test naming, Avalonia gotchas
