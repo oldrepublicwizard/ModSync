@@ -85,6 +85,8 @@ Without `--full`, validate is lighter (archives + optional dry-run only). See [c
 
 `[REPO]` Dialog issue rows and shared `ERROR:`/`WARNING:` parsing: [gui-validation-surfaces.md](gui-validation-surfaces.md). Larger GUI refactors still open: [gui-architecture-deferred.md](gui-architecture-deferred.md).
 
+**ValidatePage presentation (PR #110):** Stage result cards, copy report, go-to-first-issue scroll/highlight, and log flush behavior are documented in [gui-validation-surfaces.md](gui-validation-surfaces.md) — not duplicated here.
+
 Progress UI: `ValidationProgress`, `StatusText`, `LogExpander`, badge counts on `ValidatePage` (`AGENTS.md`).
 
 ## Debugging tips for agents
