@@ -154,19 +154,29 @@ namespace ModSync.Telemetry
             // 2. Config file in user's AppData (not in repo)
             // 3. Embedded in official builds (GitHub Actions secret)
             
-            // Try environment variable first
-            string secret = Environment.GetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET");
+            // Try environment variables (MODSYNC first, legacy KOTORMODSYNC fallback)
+            string secret = Environment.GetEnvironmentVariable("MODSYNC_SIGNING_SECRET")
+                ?? Environment.GetEnvironmentVariable("KOTORMODSYNC_SIGNING_SECRET");
             if (!string.IsNullOrEmpty(secret))
             {
-                return secret;
+                return secret.Trim();
             }
 
-            // Try config file in user's local AppData
+            // Try config file in user's local AppData (ModSync, then legacy KOTORModSync)
             string configPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "ModSync",
                 "telemetry.key"
             );
+            string legacyConfigPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "KOTORModSync",
+                "telemetry.key"
+            );
+            if (!File.Exists(configPath) && File.Exists(legacyConfigPath))
+            {
+                configPath = legacyConfigPath;
+            }
 
             if (File.Exists(configPath))
             {
@@ -192,7 +202,7 @@ namespace ModSync.Telemetry
         {
             // Configure resource attributes
             var resourceBuilder = ResourceBuilder.CreateDefault()
-                .AddService("kotormodsync")
+                .AddService("ModSync")
                 .AddAttributes(new[]
                 {
                     new KeyValuePair<string, object>("session.id", _sessionId),
@@ -419,10 +429,10 @@ Developers who want telemetry in their local builds:
 
 ```bash
 # Windows (PowerShell)
-$env:KOTORMODSYNC_SIGNING_SECRET = "dev-secret-key-here"
+$env:MODSYNC_SIGNING_SECRET = "dev-secret-key-here"
 
 # Linux/Mac
-export KOTORMODSYNC_SIGNING_SECRET="dev-secret-key-here"
+export MODSYNC_SIGNING_SECRET="dev-secret-key-here"
 ```
 
 **Option 2: Config File**
@@ -433,8 +443,8 @@ mkdir "$env:APPDATA\ModSync"
 echo "dev-secret-key-here" > "$env:APPDATA\ModSync\telemetry.key"
 
 # Linux/Mac
-mkdir -p ~/.config/kotormodsync
-echo "dev-secret-key-here" > ~/.config/kotormodsync/telemetry.key
+mkdir -p ~/.config/ModSync
+echo "dev-secret-key-here" > ~/.config/ModSync/telemetry.key
 ```
 
 **Recommendation:** Use a **different** dev secret for local development, not the production secret. This way, you can filter dev telemetry in Grafana.
