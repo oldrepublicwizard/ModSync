@@ -49,10 +49,11 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | PR-targeted test scripts (`test_pr110_validation.sh`) | Done | plan `057` |
 | Branch-aware `test_current_open_pr.sh` + AGENTS wiring | Done | plan `058` |
 | `verify_open_pr_ready.sh` (tests + `gh pr checks`) | Done | plan `059` |
+| KB quick commands + merge handoff `gh pr merge` | Done | plan `060` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`059`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`060`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md).
 
-**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`059`). Merge **without** Holocron (#111).
+**PR #110** — merge-ready: validation parity arc complete (plans `012`, `021`–`060`). Merge **without** Holocron (#111). Agent tooling frozen — prefer merge over further doc-only LFG slices.
 
 ### Merge checklist — PR #110
 
