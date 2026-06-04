@@ -27,7 +27,7 @@
 ## Bridge tests
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~KotorFormatBridgeCliTests"
+./scripts/agents/test_pr111_holocron_bridge.sh
 ```
 
 Skips when PyKotor is not importable. Fixture: `src/KOTORModSync.Tests/Fixtures/kotor/sample.mod`.

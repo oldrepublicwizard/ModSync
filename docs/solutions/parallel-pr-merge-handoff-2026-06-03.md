@@ -14,7 +14,7 @@ No shared implementation files between the feature arcs — either PR can merge 
 ## Pre-merge (both PRs)
 
 1. Confirm CI green on the PR you are merging.
-2. Run the PR-specific filters from [ci-test-matrix.md](../knowledgebase/ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs).
+2. Run `./scripts/agents/test_pr110_validation.sh` or `./scripts/agents/test_pr111_holocron_bridge.sh` (or the filters in [ci-test-matrix.md](../knowledgebase/ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs)).
 3. Do not squash Holocron commits into #110 or validation commits into #111.
 
 ## Merge order

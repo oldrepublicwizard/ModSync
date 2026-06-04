@@ -12,15 +12,8 @@
 `[REPO]` Before merging, run the filter for the branch you touched (see [ci-test-matrix.md](../../docs/knowledgebase/ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs)):
 
 ```bash
-# PR #110 — wizard validation parity
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
-  --filter "FullyQualifiedName~WizardValidationStagePresenter"
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
-  --filter "FullyQualifiedName~ValidationPipelineDialogMapper"
-
-# PR #111 — Godot Holocron bridge (skips without PyKotor)
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj \
-  --filter "FullyQualifiedName~KotorFormatBridgeCliTests"
+./scripts/agents/test_pr110_validation.sh   # PR #110
+./scripts/agents/test_pr111_holocron_bridge.sh   # PR #111 (skips without PyKotor)
 ```
 
 Godot UI work is not covered by these scripts — open `tools/godot-holocron/project.godot` in Godot 4.3+.
@@ -37,6 +30,8 @@ Godot UI work is not covered by these scripts — open `tools/godot-holocron/pro
 | `cli_full_build_pipeline.sh` | Merge mod-builds `full.md` + `KOTOR*_Full.toml`, export formats, `--auto-generate-local`, `--dry-run` / `--dry-run-only`, optional `--install` |
 | `common.sh` | `ensure_core_resources_symlink` helper (sourced by other scripts) |
 | `run_headless_tests.sh` | `dotnet test` excluding `LongRunning` |
+| `test_pr110_validation.sh` | PR #110: presenter + dialog mapper tests |
+| `test_pr111_holocron_bridge.sh` | PR #111: `KotorFormatBridgeCliTests` |
 | `mcp_filesystem.sh` | MCP filesystem server scoped to repo |
 | `mcp_playwright.sh` | MCP Playwright server |
 | `mcp_desktop_commander.sh` | MCP Desktop Commander |

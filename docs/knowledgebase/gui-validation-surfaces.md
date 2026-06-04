@@ -70,8 +70,7 @@ Prefer the **install wizard** for documented full-build flows ([install-lifecycl
 ## Automated tests
 
 ```bash
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~WizardValidationStagePresenter"
-dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~ValidationPipelineDialogMapper"
+./scripts/agents/test_pr110_validation.sh
 ```
 
 ## Debugging order
