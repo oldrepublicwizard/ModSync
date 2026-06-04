@@ -80,6 +80,17 @@ Use these when citing findings in plans, PRs, or audits:
 
 - [docs/plans/](../plans/) — dated plans with requirements and status frontmatter
 
+### Active open PRs (merge-ready, 2026-06-03)
+
+`[REPO]` Ship and review independently — do not bundle.
+
+| Track | PR | Entry doc |
+|-------|-----|-----------|
+| Wizard validation parity | [#110](https://github.com/th3w1zard1/ModSync/pull/110) | [gui-validation-surfaces.md](gui-validation-surfaces.md) |
+| Godot Holocron Phase 1 | [#111](https://github.com/th3w1zard1/ModSync/pull/111) | [godot-holocron-editor.md](godot-holocron-editor.md) |
+
+Branch filters and routing: `AGENTS.md` § Parallel open PRs · [doc-hierarchy.md](doc-hierarchy.md#active-open-prs-2026-06-03).
+
 ### Always-on rules (do not duplicate here)
 
 - `.cursorrules` — path sandboxing, VFS, test naming, Avalonia gotchas
