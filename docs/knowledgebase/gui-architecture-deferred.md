@@ -55,7 +55,11 @@ Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface refere
 
 ### MainWindow god object
 
-`[REPO]` `MainWindow.axaml.cs` still coordinates editor, downloads, validation orchestration UI, drag-drop, menus, and Getting Started. Further extraction targets: download orchestration, editor hosting, menus — validation **pipeline** work now lives in `LegacyValidationRunner` + `ValidationPipelineDialogMapper`.
+`[REPO]` `MainWindow.axaml.cs` still coordinates editor, downloads, validation orchestration UI, drag-drop, top-level File/Tools menus, and Getting Started. Further extraction targets: download orchestration, editor hosting, `InitializeTopMenu` — validation **pipeline** work now lives in `LegacyValidationRunner` + `ValidationPipelineDialogMapper`.
+
+| Item | Status | Reference |
+|------|--------|-----------|
+| Mod context menu + global actions flyout → `MenuBuilderService` | Done | plan `072`, PR pending |
 
 **Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/ModSync.GUI/Services/`.
 
