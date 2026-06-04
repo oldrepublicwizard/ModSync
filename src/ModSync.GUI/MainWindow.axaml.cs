@@ -114,6 +114,7 @@ namespace ModSync
         private readonly InstructionGenerationService _instructionGenerationService;
         private readonly ValidationDisplayService _validationDisplayService;
         private readonly StepNavigationService _stepNavigationService;
+        private readonly SettingsService _settingsService;
 
         private readonly TelemetryService _telemetryService;
 
@@ -391,7 +392,7 @@ namespace ModSync
                 _instructionBrowsingService = new InstructionBrowsingService(MainConfigInstance, _dialogService);
                 _instructionGenerationService = new InstructionGenerationService(MainConfigInstance, this);
                 _validationDisplayService = new ValidationDisplayService(_validationService, () => MainConfig.AllComponents);
-                _ = new SettingsService(MainConfigInstance, this);
+                _settingsService = new SettingsService(MainConfigInstance, this);
                 _stepNavigationService = new StepNavigationService(MainConfigInstance, _validationService);
 
                 _telemetryService = TelemetryService.Instance;
@@ -584,60 +585,13 @@ namespace ModSync
             }
         }
 
-        private void UpdateDirectoryPickersFromSettings(AppSettings settings)
-        {
-            if (!Dispatcher.UIThread.CheckAccess())
-            {
-                Dispatcher.UIThread.Post(() => UpdateDirectoryPickersFromSettings(settings), DispatcherPriority.Normal);
-                return;
-            }
-            try
-            {
+        private void UpdateDirectoryPickersFromSettings(AppSettings settings) =>
+            SettingsService.UpdateDirectoryPickersFromSettings(settings, FindDirectoryPickerControl);
 
-                if (!string.IsNullOrEmpty(settings.SourcePath))
-                {
-                    DirectoryPickerControl modPicker = this.FindControl<DirectoryPickerControl>("ModDirectoryPicker");
-                    DirectoryPickerControl step1ModPicker = GettingStartedTabControl?.FindControl<DirectoryPickerControl>("Step1ModDirectoryPicker");
-                    UpdateDirectoryPickerWithPath(modPicker, settings.SourcePath);
-                    UpdateDirectoryPickerWithPath(step1ModPicker, settings.SourcePath);
-                }
-
-                if (!string.IsNullOrEmpty(settings.DestinationPath))
-                {
-                    DirectoryPickerControl kotorPicker = this.FindControl<DirectoryPickerControl>("KotorDirectoryPicker");
-                    DirectoryPickerControl step1KotorPicker = GettingStartedTabControl?.FindControl<DirectoryPickerControl>("Step1KotorDirectoryPicker");
-                    UpdateDirectoryPickerWithPath(kotorPicker, settings.DestinationPath);
-                    UpdateDirectoryPickerWithPath(step1KotorPicker, settings.DestinationPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogException(ex, "Failed to update directory pickers from settings");
-            }
-        }
-
-        private static void UpdateDirectoryPickerWithPath(DirectoryPickerControl picker, string path)
-        {
-            if (!Dispatcher.UIThread.CheckAccess())
-            {
-                Dispatcher.UIThread.Post(() => UpdateDirectoryPickerWithPath(picker, path), DispatcherPriority.Normal);
-                return;
-            }
-            if (picker is null || string.IsNullOrEmpty(path))
-            {
-                return;
-            }
-
-            try
-            {
-                // SetCurrentPathFromSettings already handles everything including ItemsSource and suggestions
-                picker.SetCurrentPathFromSettings(path);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogException(ex, $"Failed to update directory picker with path: {path}");
-            }
-        }
+        private DirectoryPickerControl FindDirectoryPickerControl(string name) =>
+            name.StartsWith("Step1", StringComparison.Ordinal)
+                ? GettingStartedTabControl?.FindControl<DirectoryPickerControl>(name)
+                : this.FindControl<DirectoryPickerControl>(name);
 
         private void SaveSettings()
         {
@@ -7094,70 +7048,14 @@ namespace ModSync
             }
         }
 
-        private void InitializeDirectoryPickers()
-        {
-            try
-            {
-                DirectoryPickerControl modPicker = this.FindControl<DirectoryPickerControl>("ModDirectoryPicker");
-                DirectoryPickerControl kotorPicker = this.FindControl<DirectoryPickerControl>("KotorDirectoryPicker");
-                DirectoryPickerControl step1ModPicker = GettingStartedTabControl.FindControl<DirectoryPickerControl>("Step1ModDirectoryPicker");
-                DirectoryPickerControl step1KotorPicker = GettingStartedTabControl.FindControl<DirectoryPickerControl>("Step1KotorDirectoryPicker");
-                if (modPicker != null && MainConfig.SourcePath != null)
-                {
-                    modPicker.SetCurrentPathFromSettings(MainConfig.SourcePath.FullName);
-                }
-
-                if (kotorPicker != null && MainConfig.DestinationPath != null)
-                {
-                    kotorPicker.SetCurrentPathFromSettings(MainConfig.DestinationPath.FullName);
-                }
-                // Use same pattern as SettingsDialog for GettingStartedTab pickers to prevent typing issues
-                if (step1ModPicker != null && MainConfig.SourcePath != null)
-                {
-                    UpdateDirectoryPickerWithPath(step1ModPicker, MainConfig.SourcePath.FullName);
-                }
-
-                if (step1KotorPicker != null && MainConfig.DestinationPath != null)
-                {
-                    UpdateDirectoryPickerWithPath(step1KotorPicker, MainConfig.DestinationPath.FullName);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogException(ex, "[InitializeDirectoryPickers] Exception occurred");
-            }
-        }
+        private void InitializeDirectoryPickers() =>
+            _settingsService.InitializeDirectoryPickers(FindDirectoryPickerControl);
 
         public void SyncDirectoryPickers(DirectoryPickerType pickerType, string path)
         {
             try
             {
-                DirectoryPickerControl mainPicker = null;
-                DirectoryPickerControl step1Picker = null;
-
-                if (pickerType == DirectoryPickerType.ModDirectory)
-                {
-                    mainPicker = this.FindControl<DirectoryPickerControl>("ModDirectoryPicker");
-                    step1Picker = GettingStartedTabControl.FindControl<DirectoryPickerControl>("Step1ModDirectoryPicker");
-                }
-                else if (pickerType == DirectoryPickerType.KotorDirectory)
-                {
-                    mainPicker = this.FindControl<DirectoryPickerControl>("KotorDirectoryPicker");
-                    step1Picker = GettingStartedTabControl.FindControl<DirectoryPickerControl>("Step1KotorDirectoryPicker");
-                }
-
-                // Update main picker with standard method
-                if (mainPicker != null)
-                {
-                    mainPicker.SetCurrentPathFromSettings(path);
-                }
-
-                // Use same pattern as SettingsDialog for GettingStartedTab picker to prevent typing issues
-                if (step1Picker != null)
-                {
-                    UpdateDirectoryPickerWithPath(step1Picker, path);
-                }
-
+                SettingsService.SyncDirectoryPickers(pickerType, path, FindDirectoryPickerControl);
                 UpdateStepProgress();
             }
             catch (Exception ex)
