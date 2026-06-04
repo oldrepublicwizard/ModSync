@@ -51,9 +51,11 @@
 
 **Validation log** scrolls to the first `ERROR:` / `❌` log line (or first `WARNING:` / `⚠` when there are no errors) when the log expander is open.
 
-**Go to first issue** (log header) expands the log, then re-runs log scroll + result-card highlight after a failed or warned run.
+**Go to first issue** (log header) expands the log, then re-runs log scroll + result-card highlight after a failed or warned run. Both auto-focus after validation and this button call `FlushLogQueue()` first so batched log lines are visible before scroll/highlight (plan 041).
 
 A new **Run Validation** resets scroll position on both the results panel and the log (plans 039–040).
+
+**Copy report** flushes the log queue before building clipboard text (`--- Results ---` cards plus `--- Log ---` body).
 
 ## Legacy MainWindow validate
 
