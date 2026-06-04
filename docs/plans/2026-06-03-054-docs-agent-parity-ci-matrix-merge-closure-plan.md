@@ -10,15 +10,6 @@ branches:
 
 # docs: agent-parity and CI matrix merge closure (plan 054)
 
-## Holocron (PR #111)
-
-- [x] Shared: `agent-action-parity.md`, `ci-test-matrix.md`, `product-overview.md`, `.cursorrules`
-- [x] `godot-holocron-editor.md` — plan `054`, merge checklist CI filter link
-
-## Wizard (PR #110)
-
-- [x] Above plus `gui-architecture-deferred.md` (committed on wizard branch)
-
 ## Problem
 
 Parallel PR routing exists in `AGENTS.md`, `doc-hierarchy.md`, and the KB index, but `agent-action-parity.md`, `ci-test-matrix.md`, `product-overview.md`, and `.cursorrules` still omit #110 / #111 handoff. Reviewers validating a PR may run the wrong test filter.

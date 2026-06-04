@@ -72,6 +72,8 @@ Prefer the **install wizard** for documented full-build flows ([install-lifecycl
 ## Automated tests
 
 ```bash
+./scripts/agents/test_pr110_validation.sh
+# or:
 dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~WizardValidationStagePresenter"
 dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQualifiedName~ValidationPipelineDialogMapper"
 ```
@@ -88,4 +90,4 @@ dotnet test src/KOTORModSync.Tests/KOTORModSync.Tests.csproj --filter "FullyQual
 - [validation-pipeline.md](validation-pipeline.md) — stages and CLI flags
 - [gui-architecture-deferred.md](gui-architecture-deferred.md) — larger GUI refactors not done here
 - [agent-action-parity.md](agent-action-parity.md) — CLI vs GUI capabilities
-- [godot-holocron-editor.md](godot-holocron-editor.md) — separate Godot track (PR #111)
+- [godot-holocron-editor.md](godot-holocron-editor.md) — separate Godot track ([PR #111](https://github.com/th3w1zard1/ModSync/pull/111))

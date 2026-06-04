@@ -18,6 +18,8 @@ namespace KOTORModSync.Services
     /// </summary>
     public static class WizardValidationStagePresenter
     {
+        private const int MaxDisplayedDryRunIssues = 5;
+
         public delegate void AppendLogDelegate([NotNull] string message);
 
         public delegate void AddResultDelegate([NotNull] string title, [NotNull] string message);
@@ -59,7 +61,7 @@ namespace KOTORModSync.Services
                         ApplyInstallOrderStage(stage, stepIndex, appendLog, addResult);
                         break;
                     case ValidationPipelineStage.ComponentValidation:
-                        ApplyComponentValidationStage(stage, stepIndex, appendLog);
+                        ApplyComponentValidationStage(stage, stepIndex, appendLog, addResult);
                         break;
                     case ValidationPipelineStage.DryRun:
                         ApplyDryRunStage(pipelineResult, stepIndex, appendLog, addResult);
@@ -75,6 +77,12 @@ namespace KOTORModSync.Services
             AddResultDelegate addResult)
         {
             appendLog($"Step {stepIndex}: Validating installation environment");
+            foreach (string message in stage.Messages)
+            {
+                appendLog($"  {message}");
+            }
+
+            int prefixedCards = ApplyPrefixedStageMessageCards(stage.Messages, addResult);
             if (stage.Passed)
             {
                 appendLog("  ✅ Environment validation passed");
@@ -82,8 +90,15 @@ namespace KOTORModSync.Services
             }
             else
             {
-                appendLog($"  ❌ Environment validation failed: {stage.Summary}");
-                addResult("❌ Environment Error", stage.Summary ?? "Environment validation failed");
+                if (prefixedCards == 0)
+                {
+                    appendLog($"  ❌ Environment validation failed: {stage.Summary}");
+                    addResult("❌ Environment Error", stage.Summary ?? "Environment validation failed");
+                }
+                else
+                {
+                    appendLog($"  ❌ Environment validation failed: {stage.Summary}");
+                }
             }
         }
 
@@ -98,29 +113,31 @@ namespace KOTORModSync.Services
             foreach (string message in stage.Messages)
             {
                 appendLog($"  {message}");
-                if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
-                        message,
-                        "WARNING:",
-                        out string modName,
-                        out _,
-                        out string detail))
-                {
-                    addResult($"⚠️ {modName}", detail);
-                }
-                else if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
-                             message,
-                             "ERROR:",
-                             out modName,
-                             out _,
-                             out detail))
-                {
-                    addResult($"❌ {modName}", detail);
-                }
             }
 
-            if (stage.Messages.Count == 0)
+            ApplyPrefixedStageMessageCards(stage.Messages, addResult);
+
+            if (stage.Passed && !stage.HasWarnings)
             {
-                appendLog("  ✅ No conflicts");
+                if (stage.Messages.Count == 0)
+                {
+                    appendLog("  ✅ No conflicts");
+                }
+
+                addResult("✅ Conflicts", stage.Summary ?? "No dependency or restriction conflicts.");
+            }
+            else if (stage.Passed && stage.HasWarnings)
+            {
+                addResult("⚠️ Conflicts", stage.Summary ?? "Dependency warnings found");
+            }
+            else
+            {
+                if (stage.Messages.Count == 0)
+                {
+                    appendLog($"  ❌ {stage.Summary}");
+                }
+
+                addResult("❌ Conflicts", stage.Summary ?? "Restriction conflicts found");
             }
         }
 
@@ -131,19 +148,33 @@ namespace KOTORModSync.Services
             AddResultDelegate addResult)
         {
             appendLog($"Step {stepIndex}: Validating mod installation order");
+            foreach (string message in stage.Messages)
+            {
+                appendLog($"  {message}");
+            }
+
+            ApplyPrefixedStageMessageCards(stage.Messages, addResult);
+
             if (stage.Passed && !stage.HasWarnings)
             {
-                appendLog("  ✅ Install order is correct");
+                if (stage.Messages.Count == 0)
+                {
+                    appendLog("  ✅ Install order is correct");
+                }
+
                 addResult("✅ Install Order", stage.Summary ?? "Mod installation order is correct");
             }
             else if (stage.Passed && stage.HasWarnings)
             {
-                appendLog("  ⚠️ Mods will be automatically reordered");
                 addResult("⚠️ Install Order", stage.Summary ?? "Mods will be automatically reordered");
             }
             else
             {
-                appendLog($"  ❌ {stage.Summary}");
+                if (stage.Messages.Count == 0)
+                {
+                    appendLog($"  ❌ {stage.Summary}");
+                }
+
                 addResult("❌ Install Order", stage.Summary ?? "Install order validation failed");
             }
         }
@@ -151,7 +182,8 @@ namespace KOTORModSync.Services
         private static void ApplyComponentValidationStage(
             ValidationPipelineStageResult stage,
             int stepIndex,
-            AppendLogDelegate appendLog)
+            AppendLogDelegate appendLog,
+            AddResultDelegate addResult)
         {
             appendLog($"Step {stepIndex}: Validating mod archives");
             foreach (string message in stage.Messages)
@@ -164,6 +196,19 @@ namespace KOTORModSync.Services
                 {
                     appendLog($"  {message}");
                 }
+            }
+
+            ApplyPrefixedStageMessageCards(
+                stage.Messages.Where(m => !m.StartsWith("OK:", StringComparison.Ordinal)),
+                addResult);
+
+            if (!stage.Passed)
+            {
+                addResult("❌ Archive Validation", stage.Summary ?? "Archive validation failed");
+            }
+            else if (stage.HasWarnings)
+            {
+                addResult("⚠️ Archive Validation", stage.Summary ?? "Archive validation passed with warnings");
             }
         }
 
@@ -198,24 +243,87 @@ namespace KOTORModSync.Services
             {
                 List<ValidationIssue> errorIssues = dryRunResult.Issues
                     .Where(i => i.Severity == ValidationSeverity.Error || i.Severity == ValidationSeverity.Critical)
-                    .Take(5)
+                    .Take(MaxDisplayedDryRunIssues)
                     .ToList();
                 foreach (ValidationIssue issue in errorIssues)
                 {
                     appendLog($"    ❌ [{issue.Category}] {issue.Message}");
+                    addResult(FormatDryRunIssueTitle(issue), FormatDryRunIssueMessage(issue));
                 }
 
-                string errorSummary = string.Join("; ", errorIssues.Select(i => $"{i.Category}: {i.Message}"));
+                string overflow = dryRunErrors > errorIssues.Count
+                    ? $" Showing first {errorIssues.Count} of {dryRunErrors}."
+                    : string.Empty;
                 addResult(
                     "❌ Instruction Execution",
-                    $"Dry-run validation failed with {dryRunErrors} error(s). {errorSummary}");
+                    $"Dry-run validation failed with {dryRunErrors} error(s).{overflow}");
             }
             else if (dryRunWarnings > 0)
             {
+                List<ValidationIssue> warningIssues = dryRunResult.Issues
+                    .Where(i => i.Severity == ValidationSeverity.Warning)
+                    .Take(MaxDisplayedDryRunIssues)
+                    .ToList();
+                foreach (ValidationIssue issue in warningIssues)
+                {
+                    appendLog($"    ⚠️ [{issue.Category}] {issue.Message}");
+                    addResult(FormatDryRunIssueTitle(issue), FormatDryRunIssueMessage(issue));
+                }
+
+                string overflow = dryRunWarnings > warningIssues.Count
+                    ? $" Showing first {warningIssues.Count} of {dryRunWarnings}."
+                    : string.Empty;
                 addResult(
                     "⚠️ Instruction Execution",
-                    $"Dry-run validation passed with {dryRunWarnings} warning(s).");
+                    $"Dry-run validation passed with {dryRunWarnings} warning(s).{overflow}");
             }
+        }
+
+        private static int ApplyPrefixedStageMessageCards(
+            IEnumerable<string> messages,
+            AddResultDelegate addResult)
+        {
+            int count = 0;
+            foreach (string message in messages)
+            {
+                if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
+                        message,
+                        "WARNING:",
+                        out string modName,
+                        out _,
+                        out string detail))
+                {
+                    addResult($"⚠️ {modName}", detail);
+                    count++;
+                }
+                else if (ValidationPipelineDialogMapper.TryParsePrefixedStageMessage(
+                             message,
+                             "ERROR:",
+                             out modName,
+                             out _,
+                             out detail))
+                {
+                    addResult($"❌ {modName}", detail);
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static string FormatDryRunIssueTitle(ValidationIssue issue)
+        {
+            string modName = issue.AffectedComponent?.Name ?? "Unknown";
+            string category = issue.Category ?? "Validation";
+            string prefix = issue.Severity == ValidationSeverity.Warning ? "⚠️" : "❌";
+            return $"{prefix} {modName} ({category})";
+        }
+
+        private static string FormatDryRunIssueMessage(ValidationIssue issue)
+        {
+            string message = issue.Message ?? "No description available";
+            string solution = ValidationPipelineDialogMapper.GetSolutionForIssue(issue);
+            return string.IsNullOrEmpty(solution) ? message : $"{message} — {solution}";
         }
     }
 }

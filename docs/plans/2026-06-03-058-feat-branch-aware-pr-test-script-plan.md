@@ -4,17 +4,30 @@ type: feat
 status: completed
 date: 2026-06-03
 branches:
-  - feat/holocron-erf-nested-open
   - feat/wizard-archive-validation-parity
+  - feat/holocron-erf-nested-open
 ---
 
 # feat: branch-aware PR test script (plan 058)
 
-## Holocron (PR #111)
+## Problem
 
-- [x] `test_current_open_pr.sh` + AGENTS / copilot / scripts README
-- [x] `godot-holocron-editor.md`, handoff + ci-test-matrix pointers
+Plan `057` added `test_pr110_validation.sh` and `test_pr111_holocron_bridge.sh`, but `AGENTS.md` still lists raw `dotnet test` filters. Agents on the wrong branch may run the wrong script manually.
 
-## Wizard (PR #110)
+## Scope
 
-- [x] Full implementation (commit `91f96b1` on wizard branch)
+### In scope
+
+- `scripts/agents/test_current_open_pr.sh` — detect branch, invoke correct PR script
+- `AGENTS.md`, `copilot-instructions.md` — script column / pointer
+- Plan `058` index on wizard + Holocron KB
+
+### Out of scope
+
+- Merging PRs, new product features
+
+## Verification
+
+```bash
+./scripts/agents/test_current_open_pr.sh   # on each feature branch
+```

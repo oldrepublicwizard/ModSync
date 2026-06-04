@@ -10,6 +10,16 @@ branches:
 
 # docs: runbook and scripts README merge closure (plan 055)
 
+## Wizard (PR #110)
+
+- [x] `local_desktop_agent_runbook.md`, `scripts/agents/README.md`
+- [x] `gui-architecture-deferred.md` — plan `055`
+
+## Holocron (PR #111)
+
+- [x] Same runbook + scripts (committed on holocron branch)
+- [x] `godot-holocron-editor.md` — plan index `055`
+
 ## Problem
 
 Plans `051`–`054` wired parallel PR routing through KB, AGENTS, and copilot-instructions, but procedural entry points (`docs/local_desktop_agent_runbook.md`, `scripts/agents/README.md`) still lack #110 / #111 scope and test filters.

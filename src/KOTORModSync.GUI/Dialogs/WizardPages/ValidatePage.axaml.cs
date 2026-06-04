@@ -8,8 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using JetBrains.Annotations;
@@ -26,6 +28,7 @@ namespace KOTORModSync.Dialogs.WizardPages
         private readonly List<ModComponent> _allComponents;
         private readonly MainConfig _mainConfig;
         private StackPanel _resultsPanel;
+        private ScrollViewer _resultsScrollViewer;
         private ProgressBar _validationProgress;
         private TextBlock _statusText;
         private TextBlock _summaryText;
@@ -38,6 +41,9 @@ namespace KOTORModSync.Dialogs.WizardPages
         private ScrollViewer _logScrollViewer;
         private TextBlock _logText;
         private TextBlock _logProgressText;
+        private Button _copyReportButton;
+        private Button _goToFirstIssueButton;
+        private readonly List<(string Title, string Message)> _resultEntries = new List<(string Title, string Message)>();
         private bool _hasValidated;
         private bool _hasCriticalErrors;
         private int _errorCount;
@@ -125,6 +131,7 @@ namespace KOTORModSync.Dialogs.WizardPages
         private void CacheControls()
         {
             _resultsPanel = this.FindControl<StackPanel>("ResultsPanel");
+            _resultsScrollViewer = this.FindControl<ScrollViewer>("ResultsScrollViewer");
             _validationProgress = this.FindControl<ProgressBar>("ValidationProgress");
             _statusText = this.FindControl<TextBlock>("StatusText");
             _summaryText = this.FindControl<TextBlock>("SummaryText");
@@ -137,6 +144,8 @@ namespace KOTORModSync.Dialogs.WizardPages
             _logScrollViewer = this.FindControl<ScrollViewer>("LogScrollViewer");
             _logText = this.FindControl<TextBlock>("LogText");
             _logProgressText = this.FindControl<TextBlock>("LogProgressText");
+            _copyReportButton = this.FindControl<Button>("CopyReportButton");
+            _goToFirstIssueButton = this.FindControl<Button>("GoToFirstIssueButton");
         }
 
         private void HookEvents()
@@ -144,6 +153,16 @@ namespace KOTORModSync.Dialogs.WizardPages
             if (_validateButton != null)
             {
                 _validateButton.Click += async (_, __) => await RunValidation();
+            }
+
+            if (_copyReportButton != null)
+            {
+                _copyReportButton.Click += CopyReportButton_Click;
+            }
+
+            if (_goToFirstIssueButton != null)
+            {
+                _goToFirstIssueButton.Click += (_, __) => FocusFirstValidationIssue();
             }
         }
 
@@ -299,6 +318,21 @@ namespace KOTORModSync.Dialogs.WizardPages
             }
 
             _resultsPanel?.Children.Clear();
+            _resultEntries.Clear();
+            if (_resultsScrollViewer != null)
+            {
+                _resultsScrollViewer.Offset = new Vector(0, 0);
+            }
+            if (_copyReportButton != null)
+            {
+                _copyReportButton.IsVisible = false;
+            }
+
+            if (_goToFirstIssueButton != null)
+            {
+                _goToFirstIssueButton.IsVisible = false;
+            }
+
             _hasCriticalErrors = false;
             _errorCount = 0;
             _warningCount = 0;
@@ -309,6 +343,11 @@ namespace KOTORModSync.Dialogs.WizardPages
             _validationStartTime = DateTime.UtcNow;
 
             ClearLog();
+            if (_logScrollViewer != null)
+            {
+                _logScrollViewer.Offset = new Vector(0, 0);
+            }
+
             AppendLog("Starting validation...");
             UpdateBadges();
 
@@ -350,6 +389,16 @@ namespace KOTORModSync.Dialogs.WizardPages
                 UpdateBadges();
                 UpdateSummary();
 
+                if (_logExpander != null)
+                {
+                    _logExpander.IsExpanded = _hasCriticalErrors || _warningCount > 0;
+                }
+
+                if (_errorCount > 0 || _warningCount > 0)
+                {
+                    Dispatcher.UIThread.Post(FocusFirstValidationIssue, DispatcherPriority.Loaded);
+                }
+
                 _hasValidated = true;
             }
             finally
@@ -362,6 +411,16 @@ namespace KOTORModSync.Dialogs.WizardPages
                 if (_validateButton != null)
                 {
                     _validateButton.IsEnabled = true;
+                }
+
+                if (_copyReportButton != null && _hasValidated)
+                {
+                    _copyReportButton.IsVisible = true;
+                }
+
+                if (_goToFirstIssueButton != null)
+                {
+                    _goToFirstIssueButton.IsVisible = _errorCount > 0 || _warningCount > 0;
                 }
 
                 _currentOperation = string.Empty;
@@ -385,8 +444,130 @@ namespace KOTORModSync.Dialogs.WizardPages
                 AddResult);
         }
 
+        private static readonly IBrush s_errorHighlightBrush = new SolidColorBrush(Color.Parse("#E53935"));
+        private static readonly IBrush s_warningHighlightBrush = new SolidColorBrush(Color.Parse("#FB8C00"));
+
+        private void FocusFirstValidationIssue()
+        {
+            FlushLogQueue();
+
+            if (_logExpander != null)
+            {
+                _logExpander.IsExpanded = true;
+            }
+
+            ScrollLogToFirstIssueLine();
+            ScrollToFirstIssueCard();
+        }
+
+        private void ScrollLogToFirstIssueLine()
+        {
+            if (_logScrollViewer == null || _logBuilder.Length == 0)
+            {
+                return;
+            }
+
+            string[] lines = _logBuilder.ToString().Split('\n');
+            int lineIndex = FindFirstLogLineIndex(lines, preferErrors: true);
+            if (lineIndex < 0 && _warningCount > 0)
+            {
+                lineIndex = FindFirstLogLineIndex(lines, preferErrors: false);
+            }
+
+            if (lineIndex < 0)
+            {
+                return;
+            }
+
+            const double lineHeight = 15;
+            double offset = Math.Max(0, (lineIndex * lineHeight) - 30);
+            double maxOffset = Math.Max(0, _logScrollViewer.Extent.Height - _logScrollViewer.Viewport.Height);
+            _logScrollViewer.Offset = new Vector(0, Math.Min(offset, maxOffset));
+        }
+
+        private static int FindFirstLogLineIndex(string[] lines, bool preferErrors)
+        {
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i];
+                if (preferErrors)
+                {
+                    if (line.IndexOf("ERROR:", StringComparison.Ordinal) >= 0
+                        || line.IndexOf('❌') >= 0)
+                    {
+                        return i;
+                    }
+                }
+                else if (line.IndexOf("WARNING:", StringComparison.Ordinal) >= 0
+                    || line.IndexOf('⚠') >= 0)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private void ScrollToFirstIssueCard()
+        {
+            if (_resultsPanel is null)
+            {
+                return;
+            }
+
+            string prefix = "❌";
+            Control target = FindFirstResultCard(prefix);
+            if (target == null && _warningCount > 0)
+            {
+                prefix = "⚠️";
+                target = FindFirstResultCard(prefix);
+            }
+
+            if (target is Border border)
+            {
+                HighlightIssueCard(border, prefix);
+                border.BringIntoView();
+            }
+        }
+
+        private static void HighlightIssueCard(Border border, string titlePrefix)
+        {
+            border.BorderThickness = new Avalonia.Thickness(2);
+            border.BorderBrush = titlePrefix.StartsWith("❌", StringComparison.Ordinal)
+                ? s_errorHighlightBrush
+                : s_warningHighlightBrush;
+        }
+
+        private Control FindFirstResultCard(string titlePrefix)
+        {
+            if (_resultsPanel is null)
+            {
+                return null;
+            }
+
+            foreach (Control child in _resultsPanel.Children)
+            {
+                if (!(child is Border border)
+                    || !(border.Child is StackPanel panel)
+                    || panel.Children.Count == 0)
+                {
+                    continue;
+                }
+
+                if (panel.Children[0] is TextBlock titleBlock
+                    && titleBlock.Text?.StartsWith(titlePrefix, StringComparison.Ordinal) == true)
+                {
+                    return border;
+                }
+            }
+
+            return null;
+        }
+
         private void AddResult(string title, string message)
         {
+            _resultEntries.Add((title, message));
+
             if (_resultsPanel is null)
             {
                 return;
@@ -472,6 +653,78 @@ namespace KOTORModSync.Dialogs.WizardPages
                     ? "Validation failed"
                     : "Validation complete";
             }
+        }
+
+        private async void CopyReportButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                FlushLogQueue();
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.Clipboard is null)
+                {
+                    return;
+                }
+
+                await topLevel.Clipboard.SetTextAsync(BuildValidationReportText());
+                if (_copyReportButton != null)
+                {
+                    string original = _copyReportButton.Content?.ToString() ?? "Copy report";
+                    _copyReportButton.Content = "Copied!";
+                    await Task.Delay(1500);
+                    _copyReportButton.Content = original;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"Failed to copy validation report: {ex.Message}");
+            }
+        }
+
+        private string BuildValidationReportText()
+        {
+            FlushLogQueue();
+
+            var report = new StringBuilder();
+            report.AppendLine("KOTORModSync — Validation Report");
+            report.AppendLine($"Generated (UTC): {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}");
+            report.AppendLine();
+
+            if (_summaryText != null)
+            {
+                report.AppendLine(_summaryText.Text);
+            }
+
+            if (_summaryDetails != null && !string.IsNullOrWhiteSpace(_summaryDetails.Text))
+            {
+                report.AppendLine(_summaryDetails.Text);
+            }
+
+            report.AppendLine();
+            report.AppendLine($"Errors: {_errorCount}  Warnings: {_warningCount}  Passed checks: {_passedCount}");
+
+            if (_resultEntries.Count > 0)
+            {
+                report.AppendLine();
+                report.AppendLine("--- Results ---");
+                foreach ((string title, string message) in _resultEntries)
+                {
+                    report.AppendLine(title);
+                    report.AppendLine(message);
+                    report.AppendLine();
+                }
+            }
+
+            lock (_logLock)
+            {
+                if (_logBuilder.Length > 0)
+                {
+                    report.AppendLine("--- Log ---");
+                    report.Append(_logBuilder.ToString());
+                }
+            }
+
+            return report.ToString().TrimEnd();
         }
     }
 }

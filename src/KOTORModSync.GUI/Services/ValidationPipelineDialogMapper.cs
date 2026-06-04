@@ -37,7 +37,25 @@ namespace KOTORModSync.Services
                 switch (stage.Stage)
                 {
                     case ValidationPipelineStage.Environment:
-                        if (!stage.Passed)
+                        int environmentPrefixedIssues = 0;
+                        foreach (string message in stage.Messages)
+                        {
+                            if (TryParsePrefixedStageMessage(message, "ERROR:", out string modName, out string description, out string detail))
+                            {
+                                modIssues.Add(new Dialogs.ValidationIssue
+                                {
+                                    Icon = "✗",
+                                    ModName = modName,
+                                    IssueType = "Environment",
+                                    Description = description,
+                                    Solution = "Verify HoloPatcher, KOTOR paths, and install directories are configured correctly.",
+                                });
+                                appendLog?.Invoke($"✗ [Environment] {detail}");
+                                environmentPrefixedIssues++;
+                            }
+                        }
+
+                        if (!stage.Passed && environmentPrefixedIssues == 0)
                         {
                             string summary = stage.Summary ?? "Environment validation failed";
                             modIssues.Add(new Dialogs.ValidationIssue
@@ -81,8 +99,63 @@ namespace KOTORModSync.Services
                             }
                         }
 
+                        if (!stage.Passed)
+                        {
+                            string summary = stage.Summary ?? "Restriction conflicts found";
+                            modIssues.Add(new Dialogs.ValidationIssue
+                            {
+                                Icon = "✗",
+                                ModName = "Conflicts",
+                                IssueType = "Conflict",
+                                Description = summary,
+                                Solution = "Resolve dependency or restriction conflicts before installing.",
+                            });
+                            appendLog?.Invoke($"✗ [Conflict] {summary}");
+                        }
+                        else if (stage.HasWarnings)
+                        {
+                            string summary = stage.Summary ?? "Dependency warnings found";
+                            modIssues.Add(new Dialogs.ValidationIssue
+                            {
+                                Icon = "⚠",
+                                ModName = "Conflicts",
+                                IssueType = "Conflict",
+                                Description = summary,
+                                Solution = "Review mod restrictions; installation may still proceed with warnings.",
+                            });
+                            appendLog?.Invoke($"⚠ [Conflict] {summary}");
+                        }
+
                         break;
                     case ValidationPipelineStage.InstallOrder:
+                        foreach (string message in stage.Messages)
+                        {
+                            if (TryParsePrefixedStageMessage(message, "ERROR:", out string modName, out string description, out string detail))
+                            {
+                                modIssues.Add(new Dialogs.ValidationIssue
+                                {
+                                    Icon = "✗",
+                                    ModName = modName,
+                                    IssueType = "InstallOrder",
+                                    Description = description,
+                                    Solution = "Fix circular dependencies or missing prerequisites in the mod list.",
+                                });
+                                appendLog?.Invoke($"✗ [InstallOrder] {detail}");
+                            }
+                            else if (TryParsePrefixedStageMessage(message, "WARNING:", out modName, out description, out detail))
+                            {
+                                modIssues.Add(new Dialogs.ValidationIssue
+                                {
+                                    Icon = "⚠",
+                                    ModName = modName,
+                                    IssueType = "InstallOrder",
+                                    Description = description,
+                                    Solution = "Review install order; the app may reorder mods automatically.",
+                                });
+                                appendLog?.Invoke($"⚠ [InstallOrder] {detail}");
+                            }
+                        }
+
                         if (!stage.Passed)
                         {
                             string summary = stage.Summary ?? "Install order validation failed";
@@ -126,6 +199,45 @@ namespace KOTORModSync.Services
                                 });
                                 appendLog?.Invoke($"✗ [ArchiveValidation] {detail}");
                             }
+                            else if (TryParsePrefixedStageMessage(message, "WARNING:", out modName, out description, out detail))
+                            {
+                                modIssues.Add(new Dialogs.ValidationIssue
+                                {
+                                    Icon = "⚠",
+                                    ModName = modName,
+                                    IssueType = "ArchiveValidation",
+                                    Description = description,
+                                    Solution = "Review the archive warning before installing; re-download if the file may be incomplete.",
+                                });
+                                appendLog?.Invoke($"⚠ [ArchiveValidation] {detail}");
+                            }
+                        }
+
+                        if (!stage.Passed)
+                        {
+                            string summary = stage.Summary ?? "Archive validation failed";
+                            modIssues.Add(new Dialogs.ValidationIssue
+                            {
+                                Icon = "✗",
+                                ModName = "Archive Validation",
+                                IssueType = "ArchiveValidation",
+                                Description = summary,
+                                Solution = "Verify archives exist and are not corrupted. Try re-downloading affected mods.",
+                            });
+                            appendLog?.Invoke($"✗ [ArchiveValidation] {summary}");
+                        }
+                        else if (stage.HasWarnings)
+                        {
+                            string summary = stage.Summary ?? "Archive validation passed with warnings";
+                            modIssues.Add(new Dialogs.ValidationIssue
+                            {
+                                Icon = "⚠",
+                                ModName = "Archive Validation",
+                                IssueType = "ArchiveValidation",
+                                Description = summary,
+                                Solution = "Review archive warnings before installing; re-download if files may be incomplete.",
+                            });
+                            appendLog?.Invoke($"⚠ [ArchiveValidation] {summary}");
                         }
 
                         break;
