@@ -32,8 +32,9 @@ Plans: `docs/plans/2026-06-03-002` through `007` (002–006 implementation, 007 
 | Reset results/log scroll on re-validation | Done | plans `039`, `040` |
 | Flush log queue before focus/scroll to first issue | Done | plan `041` |
 | Validation surfaces KB (focus/copy/log UX) | Done | plan `042` |
+| Copy report flushes log queue inside report builder | Done | plan `043` |
 
-Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`042`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md). **PR #110** is merge-ready for the validation parity arc; Holocron archive track is **PR #111** (not the install wizard).
+Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`043`. Surface reference: [gui-validation-surfaces.md](gui-validation-surfaces.md). **PR #110** is merge-ready for the validation parity arc; Holocron archive track is **PR #111** (not the install wizard).
 
 ## Deferred — high impact
 

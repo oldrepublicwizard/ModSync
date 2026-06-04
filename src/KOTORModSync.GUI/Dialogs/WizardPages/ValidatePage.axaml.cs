@@ -683,6 +683,8 @@ namespace KOTORModSync.Dialogs.WizardPages
 
         private string BuildValidationReportText()
         {
+            FlushLogQueue();
+
             var report = new StringBuilder();
             report.AppendLine("KOTORModSync — Validation Report");
             report.AppendLine($"Generated (UTC): {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}");
