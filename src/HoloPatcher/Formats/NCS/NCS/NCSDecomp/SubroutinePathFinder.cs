@@ -1,11 +1,11 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/utils/SubroutinePathFinder.java:37-343
 // Original: public class SubroutinePathFinder extends PrunedDepthFirstAdapter
 using System;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.Analysis;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.Analysis;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Utils
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Utils
 {
     public class SubroutinePathFinder : PrunedDepthFirstAdapter
     {

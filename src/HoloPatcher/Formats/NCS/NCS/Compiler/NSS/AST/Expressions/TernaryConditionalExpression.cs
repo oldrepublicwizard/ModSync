@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync.Common.Script;
-using KOTORModSync.Formats.NCS;
+using HoloPatcher.Common.Script;
+using HoloPatcher.Formats.NCS;
 
-namespace KOTORModSync.Formats.NCS.Compiler
+namespace HoloPatcher.Formats.NCS.Compiler
 {
     /// <summary>
     /// Represents a ternary conditional expression (condition ? trueExpr : falseExpr).

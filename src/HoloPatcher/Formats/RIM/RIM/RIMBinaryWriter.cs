@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.RIM
+namespace HoloPatcher.Formats.RIM
 {
     public class RIMBinaryWriter
     {

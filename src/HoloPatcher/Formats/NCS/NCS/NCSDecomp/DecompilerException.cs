@@ -5,7 +5,7 @@
 
 using System;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/DecompilerException.java:11-32
     // Original: public class DecompilerException extends Exception

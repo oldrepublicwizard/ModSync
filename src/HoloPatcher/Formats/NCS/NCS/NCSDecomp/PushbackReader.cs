@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Lexer
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Lexer
 {
     public class PushbackReader
     {

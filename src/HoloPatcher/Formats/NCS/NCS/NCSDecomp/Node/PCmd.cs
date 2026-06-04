@@ -1,6 +1,6 @@
-using KOTORModSync.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.AST
+namespace HoloPatcher.Formats.NCS.NCSDecomp.AST
 {
     public abstract class PCmd : Node
     {

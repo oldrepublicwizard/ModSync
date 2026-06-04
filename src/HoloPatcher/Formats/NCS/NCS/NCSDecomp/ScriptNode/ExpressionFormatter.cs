@@ -5,9 +5,9 @@
 // See LICENSE.txt file in the project root for full license information.
 
 using System;
-using KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode;
+using HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode
+namespace HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode
 {
     /// <summary>
     /// Centralized expression pretty-printer that minimizes redundant parentheses

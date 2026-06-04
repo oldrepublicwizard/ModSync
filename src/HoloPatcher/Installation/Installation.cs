@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Common;
-using KOTORModSync.Extract;
-using KOTORModSync.Extract.Capsule;
-using KOTORModSync.Formats.Capsule;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Common;
+using HoloPatcher.Extract;
+using HoloPatcher.Extract.Capsule;
+using HoloPatcher.Formats.Capsule;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Installation
+namespace HoloPatcher.Installation
 {
 
     /// <summary>

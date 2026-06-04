@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KOTORModSync.Formats.NCS.Optimizers
+namespace HoloPatcher.Formats.NCS.Optimizers
 {
     /// <summary>
     /// Removes JMP instructions that jump to the immediately following instruction.

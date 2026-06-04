@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using KOTORModSync;
-using KOTORModSync.Common.Script;
-using KOTORModSync.Formats.NCS;
-using KOTORModSync.Formats.NCS.Compiler.NSS;
-using KOTORModSync.Formats.NCS.Optimizers;
+using HoloPatcher;
+using HoloPatcher.Common.Script;
+using HoloPatcher.Formats.NCS;
+using HoloPatcher.Formats.NCS.Compiler.NSS;
+using HoloPatcher.Formats.NCS.Optimizers;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS.Compiler
+namespace HoloPatcher.Formats.NCS.Compiler
 {
 
     /// <summary>

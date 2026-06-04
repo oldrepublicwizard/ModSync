@@ -4,7 +4,7 @@
 // See LICENSE.txt file in the project root for full license information.
 
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -12,9 +12,9 @@ using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/RegistrySpoofer.java:36-780
     // Original: public class RegistrySpoofer implements AutoCloseable

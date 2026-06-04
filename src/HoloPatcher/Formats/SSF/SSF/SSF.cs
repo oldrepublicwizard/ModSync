@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.SSF
+namespace HoloPatcher.Formats.SSF
 {
     /// <summary>
     /// Represents the data stored in an SSF (sound set file) file.

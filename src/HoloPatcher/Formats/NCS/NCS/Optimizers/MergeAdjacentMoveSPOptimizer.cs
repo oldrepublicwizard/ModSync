@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace KOTORModSync.Formats.NCS.Optimizers
+namespace HoloPatcher.Formats.NCS.Optimizers
 {
     /// <summary>
     /// Merges consecutive MOVSP instructions into a single instruction.

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KOTORModSync.Resource;
+using HoloPatcher.Resource;
 
-namespace KOTORModSync.Formats.LIP
+namespace HoloPatcher.Formats.LIP
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:225-458
     // Original: class LIP(ComparableMixin)

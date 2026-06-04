@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Resource;
-using static KOTORModSync.Common.GameExtensions;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Resource;
+using static HoloPatcher.Common.GameExtensions;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/generics/utp.py
     // Original: construct_utp and dismantle_utp functions

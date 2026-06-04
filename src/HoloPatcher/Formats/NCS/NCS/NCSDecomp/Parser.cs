@@ -6,14 +6,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.Analysis;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using LexerClass = KOTORModSync.Formats.NCS.NCSDecomp.Lexer;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.Analysis;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using LexerClass = HoloPatcher.Formats.NCS.NCSDecomp.Lexer;
 
 // Decompiled by Procyon v0.6.0
 // 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Parser
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Parser
 {
     public class Parser
     {
@@ -29,7 +29,7 @@ namespace KOTORModSync.Formats.NCS.NCSDecomp.Parser
         private static int[] errors;
         public readonly IAnalysis ignoredTokens;
         protected Node node;
-        private readonly KOTORModSync.Formats.NCS.NCSDecomp.Lexer.Lexer lexer;
+        private readonly HoloPatcher.Formats.NCS.NCSDecomp.Lexer.Lexer lexer;
         private readonly ListIterator stack;
         private int last_shift;
         private int last_pos;
@@ -37,7 +37,7 @@ namespace KOTORModSync.Formats.NCS.NCSDecomp.Parser
         private Token last_token;
         private readonly TokenIndex converter;
         private readonly int[] action;
-        public Parser(KOTORModSync.Formats.NCS.NCSDecomp.Lexer.Lexer lexer)
+        public Parser(HoloPatcher.Formats.NCS.NCSDecomp.Lexer.Lexer lexer)
         {
             this.ignoredTokens = new AnalysisAdapter();
             this.stack = new LinkedList<object>().ListIterator();
@@ -49,9 +49,9 @@ namespace KOTORModSync.Formats.NCS.NCSDecomp.Parser
                 try
                 {
                     // Match Lexer.cs pattern: try executing assembly first, then calling assembly
-                    System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("KOTORModSync.Formats.NCS.NCSDecomp.parser.dat") ??
-                                              System.Reflection.Assembly.GetCallingAssembly().GetManifestResourceStream("KOTORModSync.Formats.NCS.NCSDecomp.parser.dat") ??
-                                              typeof(Parser).Assembly.GetManifestResourceStream("KOTORModSync.Formats.NCS.NCSDecomp.parser.dat") ??
+                    System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("HoloPatcher.Formats.NCS.NCSDecomp.parser.dat") ??
+                                              System.Reflection.Assembly.GetCallingAssembly().GetManifestResourceStream("HoloPatcher.Formats.NCS.NCSDecomp.parser.dat") ??
+                                              typeof(Parser).Assembly.GetManifestResourceStream("HoloPatcher.Formats.NCS.NCSDecomp.parser.dat") ??
                                               System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("parser.dat") ??
                                               System.Reflection.Assembly.GetCallingAssembly().GetManifestResourceStream("parser.dat");
                     if (stream == null)

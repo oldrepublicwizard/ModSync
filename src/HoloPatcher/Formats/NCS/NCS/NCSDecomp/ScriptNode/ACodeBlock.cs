@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode;
+using HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode
+namespace HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode
 {
     // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/ScriptNode/ACodeBlock.java:7-10
     // Original: public class ACodeBlock extends ScriptRootNode { public ACodeBlock(int start, int end) { super(start, end); } }

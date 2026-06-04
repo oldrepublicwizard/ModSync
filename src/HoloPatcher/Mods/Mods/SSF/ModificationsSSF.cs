@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync;
-using KOTORModSync.Formats.SSF;
-using KOTORModSync.Logger;
-using KOTORModSync.Memory;
+using HoloPatcher;
+using HoloPatcher.Formats.SSF;
+using HoloPatcher.Logger;
+using HoloPatcher.Memory;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Mods.SSF
+namespace HoloPatcher.Mods.SSF
 {
 
     /// <summary>

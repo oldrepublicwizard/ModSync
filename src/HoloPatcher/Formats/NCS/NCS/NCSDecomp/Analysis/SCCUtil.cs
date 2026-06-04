@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Analysis
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Analysis
 {
     // Matching NCSDecomp implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/analysis/SCCUtil.java:19-117
     // Original: public final class SCCUtil

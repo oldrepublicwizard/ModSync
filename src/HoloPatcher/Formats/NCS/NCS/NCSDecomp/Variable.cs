@@ -2,10 +2,10 @@
 // Original: public class Variable extends StackEntry implements Comparable<Variable>
 using System;
 using System.Collections.Generic;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
 using Comparable = System.IComparable;
-using UtilsType = KOTORModSync.Formats.NCS.NCSDecomp.Utils.Type;
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Stack
+using UtilsType = HoloPatcher.Formats.NCS.NCSDecomp.Utils.Type;
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Stack
 {
     public class Variable : StackEntry, Comparable
     {

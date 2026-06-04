@@ -5,10 +5,10 @@
 
 using System;
 using System.Collections.Generic;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Analysis
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Analysis
 {
     // Matching NCSDecomp implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/analysis/CallSiteAnalyzer.java:36-243
     // Original: public class CallSiteAnalyzer extends PrunedDepthFirstAdapter

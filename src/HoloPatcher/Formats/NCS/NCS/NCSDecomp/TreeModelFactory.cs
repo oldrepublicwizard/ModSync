@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     /// <summary>
     /// Factory for creating tree model data structures for the subroutines/variables tree.

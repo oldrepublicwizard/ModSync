@@ -4,12 +4,12 @@
 // See LICENSE.txt file in the project root for full license information.
 
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.Collections.Generic;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Analysis
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Analysis
 {
     // Matching NCSDecomp implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/analysis/PrototypeEngine.java:26-156
     // Original: public class PrototypeEngine

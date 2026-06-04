@@ -1,6 +1,6 @@
 using System;
 
-namespace KOTORModSync.Formats.NCS.Optimizers
+namespace HoloPatcher.Formats.NCS.Optimizers
 {
     /// <summary>
     /// Optimizer to remove unused global variables from the stack.

@@ -7,9 +7,9 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using File = KOTORModSync.Formats.NCS.NCSDecomp.NcsFile;
+using File = HoloPatcher.Formats.NCS.NCSDecomp.NcsFile;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/HashUtil.java:21-67
     // Original: public class HashUtil

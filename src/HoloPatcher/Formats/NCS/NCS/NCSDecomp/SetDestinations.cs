@@ -2,10 +2,10 @@
 // Original: public class SetDestinations extends PrunedDepthFirstAdapter
 using System;
 using System.Collections.Generic;
-using KOTORModSync.Formats.NCS.NCSDecomp.Analysis;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp.Analysis;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Utils
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Utils
 {
     public class SetDestinations : PrunedDepthFirstAdapter
     {

@@ -5,28 +5,28 @@ using System.Numerics;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KOTORModSync.Mods;
-using KOTORModSync.Mods.GFF;
-using KOTORModSync.Mods.SSF;
-using KOTORModSync.Mods.TLK;
-using KOTORModSync.Mods.TwoDA;
-using KOTORModSync.Memory;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Formats.TwoDA;
-using KOTORModSync.Formats.TLK;
-using KOTORModSync.Formats.SSF;
-using KOTORModSync.Resource;
-using KOTORModSync;
-using KOTORModSync.Formats.LIP;
-using GFFContent = KOTORModSync.Formats.GFF.GFFContent;
-using TLKAuto = KOTORModSync.Formats.TLK.TLKAuto;
-using TwoDAAuto = KOTORModSync.Formats.TwoDA.TwoDAAuto;
-using GFFAuto = KOTORModSync.Formats.GFF.GFFAuto;
-using SSFAuto = KOTORModSync.Formats.SSF.SSFAuto;
-using LIPAuto = KOTORModSync.Formats.LIP.LIPAuto;
-using KOTORModSync.Common;
+using HoloPatcher.Mods;
+using HoloPatcher.Mods.GFF;
+using HoloPatcher.Mods.SSF;
+using HoloPatcher.Mods.TLK;
+using HoloPatcher.Mods.TwoDA;
+using HoloPatcher.Memory;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Formats.TwoDA;
+using HoloPatcher.Formats.TLK;
+using HoloPatcher.Formats.SSF;
+using HoloPatcher.Resource;
+using HoloPatcher;
+using HoloPatcher.Formats.LIP;
+using GFFContent = HoloPatcher.Formats.GFF.GFFContent;
+using TLKAuto = HoloPatcher.Formats.TLK.TLKAuto;
+using TwoDAAuto = HoloPatcher.Formats.TwoDA.TwoDAAuto;
+using GFFAuto = HoloPatcher.Formats.GFF.GFFAuto;
+using SSFAuto = HoloPatcher.Formats.SSF.SSFAuto;
+using LIPAuto = HoloPatcher.Formats.LIP.LIPAuto;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.TSLPatcher
+namespace HoloPatcher.TSLPatcher
 {
     // Matching PyKotor implementation at vendor/PyKotor/Libraries/PyKotor/src/pykotor/tslpatcher/diff/generator.py:68-129
     // Original: class TSLPatchDataGenerator: ...
@@ -355,7 +355,7 @@ namespace KOTORModSync.TSLPatcher
                     PatcherMemory memory = new PatcherMemory();
                     foreach (var modifier in modSsf.Modifiers)
                     {
-                        if (modifier is KOTORModSync.Mods.SSF.ModifySSF modifySsf)
+                        if (modifier is HoloPatcher.Mods.SSF.ModifySSF modifySsf)
                         {
                             try
                             {

@@ -1,4 +1,4 @@
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     public abstract class Collection
     {

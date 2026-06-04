@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace KOTORModSync.Formats.LIP
+namespace HoloPatcher.Formats.LIP
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:50-221
     // Original: class LIPShape(IntEnum)

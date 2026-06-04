@@ -1,4 +1,4 @@
-namespace KOTORModSync.Namespaces
+namespace HoloPatcher.Namespaces
 {
 
     /// <summary>

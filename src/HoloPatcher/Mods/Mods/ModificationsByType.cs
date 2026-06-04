@@ -1,14 +1,14 @@
 // Matching PyKotor implementation at vendor/PyKotor/Libraries/PyKotor/src/pykotor/tslpatcher/writer.py:128-143
 // Original: @dataclass class ModificationsByType: ...
 using System.Collections.Generic;
-using KOTORModSync.Mods.GFF;
-using KOTORModSync.Mods.NCS;
-using KOTORModSync.Mods.NSS;
-using KOTORModSync.Mods.SSF;
-using KOTORModSync.Mods.TLK;
-using KOTORModSync.Mods.TwoDA;
+using HoloPatcher.Mods.GFF;
+using HoloPatcher.Mods.NCS;
+using HoloPatcher.Mods.NSS;
+using HoloPatcher.Mods.SSF;
+using HoloPatcher.Mods.TLK;
+using HoloPatcher.Mods.TwoDA;
 
-namespace KOTORModSync.Mods
+namespace HoloPatcher.Mods
 {
     // Matching PyKotor implementation at vendor/PyKotor/Libraries/PyKotor/src/pykotor/tslpatcher/writer.py:128-143
     // Original: @dataclass class ModificationsByType: ...

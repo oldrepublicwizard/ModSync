@@ -4,29 +4,29 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using KOTORModSync;
-using KOTORModSync.Common;
-using KOTORModSync.Config;
-using KOTORModSync.Formats.Capsule;
-using KOTORModSync.Formats.ERF;
-using KOTORModSync.Formats.RIM;
-using KOTORModSync.Installation;
-using KOTORModSync.Logger;
-using KOTORModSync.Memory;
-using KOTORModSync.Mods;
-using KOTORModSync.Mods.GFF;
-using KOTORModSync.Mods.NCS;
-using KOTORModSync.Mods.NSS;
-using KOTORModSync.Mods.SSF;
-using KOTORModSync.Mods.TLK;
-using KOTORModSync.Mods.TwoDA;
-using KOTORModSync.Reader;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Common;
+using HoloPatcher.Config;
+using HoloPatcher.Formats.Capsule;
+using HoloPatcher.Formats.ERF;
+using HoloPatcher.Formats.RIM;
+using HoloPatcher.Installation;
+using HoloPatcher.Logger;
+using HoloPatcher.Memory;
+using HoloPatcher.Mods;
+using HoloPatcher.Mods.GFF;
+using HoloPatcher.Mods.NCS;
+using HoloPatcher.Mods.NSS;
+using HoloPatcher.Mods.SSF;
+using HoloPatcher.Mods.TLK;
+using HoloPatcher.Mods.TwoDA;
+using HoloPatcher.Reader;
+using HoloPatcher.Resource;
 using IniParser.Model;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.TSLPatcher
+namespace HoloPatcher.TSLPatcher
 {
 
     /// <summary>
@@ -739,7 +739,7 @@ namespace KOTORModSync.TSLPatcher
         private static byte[] LoadResourceFile(string sourcePath)
         {
             // Python: with BinaryReader.from_auto(source) as reader: return reader.read_all()
-            using (var reader = KOTORModSync.Common.RawBinaryReader.FromFile(sourcePath))
+            using (var reader = HoloPatcher.Common.RawBinaryReader.FromFile(sourcePath))
             {
                 return reader.ReadAll();
             }

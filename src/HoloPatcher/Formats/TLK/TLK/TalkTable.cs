@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using KOTORModSync;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.TLK
+namespace HoloPatcher.Formats.TLK
 {
 
     /// <summary>
@@ -44,7 +44,7 @@ namespace KOTORModSync.Formats.TLK
 
             Encoding encoding = null;
             byte[] textBytes = null;
-            using (var reader = KOTORModSync.Common.RawBinaryReader.FromFile(_path))
+            using (var reader = HoloPatcher.Common.RawBinaryReader.FromFile(_path))
             {
                 reader.Seek(12);
                 uint entriesCount = reader.ReadUInt32();
@@ -94,7 +94,7 @@ namespace KOTORModSync.Formats.TLK
                 return ResRef.FromBlank();
             }
 
-            using (var reader = KOTORModSync.Common.RawBinaryReader.FromFile(_path))
+            using (var reader = HoloPatcher.Common.RawBinaryReader.FromFile(_path))
             {
                 reader.Seek(12);
                 uint entriesCount = reader.ReadUInt32();
@@ -125,7 +125,7 @@ namespace KOTORModSync.Formats.TLK
                 return new StringResult("", ResRef.FromBlank());
             }
 
-            using (var reader = KOTORModSync.Common.RawBinaryReader.FromFile(_path))
+            using (var reader = HoloPatcher.Common.RawBinaryReader.FromFile(_path))
             {
                 reader.Seek(12);
                 uint entriesCount = reader.ReadUInt32();
@@ -167,7 +167,7 @@ namespace KOTORModSync.Formats.TLK
                 return batch;
             }
 
-            using (var reader = KOTORModSync.Common.RawBinaryReader.FromFile(_path))
+            using (var reader = HoloPatcher.Common.RawBinaryReader.FromFile(_path))
             {
                 reader.Seek(8);
                 uint languageId = reader.ReadUInt32();
@@ -210,7 +210,7 @@ namespace KOTORModSync.Formats.TLK
                 return 0;
             }
 
-            using (var reader = KOTORModSync.Common.RawBinaryReader.FromFile(_path))
+            using (var reader = HoloPatcher.Common.RawBinaryReader.FromFile(_path))
             {
                 reader.Seek(12);
                 return (int)reader.ReadUInt32();
@@ -227,7 +227,7 @@ namespace KOTORModSync.Formats.TLK
                 return Language.English;
             }
 
-            using (var reader = KOTORModSync.Common.RawBinaryReader.FromFile(_path))
+            using (var reader = HoloPatcher.Common.RawBinaryReader.FromFile(_path))
             {
                 reader.Seek(8);
                 uint languageId = reader.ReadUInt32();
@@ -235,7 +235,7 @@ namespace KOTORModSync.Formats.TLK
             }
         }
 
-        private static TLKData ExtractCommonTlkData(KOTORModSync.Common.RawBinaryReader reader, int stringref)
+        private static TLKData ExtractCommonTlkData(HoloPatcher.Common.RawBinaryReader reader, int stringref)
         {
             // Entry offset calculation: header (20 bytes) + entry_size (40 bytes) * stringref
             reader.Seek(20 + 40 * stringref);

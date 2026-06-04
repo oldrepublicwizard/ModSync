@@ -5,12 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using KOTORModSync;
-using KOTORModSync.Common;
-using KOTORModSync.Formats.NCS.Compiler;
+using HoloPatcher;
+using HoloPatcher.Common;
+using HoloPatcher.Formats.NCS.Compiler;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.NCS
+namespace HoloPatcher.Formats.NCS
 {
     /// <summary>
     /// Shared utility methods for NCS compilers.

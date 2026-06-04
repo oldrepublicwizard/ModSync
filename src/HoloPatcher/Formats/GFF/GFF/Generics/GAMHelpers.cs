@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Resource;
-using KOTORModSync.Common;
-using static KOTORModSync.Common.GameExtensions;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Resource;
+using HoloPatcher.Common;
+using static HoloPatcher.Common.GameExtensions;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     // Matching pattern from other GFF-based format helpers (IFOHelpers, AREHelpers, etc.)
     // Original: construct_gam and dismantle_gam functions for GAM file format

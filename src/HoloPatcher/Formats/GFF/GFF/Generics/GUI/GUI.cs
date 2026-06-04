@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using KOTORModSync.Resource;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Resource.Generics.GUI
+namespace HoloPatcher.Resource.Generics.GUI
 {
     /// <summary>
     /// A class representing a GUI resource in KotOR games.

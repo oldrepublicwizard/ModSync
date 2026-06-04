@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Logger;
-using KOTORModSync.Resource;
-using static KOTORModSync.Common.GameExtensions;
-using GFFAuto = KOTORModSync.Formats.GFF.GFFAuto;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Logger;
+using HoloPatcher.Resource;
+using static HoloPatcher.Common.GameExtensions;
+using GFFAuto = HoloPatcher.Formats.GFF.GFFAuto;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/generics/utc.py
     // Original: construct_utc and dismantle_utc functions

@@ -1,15 +1,15 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/scriptutils/NameGenerator.java:15-889
 // Original: public class NameGenerator
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode;
+using HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode;
 
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Scriptutils
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Scriptutils
 {
     public class NameGenerator
     {

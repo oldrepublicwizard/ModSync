@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using KOTORModSync;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.ERF
+namespace HoloPatcher.Formats.ERF
 {
 
     public class ERFBinaryWriter

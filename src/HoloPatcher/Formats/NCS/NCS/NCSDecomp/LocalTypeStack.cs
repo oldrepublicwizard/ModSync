@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using JavaSystem = KOTORModSync.Formats.NCS.NCSDecomp.JavaSystem;
-using UtilsType = KOTORModSync.Formats.NCS.NCSDecomp.Utils.Type;
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Stack
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using JavaSystem = HoloPatcher.Formats.NCS.NCSDecomp.JavaSystem;
+using UtilsType = HoloPatcher.Formats.NCS.NCSDecomp.Utils.Type;
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Stack
 {
     public class LocalTypeStack : LocalStack
     {

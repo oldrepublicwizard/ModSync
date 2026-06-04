@@ -2,7 +2,7 @@
 // Original: public class AErrorComment extends ScriptNode
 using System;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode
+namespace HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode
 {
     public class AErrorComment : ScriptNode
     {

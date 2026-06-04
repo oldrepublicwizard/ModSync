@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Formats.TLK;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Formats.TLK;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Uninstall
+namespace HoloPatcher.Uninstall
 {
 
     /// <summary>

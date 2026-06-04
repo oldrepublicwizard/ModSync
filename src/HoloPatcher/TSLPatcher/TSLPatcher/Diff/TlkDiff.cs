@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using KOTORModSync.Formats.TLK;
+using HoloPatcher.Formats.TLK;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Diff
+namespace HoloPatcher.Diff
 {
 
     public class TlkCompareResult

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.GFF;
+using HoloPatcher.Formats.GFF;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Diff
+namespace HoloPatcher.Diff
 {
 
     public class GffCompareResult
@@ -135,7 +135,7 @@ namespace KOTORModSync.Diff
 
             // Handle specific types like Vector3, Vector4, ResRef, etc. if they don't implement Equals correctly
             // Assuming Andastra.Parsing types implement Equals or are value types.
-            // ResRef, LocalizedString, Vector3, Vector4 in KOTORModSync.Common should implement Equals.
+            // ResRef, LocalizedString, Vector3, Vector4 in HoloPatcher.Common should implement Equals.
 
             return false;
         }

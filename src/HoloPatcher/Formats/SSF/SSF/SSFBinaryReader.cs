@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using System.Text;
-using KOTORModSync.Formats;
+using HoloPatcher.Formats;
 
-namespace KOTORModSync.Formats.SSF
+namespace HoloPatcher.Formats.SSF
 {
 
     /// <summary>

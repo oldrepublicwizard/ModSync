@@ -1,10 +1,10 @@
 using System;
 using System.IO;
-using KOTORModSync;
-using KOTORModSync.Formats.LIP;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Formats.LIP;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.LIP
+namespace HoloPatcher.Formats.LIP
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py:59-81
     // Original: class LIPBinaryWriter(ResourceWriter)

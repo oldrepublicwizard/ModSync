@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using KOTORModSync;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Common;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.GFF
+namespace HoloPatcher.Formats.GFF
 {
 
     /// <summary>

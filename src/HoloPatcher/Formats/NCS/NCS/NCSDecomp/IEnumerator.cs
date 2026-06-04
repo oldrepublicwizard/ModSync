@@ -1,4 +1,4 @@
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     /// <summary>
     /// Java-style enumerator interface with HasNext() and Next() methods.

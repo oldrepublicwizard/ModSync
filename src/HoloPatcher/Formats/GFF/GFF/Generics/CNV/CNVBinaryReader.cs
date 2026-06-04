@@ -1,10 +1,10 @@
 using System;
 using System.IO;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Resource;
 
-namespace KOTORModSync.Resource.Generics.CNV
+namespace HoloPatcher.Resource.Generics.CNV
 {
     // Matching pattern from GFFBinaryReader and other GFF-based format readers
     // Original: CNVBinaryReader for reading CNV conversation files

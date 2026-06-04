@@ -6,10 +6,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using UtilsType = KOTORModSync.Formats.NCS.NCSDecomp.Utils.Type;
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using UtilsType = HoloPatcher.Formats.NCS.NCSDecomp.Utils.Type;
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     public class ActionsData
     {

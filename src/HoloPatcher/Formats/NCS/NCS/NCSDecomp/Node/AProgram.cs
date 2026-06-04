@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.AST
+namespace HoloPatcher.Formats.NCS.NCSDecomp.AST
 {
     public sealed class AProgram : PProgram
     {

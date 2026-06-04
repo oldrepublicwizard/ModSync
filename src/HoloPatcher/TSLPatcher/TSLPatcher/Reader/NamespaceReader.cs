@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Namespaces;
+using HoloPatcher;
+using HoloPatcher.Namespaces;
 using IniParser;
 using IniParser.Model;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Reader
+namespace HoloPatcher.Reader
 {
 
     /// <summary>

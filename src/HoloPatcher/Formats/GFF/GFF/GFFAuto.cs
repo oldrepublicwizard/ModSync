@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using KOTORModSync.Resource;
+using HoloPatcher.Resource;
 
-namespace KOTORModSync.Formats.GFF
+namespace HoloPatcher.Formats.GFF
 {
 
     /// <summary>

@@ -1,6 +1,6 @@
 //
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -8,22 +8,22 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using KOTORModSync;
-using KOTORModSync.Formats.NCS;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.Analysis;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using KOTORModSync.Formats.NCS.NCSDecomp.Lexer;
-using KOTORModSync.Formats.NCS.NCSDecomp.Scriptutils;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
+using HoloPatcher;
+using HoloPatcher.Formats.NCS;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.Analysis;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp.Lexer;
+using HoloPatcher.Formats.NCS.NCSDecomp.Scriptutils;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
 using InputStream = System.IO.Stream;
 
 using Process = System.Diagnostics.Process;
 using Thread = System.Threading.Thread;
 using Throwable = System.Exception;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     // Matching NCSDecomp implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/FileDecompiler.java:56-79
     public class FileDecompiler

@@ -1,12 +1,12 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/utils/SetPositions.java:14-39
 // Original: public class SetPositions extends PrunedReversedDepthFirstAdapter
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.Analysis;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.Analysis;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Utils
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Utils
 {
     public class SetPositions : PrunedReversedDepthFirstAdapter
     {

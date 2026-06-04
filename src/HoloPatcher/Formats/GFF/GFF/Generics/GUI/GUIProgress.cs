@@ -1,8 +1,8 @@
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics.GUI
+namespace HoloPatcher.Resource.Generics.GUI
 {
     /// <summary>
     /// Progress bar properties for GUI controls.

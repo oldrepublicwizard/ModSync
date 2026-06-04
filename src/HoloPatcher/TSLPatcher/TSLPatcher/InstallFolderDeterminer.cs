@@ -3,14 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KOTORModSync.Mods;
-using KOTORModSync.Mods.GFF;
-using KOTORModSync.Mods.SSF;
-using KOTORModSync.Mods.TLK;
-using KOTORModSync.Mods.TwoDA;
-using KOTORModSync.Common;
+using HoloPatcher.Mods;
+using HoloPatcher.Mods.GFF;
+using HoloPatcher.Mods.SSF;
+using HoloPatcher.Mods.TLK;
+using HoloPatcher.Mods.TwoDA;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.TSLPatcher
+namespace HoloPatcher.TSLPatcher
 {
     // Matching PyKotor implementation at vendor/PyKotor/Libraries/PyKotor/src/pykotor/tslpatcher/diff/generator.py:1212-1236
     // Original: def determine_install_folders(...): ...

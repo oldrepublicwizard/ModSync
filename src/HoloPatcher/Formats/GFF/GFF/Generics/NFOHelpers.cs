@@ -1,8 +1,8 @@
 using System;
-using KOTORModSync.Common;
-using KOTORModSync.Formats.GFF;
+using HoloPatcher.Common;
+using HoloPatcher.Formats.GFF;
 
-namespace KOTORModSync.Resource.Generics
+namespace HoloPatcher.Resource.Generics
 {
     internal static class NFOHelpers
     {

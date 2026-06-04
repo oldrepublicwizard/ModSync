@@ -1,9 +1,9 @@
 using System;
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Resource.Generics.DLG
+namespace HoloPatcher.Resource.Generics.DLG
 {
     /// <summary>
     /// Represents a stunt model in a dialog.

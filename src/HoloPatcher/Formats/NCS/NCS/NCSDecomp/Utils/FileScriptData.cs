@@ -1,14 +1,14 @@
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
-using Scriptutils = KOTORModSync.Formats.NCS.NCSDecomp.Scriptutils;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
+using Scriptutils = HoloPatcher.Formats.NCS.NCSDecomp.Scriptutils;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
 
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Utils
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Utils
 {
     public class FileScriptData
     {

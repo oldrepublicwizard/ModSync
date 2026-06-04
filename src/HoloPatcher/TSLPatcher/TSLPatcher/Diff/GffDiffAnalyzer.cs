@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Mods.GFF;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Mods.GFF;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Diff
+namespace HoloPatcher.Diff
 {
     /// <summary>
     /// Analyzer for GFF file differences.

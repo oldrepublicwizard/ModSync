@@ -1,6 +1,6 @@
-using KOTORModSync.Formats.NCS;
+using HoloPatcher.Formats.NCS;
 
-namespace KOTORModSync.Formats.NCS.Compiler
+namespace HoloPatcher.Formats.NCS.Compiler
 {
 
     /// <summary>

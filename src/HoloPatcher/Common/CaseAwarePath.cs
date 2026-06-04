@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Common
+namespace HoloPatcher.Common
 {
 
     /// <summary>

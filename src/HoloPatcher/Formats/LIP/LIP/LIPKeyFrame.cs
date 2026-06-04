@@ -1,6 +1,6 @@
 using System;
 
-namespace KOTORModSync.Formats.LIP
+namespace HoloPatcher.Formats.LIP
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:459-530
     // Original: @dataclass class LIPKeyFrame(ComparableMixin)

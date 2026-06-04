@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Extract;
-using KOTORModSync.Installation;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Extract;
+using HoloPatcher.Installation;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Diff
+namespace HoloPatcher.Diff
 {
     // Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/tslpatcher/diff/resolution.py:34-63
     // Original: @dataclass class TLKModificationWithSource:

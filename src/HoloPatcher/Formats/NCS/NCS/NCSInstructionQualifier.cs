@@ -1,4 +1,4 @@
-namespace KOTORModSync.Formats.NCS
+namespace HoloPatcher.Formats.NCS
 {
 
     /// <summary>

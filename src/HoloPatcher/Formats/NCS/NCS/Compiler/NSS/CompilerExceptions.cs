@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Formats.NCS.Compiler.NSS
+namespace HoloPatcher.Formats.NCS.Compiler.NSS
 {
 
     /// <summary>

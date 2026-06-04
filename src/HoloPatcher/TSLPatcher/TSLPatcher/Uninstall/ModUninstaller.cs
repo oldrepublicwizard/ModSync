@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Formats.TLK;
-using KOTORModSync.Logger;
+using HoloPatcher;
+using HoloPatcher.Formats.TLK;
+using HoloPatcher.Logger;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Uninstall
+namespace HoloPatcher.Uninstall
 {
 
     /// <summary>

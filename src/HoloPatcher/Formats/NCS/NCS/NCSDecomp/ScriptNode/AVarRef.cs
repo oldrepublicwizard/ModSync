@@ -1,11 +1,11 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/ScriptNode/AVarRef.java:13-68
 // Original: public class AVarRef extends ScriptNode implements AExpression
-using KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode;
-using KOTORModSync.Formats.NCS.NCSDecomp.Stack;
-using KOTORModSync.Formats.NCS.NCSDecomp.Utils;
-using UtilsType = KOTORModSync.Formats.NCS.NCSDecomp.Utils.Type;
+using HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode;
+using HoloPatcher.Formats.NCS.NCSDecomp.Stack;
+using HoloPatcher.Formats.NCS.NCSDecomp.Utils;
+using UtilsType = HoloPatcher.Formats.NCS.NCSDecomp.Utils.Type;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.ScriptNode
+namespace HoloPatcher.Formats.NCS.NCSDecomp.ScriptNode
 {
     public class AVarRef : ScriptNode, AExpression
     {

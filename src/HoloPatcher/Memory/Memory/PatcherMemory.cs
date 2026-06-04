@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace KOTORModSync.Memory
+namespace HoloPatcher.Memory
 {
 
     /// <summary>

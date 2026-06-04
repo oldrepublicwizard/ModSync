@@ -1,12 +1,12 @@
 using System;
-using KOTORModSync;
-using KOTORModSync.Formats.TwoDA;
-using KOTORModSync.Memory;
-using KOTORModSync.Mods.NSS;
+using HoloPatcher;
+using HoloPatcher.Formats.TwoDA;
+using HoloPatcher.Memory;
+using HoloPatcher.Mods.NSS;
 using Andastra.Utility;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Mods.TwoDA
+namespace HoloPatcher.Mods.TwoDA
 {
 
     /// <summary>

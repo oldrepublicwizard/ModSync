@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using KOTORModSync;
-using KOTORModSync.Formats.TwoDA;
-using KOTORModSync.Logger;
-using KOTORModSync.Memory;
-using KOTORModSync.Common;
+using HoloPatcher;
+using HoloPatcher.Formats.TwoDA;
+using HoloPatcher.Logger;
+using HoloPatcher.Memory;
+using HoloPatcher.Common;
 
-namespace KOTORModSync.Mods.TwoDA
+namespace HoloPatcher.Mods.TwoDA
 {
 
     /// <summary>

@@ -1,8 +1,8 @@
 using System;
-using KOTORModSync;
+using HoloPatcher;
 using JetBrains.Annotations;
 
-namespace KOTORModSync.Resource.Generics.DLG
+namespace HoloPatcher.Resource.Generics.DLG
 {
     /// <summary>
     /// Represents a unit of animation executed during a node.

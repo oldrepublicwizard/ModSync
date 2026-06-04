@@ -1,9 +1,9 @@
 //
 using System;
 using System.Text;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp
+namespace HoloPatcher.Formats.NCS.NCSDecomp
 {
     public sealed class X2PSubroutine : XPSubroutine
     {

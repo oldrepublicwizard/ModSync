@@ -1,17 +1,17 @@
 // Matching DeNCS implementation at vendor/DeNCS/src/main/java/com/kotor/resource/formats/ncs/utils/SubroutineAnalysisData.java:23-569
 // Original: public class SubroutineAnalysisData
 using System;
-using static KOTORModSync.Formats.NCS.NCSDecomp.DecompilerLogger;
+using static HoloPatcher.Formats.NCS.NCSDecomp.DecompilerLogger;
 using System.Collections;
 using System.Collections.Generic;
-using KOTORModSync.Formats.NCS.NCSDecomp;
-using KOTORModSync.Formats.NCS.NCSDecomp.AST;
-using KOTORModSync.Formats.NCS.NCSDecomp.Scriptutils;
-using KOTORModSync.Formats.NCS.NCSDecomp.Stack;
-using IEnumerator = KOTORModSync.Formats.NCS.NCSDecomp.IEnumerator<object>;
-using IAnalysis = KOTORModSync.Formats.NCS.NCSDecomp.Analysis.IAnalysis;
+using HoloPatcher.Formats.NCS.NCSDecomp;
+using HoloPatcher.Formats.NCS.NCSDecomp.AST;
+using HoloPatcher.Formats.NCS.NCSDecomp.Scriptutils;
+using HoloPatcher.Formats.NCS.NCSDecomp.Stack;
+using IEnumerator = HoloPatcher.Formats.NCS.NCSDecomp.IEnumerator<object>;
+using IAnalysis = HoloPatcher.Formats.NCS.NCSDecomp.Analysis.IAnalysis;
 
-namespace KOTORModSync.Formats.NCS.NCSDecomp.Utils
+namespace HoloPatcher.Formats.NCS.NCSDecomp.Utils
 {
     public class SubroutineAnalysisData
     {

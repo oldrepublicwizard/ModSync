@@ -2,14 +2,14 @@ using System;
 using System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
-using KOTORModSync;
-using KOTORModSync.Formats.GFF;
-using KOTORModSync.Resource;
+using HoloPatcher;
+using HoloPatcher.Formats.GFF;
+using HoloPatcher.Resource;
 using JetBrains.Annotations;
-using KOTORModSync.Common;
-using KOTORModSync.Resource.Generics.DLG;
+using HoloPatcher.Common;
+using HoloPatcher.Resource.Generics.DLG;
 
-namespace KOTORModSync.Resource.Generics.CNV
+namespace HoloPatcher.Resource.Generics.CNV
 {
     // Matching pattern from DLGHelper
     // Original: construct_cnv, dismantle_cnv, read_cnv, bytes_cnv functions for CNV conversation format
