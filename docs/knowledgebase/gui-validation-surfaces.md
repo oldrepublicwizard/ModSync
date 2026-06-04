@@ -70,7 +70,8 @@ Prefer the **install wizard** for documented full-build flows ([install-lifecycl
 ## Automated tests
 
 ```bash
-./scripts/agents/test_pr110_validation.sh
+./scripts/agents/verify_open_pr_ready.sh
+# or: ./scripts/agents/test_pr110_validation.sh
 ```
 
 ## Debugging order

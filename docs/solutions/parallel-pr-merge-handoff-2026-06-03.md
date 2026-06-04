@@ -13,8 +13,7 @@ No shared implementation files between the feature arcs — either PR can merge 
 
 ## Pre-merge (both PRs)
 
-1. Confirm CI green on the PR you are merging.
-2. Run `./scripts/agents/test_pr110_validation.sh` or `./scripts/agents/test_pr111_holocron_bridge.sh` (or the filters in [ci-test-matrix.md](../knowledgebase/ci-test-matrix.md#pr-targeted-local-filters-merge-ready-open-prs)).
+1. On the feature branch, run `./scripts/agents/verify_open_pr_ready.sh` (local tests + `gh pr checks`), or separately confirm CI green and run `test_current_open_pr.sh`.
 3. Do not squash Holocron commits into #110 or validation commits into #111.
 
 ## Merge order
@@ -39,7 +38,7 @@ No shared implementation files between the feature arcs — either PR can merge 
 
 ## After both merge
 
-- Close plan arc `012`–`056` / `013`–`056` — no further LFG doc slices required for merge readiness.
+- Close plan arc `012`–`059` / `013`–`059` — agent tooling complete; no further LFG doc slices required for merge readiness.
 - Holocron Phase 2: new branch from default per [2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md](../plans/2026-06-03-047-feat-holocron-phase2-deferred-editors-plan.md).
 - Wizard structural debt: [gui-architecture-deferred.md](../knowledgebase/gui-architecture-deferred.md) (MainWindow split, wizard hosts) — separate future PRs.
 
