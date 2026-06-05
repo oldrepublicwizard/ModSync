@@ -41,10 +41,10 @@ namespace ModSync.Tests
                         SettingsService.UpdateDirectoryPickersFromSettings(settings, harness.FindControl));
                     await PumpAsync();
 
-                    Assert.Equal(modPath, harness.ModPicker.GetCurrentPath());
-                    Assert.Equal(modPath, harness.Step1ModPicker.GetCurrentPath());
-                    Assert.Equal(kotorPath, harness.KotorPicker.GetCurrentPath());
-                    Assert.Equal(kotorPath, harness.Step1KotorPicker.GetCurrentPath());
+                    AssertPickerShowsPath(harness.ModPicker, modPath);
+                    AssertPickerShowsPath(harness.Step1ModPicker, modPath);
+                    AssertPickerShowsPath(harness.KotorPicker, kotorPath);
+                    AssertPickerShowsPath(harness.Step1KotorPicker, kotorPath);
                 }
                 finally
                 {
@@ -75,8 +75,39 @@ namespace ModSync.Tests
                             harness.FindControl));
                     await PumpAsync();
 
-                    Assert.Equal(updatedPath, harness.ModPicker.GetCurrentPath());
-                    Assert.Equal(updatedPath, harness.Step1ModPicker.GetCurrentPath());
+                    AssertPickerShowsPath(harness.ModPicker, updatedPath);
+                    AssertPickerShowsPath(harness.Step1ModPicker, updatedPath);
+                }
+                finally
+                {
+                    await CloseWindowAsync(harness.Window);
+                }
+            }
+            finally
+            {
+                TryDeleteDirectory(updatedPath);
+            }
+        }
+
+        [AvaloniaFact(DisplayName = "SyncDirectoryPickers updates main and Step1 kotor pickers")]
+        public async Task SyncDirectoryPickers_KotorDirectory_UpdatesBothPickers()
+        {
+            string updatedPath = CreateTempDirectory();
+
+            try
+            {
+                PickerHarness harness = await CreatePickerHarnessAsync();
+                try
+                {
+                    await RunOnUiThreadAsync(() =>
+                        SettingsService.SyncDirectoryPickers(
+                            DirectoryPickerType.KotorDirectory,
+                            updatedPath,
+                            harness.FindControl));
+                    await PumpAsync();
+
+                    AssertPickerShowsPath(harness.KotorPicker, updatedPath);
+                    AssertPickerShowsPath(harness.Step1KotorPicker, updatedPath);
                 }
                 finally
                 {
@@ -110,10 +141,10 @@ namespace ModSync.Tests
                     await RunOnUiThreadAsync(() => service.InitializeDirectoryPickers(harness.FindControl));
                     await PumpAsync();
 
-                    Assert.Equal(modPath, harness.ModPicker.GetCurrentPath());
-                    Assert.Equal(modPath, harness.Step1ModPicker.GetCurrentPath());
-                    Assert.Equal(kotorPath, harness.KotorPicker.GetCurrentPath());
-                    Assert.Equal(kotorPath, harness.Step1KotorPicker.GetCurrentPath());
+                    AssertPickerShowsPath(harness.ModPicker, modPath);
+                    AssertPickerShowsPath(harness.Step1ModPicker, modPath);
+                    AssertPickerShowsPath(harness.KotorPicker, kotorPath);
+                    AssertPickerShowsPath(harness.Step1KotorPicker, kotorPath);
                 }
                 finally
                 {
@@ -125,6 +156,15 @@ namespace ModSync.Tests
                 TryDeleteDirectory(modPath);
                 TryDeleteDirectory(kotorPath);
             }
+        }
+
+        private static void AssertPickerShowsPath(DirectoryPickerControl picker, string expectedPath)
+        {
+            Assert.Equal(expectedPath, picker.GetCurrentPath());
+
+            TextBox pathInput = picker.FindControl<TextBox>("PathInput");
+            Assert.NotNull(pathInput);
+            Assert.Equal(expectedPath, pathInput.Text);
         }
 
         private static async Task RunOnUiThreadAsync(Action action)
@@ -215,10 +255,26 @@ namespace ModSync.Tests
         {
             public PickerHarness()
             {
-                ModPicker = new DirectoryPickerControl { Name = "ModDirectoryPicker" };
-                KotorPicker = new DirectoryPickerControl { Name = "KotorDirectoryPicker" };
-                Step1ModPicker = new DirectoryPickerControl { Name = "Step1ModDirectoryPicker" };
-                Step1KotorPicker = new DirectoryPickerControl { Name = "Step1KotorDirectoryPicker" };
+                ModPicker = new DirectoryPickerControl
+                {
+                    Name = "ModDirectoryPicker",
+                    PickerType = DirectoryPickerType.ModDirectory,
+                };
+                KotorPicker = new DirectoryPickerControl
+                {
+                    Name = "KotorDirectoryPicker",
+                    PickerType = DirectoryPickerType.KotorDirectory,
+                };
+                Step1ModPicker = new DirectoryPickerControl
+                {
+                    Name = "Step1ModDirectoryPicker",
+                    PickerType = DirectoryPickerType.ModDirectory,
+                };
+                Step1KotorPicker = new DirectoryPickerControl
+                {
+                    Name = "Step1KotorDirectoryPicker",
+                    PickerType = DirectoryPickerType.KotorDirectory,
+                };
 
                 Controls = new Dictionary<string, DirectoryPickerControl>(StringComparer.Ordinal)
                 {
