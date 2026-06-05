@@ -2,7 +2,7 @@
 
 ## Required GitHub Secret
 
-**Name:** `KOTORMODSYNC_SIGNING_SECRET` (GitHub Actions secret; client also accepts `MODSYNC_SIGNING_SECRET`)
+**Name:** `KOTORMODSYNC_SIGNING_SECRET` (GitHub Actions repository secret; local client dev prefers `MODSYNC_SIGNING_SECRET` with legacy fallback — see [rebrand-legacy-strings.md](knowledgebase/rebrand-legacy-strings.md))
 
 **Purpose:** HMAC-SHA256 signing key for authenticating telemetry requests to bolabaden.org. Prevents unauthorized/fake telemetry from being sent.
 
@@ -76,8 +76,8 @@ The same secret needs to be configured on your server to verify signatures. See 
 When sending telemetry to `https://otlp.bolabaden.org`:
 
 1. **Loads signing secret** (priority order):
-   - Environment variable: `KOTORMODSYNC_SIGNING_SECRET`
-   - Local config file: `%AppData%/ModSync/telemetry.key`
+   - Environment variable: `MODSYNC_SIGNING_SECRET` (legacy fallback: `KOTORMODSYNC_SIGNING_SECRET`)
+   - Local config file: `%AppData%/ModSync/telemetry.key` (legacy: `%AppData%/KOTORModSync/telemetry.key`)
    - Embedded secret (only in official builds from GitHub Actions)
 
 2. **Computes HMAC-SHA256 signature**:
@@ -365,11 +365,13 @@ your_secret_here
 
 ```bash
 # Windows (PowerShell)
-$env:KOTORMODSYNC_SIGNING_SECRET = "your_secret_here"
+$env:MODSYNC_SIGNING_SECRET = "your_secret_here"
 
 # Linux/Mac
-export KOTORMODSYNC_SIGNING_SECRET="your_secret_here"
+export MODSYNC_SIGNING_SECRET="your_secret_here"
 ```
+
+(`KOTORMODSYNC_SIGNING_SECRET` is still accepted as a legacy fallback.)
 
 ### Option 3: No Secret (Development Mode)
 
@@ -434,11 +436,13 @@ Check if secret is set:
 1. Check if secret is loaded:
 
    ```bash
-   # Check environment variable
+   # Check environment variable (primary, then legacy fallback)
+   echo $MODSYNC_SIGNING_SECRET
    echo $KOTORMODSYNC_SIGNING_SECRET
 
-   # Check config file exists
-   cat %AppData%/ModSync/telemetry.key
+   # Check config file exists (Windows vs Linux/Mac)
+   # Windows: %AppData%/ModSync/telemetry.key
+   # Linux/Mac: ~/.config/ModSync/telemetry.key
    ```
 
 2. Check application logs:
