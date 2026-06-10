@@ -107,10 +107,9 @@ Use these when citing findings in plans, PRs, or audits:
 | 086 | [#134](https://github.com/th3w1zard1/ModSync/pull/134) | KB closure + agent routing (consolidates closed #131/#132) |
 | 087 | [#135](https://github.com/th3w1zard1/ModSync/pull/135) | `InitializeTopMenu` → `MenuBuilderService` (stacks #130) |
 | 088 | [#136](https://github.com/th3w1zard1/ModSync/pull/136) | `DownloadOrchestrationService` headless tests (`master`) |
-| 090 / 091 | [#137](https://github.com/th3w1zard1/ModSync/pull/137) | `DownloadIndicatorUiHelper` shared download labels (`master`) |
+| 090 / 091 / 098 | [#137](https://github.com/th3w1zard1/ModSync/pull/137) | `DownloadIndicatorUiHelper` + headless Getting Started indicators (`master`) |
 | 094 | [#139](https://github.com/th3w1zard1/ModSync/pull/139) | `ValidationDisplayUiHelper` Getting Started summaries (`master`) |
 | 096 | [#140](https://github.com/th3w1zard1/ModSync/pull/140) | `StepProgressUiHelper` + navigation tests (supersedes closed #138) |
-| 098 | [#137](https://github.com/th3w1zard1/ModSync/pull/137) | `DownloadIndicatorUiHelper` + headless Getting Started indicators |
 
 Superseded duplicate PRs [#120](https://github.com/th3w1zard1/ModSync/pull/120)–[#129](https://github.com/th3w1zard1/ModSync/pull/129), closed #131/#132/#138 are closed or superseded. Suggested merge order: #133 → #130 → #134 → #135; #136–#140 can land on `master` independently.
 
