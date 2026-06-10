@@ -107,8 +107,9 @@ Use these when citing findings in plans, PRs, or audits:
 | 086 | [#134](https://github.com/th3w1zard1/ModSync/pull/134) | KB closure + agent routing (consolidates closed #131/#132) |
 | 087 | [#135](https://github.com/th3w1zard1/ModSync/pull/135) | `InitializeTopMenu` → `MenuBuilderService` (stacks #130) |
 | 088 | [#136](https://github.com/th3w1zard1/ModSync/pull/136) | `DownloadOrchestrationService` headless tests (`master`) |
+| 090 / 091 | [#137](https://github.com/th3w1zard1/ModSync/pull/137) | `DownloadIndicatorUiHelper` shared download labels (`master`) |
 
-Superseded duplicate PRs [#120](https://github.com/th3w1zard1/ModSync/pull/120)–[#129](https://github.com/th3w1zard1/ModSync/pull/129) and closed #131/#132 are closed. Suggested merge order: #133 → #130 → #134 → #135; #136 can land on `master` independently.
+Superseded duplicate PRs [#120](https://github.com/th3w1zard1/ModSync/pull/120)–[#129](https://github.com/th3w1zard1/ModSync/pull/129) and closed #131/#132 are closed. Suggested merge order: #133 → #130 → #134 → #135; #136 and #137 can land on `master` independently.
 
 KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-architecture-deferred.md](gui-architecture-deferred.md).
 

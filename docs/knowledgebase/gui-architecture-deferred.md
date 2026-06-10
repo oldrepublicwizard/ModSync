@@ -62,8 +62,9 @@ Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface refere
 | Dead `InstallationService` / `InstructionManagementService` constructions | Done | plan `074`, PR #122 |
 | Directory picker init/sync → `SettingsService` | Done | plan `075`, PR #123 |
 | Mod context menu + global actions flyout → `MenuBuilderService` | Pending merge | plan `072` / `082`, PR [#130](https://github.com/th3w1zard1/ModSync/pull/130) |
+| Download indicator labels (Getting Started + wizard) → `DownloadIndicatorUiHelper` | Pending merge | plans `090`–`091`, PR [#137](https://github.com/th3w1zard1/ModSync/pull/137) |
 
-**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plans `077`–`078`); `--filter MenuBuilderService` (plan `072`).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plans `077`–`078`); `--filter MenuBuilderService` (plan `072`); `--filter DownloadOrchestrationService` (plan `088`); `--filter DownloadIndicatorUiHelper` (plans `090`–`091`).
 
 **Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/ModSync.GUI/Services/`. See [knowledgebase README](README.md) §June 2026 arcs for merge status.
 
