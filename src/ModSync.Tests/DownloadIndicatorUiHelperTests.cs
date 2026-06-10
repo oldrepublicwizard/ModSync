@@ -45,5 +45,39 @@ namespace ModSync.Tests
                 "No downloads queued.",
                 DownloadIndicatorUiHelper.FormatWizardSidebarProgressText(downloadInProgress: false, completedDownloads: 0, totalDownloads: 0));
         }
+
+        [Fact(DisplayName = "FormatWizardStatusBarText uses complete counts when total is known")]
+        public void FormatWizardStatusBarText_WithTotal_UsesCompletePhrasing()
+        {
+            Assert.Equal(
+                "Downloads: 2/4 complete",
+                DownloadIndicatorUiHelper.FormatWizardStatusBarText(downloadInProgress: true, completedDownloads: 2, totalDownloads: 4));
+        }
+
+        [Fact(DisplayName = "FormatWizardStatusBarText uses running and ready fallbacks without total")]
+        public void FormatWizardStatusBarText_WithoutTotal_UsesFallbacks()
+        {
+            Assert.Equal(
+                "Downloads running…",
+                DownloadIndicatorUiHelper.FormatWizardStatusBarText(downloadInProgress: true, completedDownloads: 0, totalDownloads: 0));
+            Assert.Equal(
+                "Downloads ready",
+                DownloadIndicatorUiHelper.FormatWizardStatusBarText(downloadInProgress: false, completedDownloads: 0, totalDownloads: 0));
+        }
+
+        [Fact(DisplayName = "FormatWizardStatusBarIcon reflects download state")]
+        public void FormatWizardStatusBarIcon_ReflectsState()
+        {
+            Assert.Equal("⬇️", DownloadIndicatorUiHelper.FormatWizardStatusBarIcon(true));
+            Assert.Equal("✅", DownloadIndicatorUiHelper.FormatWizardStatusBarIcon(false));
+        }
+
+        [Fact(DisplayName = "FormatRunningAnimationText appends dot cycle")]
+        public void FormatRunningAnimationText_AppendsDots()
+        {
+            Assert.Equal("Running", DownloadIndicatorUiHelper.FormatRunningAnimationText(0));
+            Assert.Equal("Running.", DownloadIndicatorUiHelper.FormatRunningAnimationText(1));
+            Assert.Equal("Running...", DownloadIndicatorUiHelper.FormatRunningAnimationText(3));
+        }
     }
 }

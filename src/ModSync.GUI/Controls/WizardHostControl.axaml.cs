@@ -631,23 +631,15 @@ namespace ModSync.Controls
 
             if (_downloadStatusBarText != null)
             {
-                if (_latestTotalDownloads > 0)
-                {
-                    _downloadStatusBarText.Text = $"Downloads: {_latestCompletedDownloads}/{_latestTotalDownloads} complete";
-                }
-                else if (_latestDownloadInProgress)
-                {
-                    _downloadStatusBarText.Text = "Downloads running…";
-                }
-                else
-                {
-                    _downloadStatusBarText.Text = "Downloads ready";
-                }
+                _downloadStatusBarText.Text = DownloadIndicatorUiHelper.FormatWizardStatusBarText(
+                    _latestDownloadInProgress,
+                    _latestCompletedDownloads,
+                    _latestTotalDownloads);
             }
 
             if (_downloadStatusBarIcon != null)
             {
-                _downloadStatusBarIcon.Text = _latestDownloadInProgress ? "⬇️" : "✅";
+                _downloadStatusBarIcon.Text = DownloadIndicatorUiHelper.FormatWizardStatusBarIcon(_latestDownloadInProgress);
             }
         }
 

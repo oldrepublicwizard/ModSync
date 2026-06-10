@@ -7345,8 +7345,7 @@ namespace ModSync
                 if (runningText != null && runningText.IsVisible)
                 {
                     _downloadAnimationDots = (_downloadAnimationDots + 1) % 4;
-                    string dots = new string('.', _downloadAnimationDots);
-                    runningText.Text = $"Running{dots}";
+                    runningText.Text = DownloadIndicatorUiHelper.FormatRunningAnimationText(_downloadAnimationDots);
                 }
             };
         }

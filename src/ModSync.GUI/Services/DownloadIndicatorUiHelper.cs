@@ -28,6 +28,22 @@ namespace ModSync.Services
             return downloadInProgress ? "Preparing downloads…" : "No downloads queued.";
         }
 
+        public static string FormatWizardStatusBarText(bool downloadInProgress, int completedDownloads, int totalDownloads)
+        {
+            if (totalDownloads > 0)
+            {
+                return $"Downloads: {completedDownloads}/{totalDownloads} complete";
+            }
+
+            return downloadInProgress ? "Downloads running…" : "Downloads ready";
+        }
+
+        public static string FormatWizardStatusBarIcon(bool downloadInProgress) =>
+            downloadInProgress ? "⬇️" : "✅";
+
+        public static string FormatRunningAnimationText(int dotCount) =>
+            $"Running{new string('.', dotCount)}";
+
         public static IBrush GetLedBrush(bool downloadActive) =>
             downloadActive
                 ? ThemeResourceHelper.DownloadLedActiveBrush
