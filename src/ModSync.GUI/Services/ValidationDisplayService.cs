@@ -47,14 +47,8 @@ namespace ModSync.Services
                 List<ModComponent> mainComponents = _getMainComponents();
                 var selectedComponents = mainComponents.Where(c => c.IsSelected).ToList();
                 _validationErrors.Clear();
-
-                foreach (ModComponent component in selectedComponents)
-                {
-                    if (!isComponentValid(component))
-                    {
-                        _validationErrors.Add(component);
-                    }
-                }
+                _validationErrors.AddRange(
+                    ValidationDisplayUiHelper.CollectInvalidSelectedComponents(selectedComponents, isComponentValid));
 
                 if (validationResultsArea is null)
                 {
@@ -68,7 +62,7 @@ namespace ModSync.Services
 
                     if (validationSummaryText != null)
                     {
-                        validationSummaryText.Text = $"✅ All {selectedComponents.Count} mods validated successfully!";
+                        validationSummaryText.Text = ValidationDisplayUiHelper.FormatAllValidSummary(selectedComponents.Count);
                     }
 
                     if (errorNavigationArea != null)
@@ -92,7 +86,9 @@ namespace ModSync.Services
                     int validCount = selectedComponents.Count - _validationErrors.Count;
                     if (validationSummaryText != null)
                     {
-                        validationSummaryText.Text = $"⚠️ {validCount}/{selectedComponents.Count} mods validated successfully";
+                        validationSummaryText.Text = ValidationDisplayUiHelper.FormatPartialValidSummary(
+                            validCount,
+                            selectedComponents.Count);
                     }
 
                     if (errorNavigationArea != null)
@@ -161,7 +157,9 @@ namespace ModSync.Services
 
                 if (errorCounterText != null)
                 {
-                    errorCounterText.Text = $"Error {_currentErrorIndex + 1} of {_validationErrors.Count}";
+                    errorCounterText.Text = ValidationDisplayUiHelper.FormatErrorCounter(
+                        _currentErrorIndex,
+                        _validationErrors.Count);
                 }
 
                 if (errorModNameText != null)
@@ -171,12 +169,14 @@ namespace ModSync.Services
 
                 if (prevErrorButton != null)
                 {
-                    prevErrorButton.IsEnabled = _currentErrorIndex > 0;
+                    prevErrorButton.IsEnabled = ValidationDisplayUiHelper.CanNavigateToPreviousError(_currentErrorIndex);
                 }
 
                 if (nextErrorButton != null)
                 {
-                    nextErrorButton.IsEnabled = _currentErrorIndex < _validationErrors.Count - 1;
+                    nextErrorButton.IsEnabled = ValidationDisplayUiHelper.CanNavigateToNextError(
+                        _currentErrorIndex,
+                        _validationErrors.Count);
                 }
 
                 (string ErrorType, string Description, bool CanAutoFix) = _validationService.GetComponentErrorDetails(currentError);
@@ -211,7 +211,7 @@ namespace ModSync.Services
             Button prevErrorButton,
             Button nextErrorButton)
         {
-            if (_currentErrorIndex > 0)
+            if (ValidationDisplayUiHelper.CanNavigateToPreviousError(_currentErrorIndex))
             {
                 _currentErrorIndex--;
                 UpdateErrorDisplay(
@@ -234,7 +234,7 @@ namespace ModSync.Services
             Button prevErrorButton,
             Button nextErrorButton)
         {
-            if (_currentErrorIndex < _validationErrors.Count - 1)
+            if (ValidationDisplayUiHelper.CanNavigateToNextError(_currentErrorIndex, _validationErrors.Count))
             {
                 _currentErrorIndex++;
                 UpdateErrorDisplay(
