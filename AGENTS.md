@@ -15,7 +15,7 @@ For broad repo tasks, start with `.github/copilot-instructions.md` for the short
 
 **Knowledgebase (canonical index):** [docs/knowledgebase/README.md](docs/knowledgebase/README.md) — agent-native audit, CLI reference, action parity, and links to runbooks/scripts.
 
-**June 2026 in-flight PRs (landing queue):** `[SYNTH]` Prefer merging CI-green landing PRs before opening duplicate slices. Suggested order: [#133](https://github.com/th3w1zard1/ModSync/pull/133) (`SettingsService` tests) → [#130](https://github.com/th3w1zard1/ModSync/pull/130) (`MenuBuilderService` wiring) → KB/routing docs PR (consolidates closed #131/#132). Superseded duplicate PRs #120–#129 are already closed. Full plan/PR tables: KB README §June 2026 arcs.
+**June 2026 in-flight PRs (landing queue):** `[SYNTH]` Prefer merging CI-green landing PRs before opening duplicate slices. Suggested order: [#133](https://github.com/th3w1zard1/ModSync/pull/133) (`SettingsService` tests) → [#130](https://github.com/th3w1zard1/ModSync/pull/130) (`MenuBuilderService` wiring) → [#134](https://github.com/th3w1zard1/ModSync/pull/134) (KB + agent routing) → [#135](https://github.com/th3w1zard1/ModSync/pull/135) (`InitializeTopMenu`, stacks #130) → [#136](https://github.com/th3w1zard1/ModSync/pull/136) (`DownloadOrchestrationService` tests, independent on `master`). Superseded duplicate PRs #120–#129 and closed #131/#132 are already closed. Full plan/PR tables: KB README §June 2026 arcs.
 
 For **install wizard `ValidatePage`** behavior (stage cards, copy report, go-to-first-issue), read [docs/knowledgebase/gui-validation-surfaces.md](docs/knowledgebase/gui-validation-surfaces.md) before editing validation UI.
 

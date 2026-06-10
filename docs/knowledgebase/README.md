@@ -104,8 +104,11 @@ Use these when citing findings in plans, PRs, or audits:
 |------|-----|--------|
 | 078 / 085 | [#133](https://github.com/th3w1zard1/ModSync/pull/133) | `SettingsService` picker hardening + edge cases |
 | 072 / 082 | [#130](https://github.com/th3w1zard1/ModSync/pull/130) | `MenuBuilderService` wiring |
+| 086 | [#134](https://github.com/th3w1zard1/ModSync/pull/134) | KB closure + agent routing (consolidates closed #131/#132) |
+| 087 | [#135](https://github.com/th3w1zard1/ModSync/pull/135) | `InitializeTopMenu` → `MenuBuilderService` (stacks #130) |
+| 088 | [#136](https://github.com/th3w1zard1/ModSync/pull/136) | `DownloadOrchestrationService` headless tests (`master`) |
 
-Superseded duplicate PRs [#120](https://github.com/th3w1zard1/ModSync/pull/120)–[#129](https://github.com/th3w1zard1/ModSync/pull/129) are closed. Suggested merge order: #133 → #130 → KB/routing docs PR.
+Superseded duplicate PRs [#120](https://github.com/th3w1zard1/ModSync/pull/120)–[#129](https://github.com/th3w1zard1/ModSync/pull/129) and closed #131/#132 are closed. Suggested merge order: #133 → #130 → #134 → #135; #136 can land on `master` independently.
 
 KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-architecture-deferred.md](gui-architecture-deferred.md).
 
