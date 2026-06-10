@@ -98,12 +98,14 @@ Use these when citing findings in plans, PRs, or audits:
 | 075 | [#123](https://github.com/th3w1zard1/ModSync/pull/123) | `SettingsService` directory pickers |
 | 077 | [#125](https://github.com/th3w1zard1/ModSync/pull/125) | Headless `SettingsService` picker tests |
 
-**Open PRs (tests + menus + KB):**
+**Open PRs (tests + menus):**
 
 | Plan | PR | Topic |
 |------|-----|--------|
-| 078 | [#126](https://github.com/th3w1zard1/ModSync/pull/126) | Harden `SettingsService` picker tests |
-| 072 / 079 | [#127](https://github.com/th3w1zard1/ModSync/pull/127) | `MenuBuilderService` wiring (supersedes [#120](https://github.com/th3w1zard1/ModSync/pull/120)) |
+| 078 / 081 | [#129](https://github.com/th3w1zard1/ModSync/pull/129) | Harden `SettingsService` picker tests (supersedes [#126](https://github.com/th3w1zard1/ModSync/pull/126)) |
+| 072 / 082 | [#130](https://github.com/th3w1zard1/ModSync/pull/130) | `MenuBuilderService` wiring (supersedes [#120](https://github.com/th3w1zard1/ModSync/pull/120), [#127](https://github.com/th3w1zard1/ModSync/pull/127)) |
+
+Close superseded open PRs [#124](https://github.com/th3w1zard1/ModSync/pull/124), [#126](https://github.com/th3w1zard1/ModSync/pull/126), [#127](https://github.com/th3w1zard1/ModSync/pull/127), [#128](https://github.com/th3w1zard1/ModSync/pull/128) after #129–#130 merge.
 
 KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-architecture-deferred.md](gui-architecture-deferred.md).
 
