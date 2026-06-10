@@ -80,6 +80,33 @@ Use these when citing findings in plans, PRs, or audits:
 
 - [docs/plans/](../plans/) — dated plans with requirements and status frontmatter
 
+#### June 2026 arcs (rebrand closure + MainWindow extraction)
+
+`[SYNTH]` Merged to `master` through PR #125 unless noted. Open PRs are CI-green slices waiting on merge — check `gh pr list` before assuming they landed.
+
+**Merged on `master` (rebrand + legacy compat + extraction):**
+
+| Plan | PR | Topic |
+|------|-----|--------|
+| 067 | [#115](https://github.com/th3w1zard1/ModSync/pull/115) | Rebrand KB + plan 065 footnotes |
+| 068 | [#116](https://github.com/th3w1zard1/ModSync/pull/116) | Telemetry setup guides client paths |
+| 069 | [#117](https://github.com/th3w1zard1/ModSync/pull/117) | `ModSync_Master.md` client strings |
+| 070 | [#118](https://github.com/th3w1zard1/ModSync/pull/118) | Legacy settings path tests |
+| 071 | [#119](https://github.com/th3w1zard1/ModSync/pull/119) | Legacy compat test completion |
+| 073 | [#121](https://github.com/th3w1zard1/ModSync/pull/121) | `GITHUB_SECRET_SETUP.md` client env |
+| 074 | [#122](https://github.com/th3w1zard1/ModSync/pull/122) | Remove dead service instantiations |
+| 075 | [#123](https://github.com/th3w1zard1/ModSync/pull/123) | `SettingsService` directory pickers |
+| 077 | [#125](https://github.com/th3w1zard1/ModSync/pull/125) | Headless `SettingsService` picker tests |
+
+**Open PRs (tests + menus + KB):**
+
+| Plan | PR | Topic |
+|------|-----|--------|
+| 078 | [#126](https://github.com/th3w1zard1/ModSync/pull/126) | Harden `SettingsService` picker tests |
+| 072 / 079 | [#127](https://github.com/th3w1zard1/ModSync/pull/127) | `MenuBuilderService` wiring (supersedes [#120](https://github.com/th3w1zard1/ModSync/pull/120)) |
+
+KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-architecture-deferred.md](gui-architecture-deferred.md).
+
 ### Always-on rules (do not duplicate here)
 
 - `.cursorrules` — path sandboxing, VFS, test naming, Avalonia gotchas
