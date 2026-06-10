@@ -102,10 +102,10 @@ Use these when citing findings in plans, PRs, or audits:
 
 | Plan | PR | Topic |
 |------|-----|--------|
-| 078 / 081 | [#129](https://github.com/th3w1zard1/ModSync/pull/129) | Harden `SettingsService` picker tests (supersedes [#126](https://github.com/th3w1zard1/ModSync/pull/126)) |
-| 072 / 082 | [#130](https://github.com/th3w1zard1/ModSync/pull/130) | `MenuBuilderService` wiring (supersedes [#120](https://github.com/th3w1zard1/ModSync/pull/120), [#127](https://github.com/th3w1zard1/ModSync/pull/127)) |
+| 078 / 085 | [#133](https://github.com/th3w1zard1/ModSync/pull/133) | `SettingsService` picker hardening + edge cases |
+| 072 / 082 | [#130](https://github.com/th3w1zard1/ModSync/pull/130) | `MenuBuilderService` wiring |
 
-Close superseded open PRs [#124](https://github.com/th3w1zard1/ModSync/pull/124), [#126](https://github.com/th3w1zard1/ModSync/pull/126), [#127](https://github.com/th3w1zard1/ModSync/pull/127), [#128](https://github.com/th3w1zard1/ModSync/pull/128) after #129–#130 merge.
+Superseded duplicate PRs [#120](https://github.com/th3w1zard1/ModSync/pull/120)–[#129](https://github.com/th3w1zard1/ModSync/pull/129) are closed. Suggested merge order: #133 → #130 → KB/routing docs PR.
 
 KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-architecture-deferred.md](gui-architecture-deferred.md).
 
