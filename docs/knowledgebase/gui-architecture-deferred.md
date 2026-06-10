@@ -62,7 +62,7 @@ Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface refere
 | Directory picker init/sync → `SettingsService` | Done | plan `075`, PR pending |
 | Mod context menu + global flyout → `MenuBuilderService` | Pending | plan `072`, PR #120 |
 
-**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`, complements PR #123 picker wiring).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`, complements PR #123 picker wiring); `--filter ValidationServiceTests` (plan `109`).
 
 **Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/ModSync.GUI/Services/`.
 
