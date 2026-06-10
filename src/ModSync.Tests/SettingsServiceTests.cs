@@ -158,6 +158,73 @@ namespace ModSync.Tests
             }
         }
 
+        [AvaloniaFact(DisplayName = "UpdateDirectoryPickersFromSettings skips empty path fields")]
+        public async Task UpdateDirectoryPickersFromSettings_EmptyPaths_LeavesPickersUnchanged()
+        {
+            string modPath = CreateTempDirectory();
+            string kotorPath = CreateTempDirectory();
+
+            try
+            {
+                PickerHarness harness = await CreatePickerHarnessAsync();
+                try
+                {
+                    await RunOnUiThreadAsync(() =>
+                    {
+                        harness.ModPicker.SetCurrentPath(modPath, fireEvent: false);
+                        harness.KotorPicker.SetCurrentPath(kotorPath, fireEvent: false);
+                    });
+                    await PumpAsync();
+
+                    await RunOnUiThreadAsync(() =>
+                        SettingsService.UpdateDirectoryPickersFromSettings(new AppSettings(), harness.FindControl));
+                    await PumpAsync();
+
+                    AssertPickerShowsPath(harness.ModPicker, modPath);
+                    AssertPickerShowsPath(harness.KotorPicker, kotorPath);
+                }
+                finally
+                {
+                    await CloseWindowAsync(harness.Window);
+                }
+            }
+            finally
+            {
+                TryDeleteDirectory(modPath);
+                TryDeleteDirectory(kotorPath);
+            }
+        }
+
+        [AvaloniaFact(DisplayName = "UpdateDirectoryPickersFromSettings tolerates null findControl results")]
+        public async Task UpdateDirectoryPickersFromSettings_NullPickers_DoesNotThrow()
+        {
+            PickerHarness harness = await CreatePickerHarnessAsync();
+            try
+            {
+                var settings = new AppSettings
+                {
+                    SourcePath = CreateTempDirectory(),
+                    DestinationPath = CreateTempDirectory(),
+                };
+
+                try
+                {
+                    await RunOnUiThreadAsync(() =>
+                        SettingsService.UpdateDirectoryPickersFromSettings(settings, _ => null));
+                    await PumpAsync();
+                }
+                finally
+                {
+                    TryDeleteDirectory(settings.SourcePath);
+                    TryDeleteDirectory(settings.DestinationPath);
+                }
+            }
+            finally
+            {
+                await CloseWindowAsync(harness.Window);
+            }
+        }
+
         private static void AssertPickerShowsPath(DirectoryPickerControl picker, string expectedPath)
         {
             Assert.Equal(expectedPath, picker.GetCurrentPath());
