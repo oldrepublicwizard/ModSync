@@ -15,6 +15,8 @@ For broad repo tasks, start with `.github/copilot-instructions.md` for the short
 
 **Knowledgebase (canonical index):** [docs/knowledgebase/README.md](docs/knowledgebase/README.md) — agent-native audit, CLI reference, action parity, and links to runbooks/scripts.
 
+**June 2026 in-flight PRs (landing queue):** `[SYNTH]` Prefer merging CI-green landing PRs before opening duplicate slices. Suggested order: [#129](https://github.com/th3w1zard1/ModSync/pull/129) (SettingsService test hardening) → [#130](https://github.com/th3w1zard1/ModSync/pull/130) (MenuBuilderService wiring) → [#131](https://github.com/th3w1zard1/ModSync/pull/131) (KB arc closure). Superseded open PRs to close after landing merges: [#120](https://github.com/th3w1zard1/ModSync/pull/120), [#124](https://github.com/th3w1zard1/ModSync/pull/124), [#126](https://github.com/th3w1zard1/ModSync/pull/126), [#127](https://github.com/th3w1zard1/ModSync/pull/127), [#128](https://github.com/th3w1zard1/ModSync/pull/128). Full plan/PR tables: KB README §June 2026 arcs (lands in #131).
+
 For **install wizard `ValidatePage`** behavior (stage cards, copy report, go-to-first-issue), read [docs/knowledgebase/gui-validation-surfaces.md](docs/knowledgebase/gui-validation-surfaces.md) before editing validation UI.
 
 **Wizard validation regression tests:** `./scripts/agents/test_pr110_validation.sh`
