@@ -586,16 +586,12 @@ namespace ModSync.Controls
 
             if (_downloadLedIndicator != null)
             {
-                _downloadLedIndicator.Fill = _latestDownloadInProgress
-                    ? ThemeResourceHelper.DownloadLedActiveBrush
-                    : ThemeResourceHelper.DownloadLedInactiveBrush;
+                _downloadLedIndicator.Fill = DownloadIndicatorUiHelper.GetLedBrush(_latestDownloadInProgress);
             }
 
             if (_downloadStatusText != null)
             {
-                _downloadStatusText.Text = _latestDownloadInProgress
-                    ? "Downloads in progress"
-                    : "Downloads idle";
+                _downloadStatusText.Text = DownloadIndicatorUiHelper.FormatWizardSidebarStatusText(_latestDownloadInProgress);
             }
 
             if (_downloadRunningText != null)
@@ -605,18 +601,11 @@ namespace ModSync.Controls
 
             if (_downloadProgressText != null)
             {
-                if (_latestTotalDownloads > 0)
-                {
-                    _downloadProgressText.IsVisible = true;
-                    _downloadProgressText.Text = $"Downloaded: {_latestCompletedDownloads} / {_latestTotalDownloads} mods";
-                }
-                else
-                {
-                    _downloadProgressText.IsVisible = true;
-                    _downloadProgressText.Text = _latestDownloadInProgress
-                        ? "Preparing downloads…"
-                        : "No downloads queued.";
-                }
+                _downloadProgressText.IsVisible = true;
+                _downloadProgressText.Text = DownloadIndicatorUiHelper.FormatWizardSidebarProgressText(
+                    _latestDownloadInProgress,
+                    _latestCompletedDownloads,
+                    _latestTotalDownloads);
             }
 
             if (_downloadStopButton != null)

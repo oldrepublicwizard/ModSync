@@ -7377,33 +7377,14 @@ namespace ModSync
 
                 bool isDownloadInProgress = _downloadOrchestrationService.IsDownloadInProgress;
 
-                if (ledIndicator != null)
-                {
-                    ledIndicator.Fill = isDownloadInProgress
-                        ? ThemeResourceHelper.DownloadLedActiveBrush
-                        : ThemeResourceHelper.DownloadLedInactiveBrush;
-                }
-
-                if (runningText != null)
-                {
-                    runningText.IsVisible = isDownloadInProgress;
-                }
-
-                if (stopButton != null)
-                {
-                    stopButton.IsVisible = isDownloadInProgress;
-                }
-
-                if (progressText != null)
-                {
-                    progressText.IsVisible = isDownloadInProgress;
-                    if (isDownloadInProgress)
-                    {
-                        int completed = _downloadOrchestrationService.CompletedComponents;
-                        int total = _downloadOrchestrationService.TotalComponentsToDownload;
-                        progressText.Text = $"Downloaded: {completed} / {total} mods";
-                    }
-                }
+                DownloadIndicatorUiHelper.ApplyGettingStartedTabIndicators(
+                    ledIndicator,
+                    runningText,
+                    stopButton,
+                    progressText,
+                    isDownloadInProgress,
+                    _downloadOrchestrationService.CompletedComponents,
+                    _downloadOrchestrationService.TotalComponentsToDownload);
 
                 if (isDownloadInProgress)
                 {
