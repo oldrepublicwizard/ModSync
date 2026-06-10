@@ -64,8 +64,9 @@ Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface refere
 | Mod context menu + global actions flyout → `MenuBuilderService` | Pending merge | plan `072` / `082`, PR [#130](https://github.com/th3w1zard1/ModSync/pull/130) |
 | Download indicator labels (Getting Started + wizard) → `DownloadIndicatorUiHelper` | Pending merge | plans `090`–`091`, PR [#137](https://github.com/th3w1zard1/ModSync/pull/137) |
 | Getting Started validation summaries → `ValidationDisplayUiHelper` | Pending merge | plan `094`, PR [#139](https://github.com/th3w1zard1/ModSync/pull/139) |
+| Getting Started step progress → `StepProgressUiHelper` | Pending merge | plan `096`, branch `refactor/step-progress-ui-helper` (supersedes #138) |
 
-**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plans `077`–`078`); `--filter MenuBuilderService` (plan `072`); `--filter DownloadOrchestrationService` (plan `088`); `--filter DownloadIndicatorUiHelper` (plans `090`–`091`); `--filter StepNavigationService` (plan `093`); `--filter ValidationDisplayUiHelper` (plan `094`).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plans `077`–`078`); `--filter MenuBuilderService` (plan `072`); `--filter DownloadOrchestrationService` (plan `088`); `--filter DownloadIndicatorUiHelper` (plans `090`–`091`); `--filter StepProgressUiHelper` (plan `096`); `--filter StepNavigationService` (plan `093`/`096`); `--filter ValidationDisplayUiHelper` (plan `094`).
 
 **Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/ModSync.GUI/Services/`. See [knowledgebase README](README.md) §June 2026 arcs for merge status.
 

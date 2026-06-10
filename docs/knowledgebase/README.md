@@ -108,10 +108,11 @@ Use these when citing findings in plans, PRs, or audits:
 | 087 | [#135](https://github.com/th3w1zard1/ModSync/pull/135) | `InitializeTopMenu` → `MenuBuilderService` (stacks #130) |
 | 088 | [#136](https://github.com/th3w1zard1/ModSync/pull/136) | `DownloadOrchestrationService` headless tests (`master`) |
 | 090 / 091 | [#137](https://github.com/th3w1zard1/ModSync/pull/137) | `DownloadIndicatorUiHelper` shared download labels (`master`) |
-| 093 | [#138](https://github.com/th3w1zard1/ModSync/pull/138) | `StepNavigationService` step progression tests (`master`) |
+| 093 | [#138](https://github.com/th3w1zard1/ModSync/pull/138) (superseded) | `StepNavigationService` tests only — use plan `096` branch |
 | 094 | [#139](https://github.com/th3w1zard1/ModSync/pull/139) | `ValidationDisplayUiHelper` Getting Started summaries (`master`) |
+| 096 | [`refactor/step-progress-ui-helper`](https://github.com/th3w1zard1/ModSync/compare/master...refactor/step-progress-ui-helper) | `StepProgressUiHelper` + navigation tests (supersedes #138) |
 
-Superseded duplicate PRs [#120](https://github.com/th3w1zard1/ModSync/pull/120)–[#129](https://github.com/th3w1zard1/ModSync/pull/129) and closed #131/#132 are closed. Suggested merge order: #133 → #130 → #134 → #135; #136–#139 can land on `master` independently.
+Superseded duplicate PRs [#120](https://github.com/th3w1zard1/ModSync/pull/120)–[#129](https://github.com/th3w1zard1/ModSync/pull/129), closed #131/#132, and #138 (by plan `096`) are closed or superseded. Suggested merge order: #133 → #130 → #134 → #135; #136–#139 and plan `096` branch can land on `master` independently.
 
 KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-architecture-deferred.md](gui-architecture-deferred.md).
 
