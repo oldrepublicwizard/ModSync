@@ -55,12 +55,13 @@ Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface refere
 
 ### MainWindow god object
 
-`[REPO]` `MainWindow.axaml.cs` still coordinates editor, downloads, validation orchestration UI, drag-drop, top-level File/Tools menus, and Getting Started. Further extraction targets: download orchestration, editor hosting, `InitializeTopMenu` — validation **pipeline** work now lives in `LegacyValidationRunner` + `ValidationPipelineDialogMapper`.
+`[REPO]` `MainWindow.axaml.cs` still coordinates editor, downloads, validation orchestration UI, drag-drop, and Getting Started. Further extraction targets: download orchestration, editor hosting — validation **pipeline** work now lives in `LegacyValidationRunner` + `ValidationPipelineDialogMapper`; top-level File/Tools/Help menus live in `MenuBuilderService.BuildTopMenu` (plan `087`).
 
 | Item | Status | Reference |
 |------|--------|-----------|
 | Directory picker init/sync → `SettingsService` | Done | plan `075`, PR #123 |
-| Mod context menu + global actions flyout → `MenuBuilderService` | Done | plan `072`, PR pending |
+| Mod context menu + global actions flyout → `MenuBuilderService` | Done | plan `072`, PR [#130](https://github.com/th3w1zard1/ModSync/pull/130) |
+| Top-level File/Tools/Help menus → `MenuBuilderService.BuildTopMenu` | Pending merge | plan `087`, stacks #130 |
 
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`).
 

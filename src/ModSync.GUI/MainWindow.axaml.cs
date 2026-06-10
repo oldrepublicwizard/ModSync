@@ -116,6 +116,7 @@ namespace ModSync
         private readonly StepNavigationService _stepNavigationService;
         private readonly SettingsService _settingsService;
         private readonly MenuBuilderService _menuBuilderService;
+        private TopMenuBuildResult _topMenuBuildResult;
 
         private readonly TelemetryService _telemetryService;
 
@@ -370,6 +371,7 @@ namespace ModSync
 
                 // Now initialize UI controls (services are ready)
                 Task _task = InitializeControls();
+                _menuBuilderService = new MenuBuilderService(ModManagementService, this);
                 InitializeTopMenu();
                 UpdateMenuVisibility();
                 InitializeDirectoryPickers();
@@ -379,7 +381,6 @@ namespace ModSync
                 _componentSelectionService = new ComponentSelectionService(MainConfigInstance);
                 _guiPathService = new GuiPathService(MainConfigInstance, _componentSelectionService);
                 _dialogService = new DialogService(this);
-                _menuBuilderService = new MenuBuilderService(ModManagementService, this);
                 _dragDropService = new DragDropService(this, () => MainConfig.AllComponents, () => ProcessComponentsAsync(MainConfig.AllComponents));
                 _fileLoadingService = new Services.FileLoadingService(MainConfigInstance, this);
                 _componentEditorService = new Services.ComponentEditorService(MainConfigInstance, this);
@@ -943,348 +944,37 @@ namespace ModSync
             }
         }
 
+
         private void InitializeTopMenu()
         {
-            var menu = new Menu();
-            var fileMenu = new MenuItem { Header = "File" };
+            _topMenuBuildResult = _menuBuilderService.BuildTopMenu(new TopMenuCallbacks
+            {
+                EditorMode = EditorMode,
+                ToggleEditorMode = () => EditorMode = !EditorMode,
+                EditorModePropertySource = this,
+                GetEditorMode = () => EditorMode,
+                OnOpenFile = () => LoadFile_Click(new object(), new RoutedEventArgs()),
+                OnCloseToml = () => CloseTOMLFile_Click(new object(), new RoutedEventArgs()),
+                OnSave = () => SaveModFileAs_ClickWithFormat(new object(), new RoutedEventArgs()),
+                OnExit = () => CloseButton_Click(new object(), new RoutedEventArgs()),
+                OnFixIosCaseSensitivity = () => FixIosCaseSensitivityClick(new object(), new RoutedEventArgs()),
+                OnFixPathPermissions = () => FixPathPermissionsClick(new object(), new RoutedEventArgs()),
+                OnOpenCheckpoints = () => OpenCheckpointManagement_Click(new object(), new RoutedEventArgs()),
+                OnRunHolopatcher = () => RunHolopatcherButton_Click(new object(), new RoutedEventArgs()),
+                OnOpenSettings = () => OpenSettings_Click(new object(), new RoutedEventArgs()),
+                OnOpenOutputLog = () => OpenOutputWindow_Click(new object(), new RoutedEventArgs()),
+                OnResolveDuplicateFilesAndFolders = () => ResolveDuplicateFilesAndFolders(new object(), new RoutedEventArgs()),
+            });
 
-            var saveMenuItem = new MenuItem
-            {
-                Header = "Save",
-                IsVisible = EditorMode,
-                Command = ReactiveCommand.Create(() => SaveModFileAs_ClickWithFormat(new object(), new RoutedEventArgs())),
-            };
-
-            var fileItems = new List<MenuItem>
-        {
-            new MenuItem
-            {
-                Header = "Open File",
-                Command = ReactiveCommand.Create( () => LoadFile_Click(new object(), new RoutedEventArgs()) ),
-            },
-            new MenuItem
-            {
-                Header = "Close",
-                Command = ReactiveCommand.Create( () => CloseTOMLFile_Click(new object(), new RoutedEventArgs()) ),
-                IsVisible = EditorMode,
-            },
-            saveMenuItem,
-            new MenuItem
-            {
-                Header = "Exit",
-                Command = ReactiveCommand.Create( () => CloseButton_Click(new object(), new RoutedEventArgs()) ),
-            },
-        };
-            fileMenu.ItemsSource = fileItems;
-
-            var toolsMenu = new MenuItem { Header = "Tools" };
-
-            // Editor Mode checkbox menu item
-            var editorModeMenuItem = new MenuItem
-            {
-                Header = EditorMode ? "✓ Editor Mode" : "Editor Mode",
-            };
-            editorModeMenuItem.Click += (s, e) =>
-            {
-                EditorMode = !EditorMode;
-            };
-
-            // Subscribe to EditorMode changes to keep menu item in sync
-            PropertyChanged += (s, e) =>
-            {
-                if (string.Equals(e.PropertyName, nameof(EditorMode), StringComparison.Ordinal))
-                {
-                    editorModeMenuItem.Header = EditorMode ? "✓ Editor Mode" : "Editor Mode";
-                }
-            };
-
-            var toolItems = new List<MenuItem>
-            {
-                editorModeMenuItem,
-                new MenuItem { Header = "-" }, // Separator
-                new MenuItem
-                {
-                    Header = "Fix iOS case sensitivity.",
-                    Command = ReactiveCommand.Create( () => FixIosCaseSensitivityClick(new object(), new RoutedEventArgs()) ),
-                },
-                new MenuItem
-                {
-                    Header = "Fix file/folder permissions.",
-                    Command = ReactiveCommand.Create( () => FixPathPermissionsClick(new object(), new RoutedEventArgs()) ),
-                },
-                new MenuItem
-                {
-                    Header = "Manage Checkpoints",
-                    Command = ReactiveCommand.Create( () => OpenCheckpointManagement_Click(new object(), new RoutedEventArgs()) ),
-                },
-                new MenuItem
-                {
-                    Header = "Run HoloPatcher",
-                    Command = ReactiveCommand.Create( () => RunHolopatcherButton_Click(new object(), new RoutedEventArgs()) ),
-                },
-                new MenuItem
-                {
-                    Header = "Settings",
-                    Command = ReactiveCommand.Create( () => OpenSettings_Click(new object(), new RoutedEventArgs()) ),
-                },
-                new MenuItem
-                {
-                    Header = "Show Output Log",
-                    Command = ReactiveCommand.Create( () => OpenOutputWindow_Click(new object(), new RoutedEventArgs()) ),
-                },
-            };
-            ToolTip.SetTip(
-                editorModeMenuItem,
-                value:
-                "Toggle to enable Editor Mode: exposes Raw/Editor tabs, editing buttons, and creation tools. When off, the UI is simplified for end users installing mods."
-            );
-            ToolTip.SetTip(
-                toolItems[2],
-                value:
-                "Lowercase all files/folders recursively at the given path. Necessary for iOS installs."
-            );
-            ToolTip.SetTip(
-                toolItems[3],
-                value:
-                "Fixes various file/folder permissions. On Unix, this will also find case-insensitive duplicate file/folder names."
-            );
-            if (UtilityHelper.GetOperatingSystem() != OSPlatform.Windows)
-            {
-                var filePermFixTool = new MenuItem
-                {
-                    Header = "Fix file and folder permissions",
-                    Command = ReactiveCommand.Create(() => ResolveDuplicateFilesAndFolders(new object(), new RoutedEventArgs())),
-                };
-                ToolTip.SetTip(
-                    filePermFixTool,
-                    "(Linux/Mac only) This will acquire a list of any case-insensitive duplicates in the mod workspace or"
-                    + " the kotor directory, including subfolders, and resolve them."
-                );
-                toolItems.Add(filePermFixTool);
-            }
-            toolsMenu.ItemsSource = toolItems;
-
-            var helpMenu = new MenuItem { Header = "Help" };
-            var deadlystreamMenu = new MenuItem
-            {
-                Header = "DeadlyStream",
-                ItemsSource = new[]
-                {
-                    new MenuItem
-                    {
-                        Header = "Discord",
-                        Command = ReactiveCommand.Create(() => UrlUtilities.OpenUrl("https://discord.gg/nDkHXfc36s")),
-                    },
-                    new MenuItem
-                    {
-                        Header = "Website",
-                        Command = ReactiveCommand.Create(() => UrlUtilities.OpenUrl("https://deadlystream.com")),
-                    },
-                },
-            };
-            var neocitiesMenu = new MenuItem
-            {
-                Header = "KOTOR Community Portal",
-                ItemsSource = new[]
-                {
-                    new MenuItem
-                    {
-                        Header = "Discord",
-                        Command = ReactiveCommand.Create(() => UrlUtilities.OpenUrl("https://discord.com/invite/kotor")),
-                    },
-                    new MenuItem
-                    {
-                        Header = "Website",
-                        Command = ReactiveCommand.Create(() => UrlUtilities.OpenUrl("https://kotor.neocities.org")),
-                    },
-                },
-            };
-            var pcgamingwikiMenu = new MenuItem
-            {
-                Header = "PCGamingWiki",
-                ItemsSource = new[]
-                {
-                    new MenuItem
-                    {
-                        Header = "KOTOR 1",
-                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl( "https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic" ) ),
-                    },
-                    new MenuItem
-                    {
-                        Header = "KOTOR 2: TSL",
-                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl( "https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords" ) ),
-                    },
-                },
-            };
-            helpMenu.ItemsSource = new[] { deadlystreamMenu, neocitiesMenu, pcgamingwikiMenu };
-
-            var engineRewritesMenu = new MenuItem
-            {
-                Header = "Open-Source Odyssey/Aurora Engines",
-                ItemsSource = new[]
-                {
-                    new MenuItem
-                    {
-                        Header = "KotOR.js",
-                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://github.com/KobaltBlu/KotOR.js") ),
-                    },
-                    new MenuItem
-                    {
-                        Header = "NorthernLights",
-                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://github.com/lachjames/NorthernLights") ),
-                    },
-                    new MenuItem
-                    {
-                        Header = "reone",
-                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://github.com/seedhartha/reone") ),
-                    },
-                },
-            };
-            var otherProjectsMenu = new MenuItem
-            {
-                Header = "Other Projects",
-                ItemsSource = new[]
-                {
-                    new MenuItem
-                    {
-                        Header = "PyKotor Library",
-                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://github.com/NickHugi/PyKotor") ),
-                        ItemsSource = new []
-                        {
-                            new MenuItem
-                            {
-                                Header = "HoloPatcher",
-                                ItemsSource = new []
-                                {
-                                    new MenuItem
-                                    {
-                                        Header = "DeadlyStream",
-                                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://deadlystream.com/files/file/2243-holopatcher") ),
-                                    },
-                                    new MenuItem
-                                    {
-                                        Header = "GitHub",
-                                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://github.com/NickHugi/PyKotor") ),
-                                    },
-                                },
-                            },
-                            new MenuItem
-                            {
-                                Header = "Holocron Toolset",
-                                ItemsSource = new []
-                                {
-                                    new MenuItem
-                                    {
-                                        Header = "GitHub",
-                                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://github.com/NickHugi/PyKotor/blob/master/Tools/HolocronToolset") ),
-                                    },
-                                    new MenuItem
-                                    {
-                                        Header = "DeadlyStream",
-                                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://deadlystream.com/files/file/1982-holocron-toolset") ),
-                                    },
-                                    new MenuItem
-                                    {
-                                        Header = "Discord",
-                                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://discord.gg/hfAqtkVEzQ") ),
-                                    },
-                                },
-                            },
-                            new MenuItem
-                            {
-                                Header = "Auto-Translate / Font Creator",
-                                Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://deadlystream.com/files/file/2375-kotor-autotranslate-tool") ),
-                            },
-                            new MenuItem
-                            {
-                                Header = "KotorDiff",
-                                Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://deadlystream.com/files/file/2364-kotordiff") ),
-                            },
-                        },
-                    },
-                    new MenuItem
-                    {
-                        Header = "LIP Composer / reone toolkit",
-                        ItemsSource = new []
-                        {
-                            new MenuItem
-                            {
-                                Header = "DeadlyStream",
-                                Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://deadlystream.com/files/file/1862-reone-toolkit") ),
-                            },
-                            new MenuItem
-                            {
-                                Header = "GitHub",
-                                Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://github.com/seedhartha/reone/wiki/Tooling") ),
-                            },
-                        },
-                    },
-                    engineRewritesMenu,
-                },
-            };
-            var aboutMenu = new MenuItem
-            {
-                Header = "About",
-                ItemsSource = new[]
-                {
-                    new MenuItem
-                    {
-                        Header = "The ModSync Project",
-                        ItemsSource = new []
-                        {
-                            new MenuItem
-                            {
-                                Header = "DeadlyStream",
-                                Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://deadlystream.com/files/file/2317-kotormodsync/") ),
-                            },
-                            new MenuItem
-                            {
-                                Header = "GitHub",
-                                Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://github.com/th3w1zard1/ModSync") ),
-                            },
-                        },
-                    },
-                    new MenuItem
-                    {
-                        Header = "HoloPatcher",
-                        ItemsSource = new []
-                        {
-                            new MenuItem
-                            {
-                                Header = "DeadlyStream",
-                                Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://deadlystream.com/files/file/2243-holopatcher") ),
-                            },
-                            new MenuItem
-                            {
-                                Header = "GitHub",
-                                Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl("https://github.com/NickHugi/PyKotor") ),
-                            },
-                        },
-                    },
-                },
-            };
-            var moreMenu = new MenuItem
-            {
-                Header = "More",
-                ItemsSource = new[]
-                {
-                    otherProjectsMenu,
-                    new MenuItem
-                    {
-                        Header = "Modding Tools",
-                        Command = ReactiveCommand.Create( () => UrlUtilities.OpenUrl(url: "https://deadlystream.github.io/ds-kotor-modding-wiki/en/#!pages/tools_overview.md") ),
-                    },
-                },
-            };
-            menu.ItemsSource = new[] { fileMenu, toolsMenu, helpMenu, aboutMenu, moreMenu };
             Menu topMenu = this.FindControl<Menu>(name: "TopMenu");
             if (topMenu is null)
             {
                 return;
             }
 
-            topMenu.ItemsSource = menu.Items;
+            topMenu.ItemsSource = _topMenuBuildResult.RootMenu.Items;
         }
+
 
         private void UpdateMenuVisibility()
         {
@@ -1293,36 +983,15 @@ namespace ModSync
                 Dispatcher.UIThread.Post(UpdateMenuVisibility, DispatcherPriority.Normal);
                 return;
             }
-            Menu topMenu = this.FindControl<Menu>(name: "TopMenu");
-            if (topMenu is null)
+
+            if (_topMenuBuildResult is null)
             {
                 return;
             }
 
-            if (topMenu.Items[0] is MenuItem fileMenu && fileMenu.Items is IList fileItems)
-            {
-
-                if (fileItems.Count > 1 && fileItems[1] is MenuItem closeItem)
-                {
-                    closeItem.IsVisible = EditorMode;
-                }
-
-                if (fileItems.Count > 2 && fileItems[2] is MenuItem saveItem)
-                {
-                    saveItem.IsVisible = EditorMode;
-                }
-            }
-
-            if (
-                topMenu.Items[1] is MenuItem toolsMenu
-                && toolsMenu.Items is IList toolItems
-                && toolItems.Count > 0
-                && toolItems[0] is MenuItem docsItem
-            )
-            {
-                docsItem.IsVisible = EditorMode;
-            }
+            _menuBuilderService.UpdateTopMenuVisibility(_topMenuBuildResult, EditorMode);
         }
+
 
         private void RefreshSingleComponentVisuals(ModComponent component)
         {
