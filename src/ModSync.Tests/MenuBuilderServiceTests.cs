@@ -127,6 +127,91 @@ namespace ModSync.Tests
             }
         }
 
+        [AvaloniaFact(DisplayName = "BuildTopMenu exposes File Tools Help About and More root menus")]
+        public void BuildTopMenu_IncludesExpectedRootMenus()
+        {
+            MenuBuilderService service = CreateService(out Window window);
+            bool editorMode = false;
+
+            try
+            {
+                TopMenuBuildResult result = service.BuildTopMenu(new TopMenuCallbacks
+                {
+                    EditorMode = editorMode,
+                    ToggleEditorMode = () => editorMode = !editorMode,
+                    EditorModePropertySource = window,
+                    GetEditorMode = () => editorMode,
+                    OnOpenFile = () => { },
+                    OnCloseToml = () => { },
+                    OnSave = () => { },
+                    OnExit = () => { },
+                    OnFixIosCaseSensitivity = () => { },
+                    OnFixPathPermissions = () => { },
+                    OnOpenCheckpoints = () => { },
+                    OnRunHolopatcher = () => { },
+                    OnOpenSettings = () => { },
+                    OnOpenOutputLog = () => { },
+                    OnResolveDuplicateFilesAndFolders = () => { },
+                });
+
+                List<string> rootHeaders = GetMenuHeaders(result.RootMenu.Items);
+                Assert.Equal(new[] { "File", "Tools", "Help", "About", "More" }, rootHeaders);
+
+                MenuItem toolsMenu = result.RootMenu.Items.OfType<MenuItem>().First(item => item.Header as string == "Tools");
+                List<string> toolHeaders = GetMenuHeaders(toolsMenu.Items);
+                Assert.Contains("Editor Mode", toolHeaders);
+                Assert.Contains("Settings", toolHeaders);
+                Assert.Contains("Show Output Log", toolHeaders);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
+        [AvaloniaFact(DisplayName = "UpdateTopMenuVisibility toggles editor-only menu items")]
+        public void UpdateTopMenuVisibility_TogglesEditorOnlyItems()
+        {
+            MenuBuilderService service = CreateService(out Window window);
+            bool editorMode = false;
+
+            try
+            {
+                TopMenuBuildResult result = service.BuildTopMenu(new TopMenuCallbacks
+                {
+                    EditorMode = editorMode,
+                    ToggleEditorMode = () => editorMode = !editorMode,
+                    EditorModePropertySource = window,
+                    GetEditorMode = () => editorMode,
+                    OnOpenFile = () => { },
+                    OnCloseToml = () => { },
+                    OnSave = () => { },
+                    OnExit = () => { },
+                    OnFixIosCaseSensitivity = () => { },
+                    OnFixPathPermissions = () => { },
+                    OnOpenCheckpoints = () => { },
+                    OnRunHolopatcher = () => { },
+                    OnOpenSettings = () => { },
+                    OnOpenOutputLog = () => { },
+                    OnResolveDuplicateFilesAndFolders = () => { },
+                });
+
+                service.UpdateTopMenuVisibility(result, editorMode: false);
+                Assert.False(result.CloseFileMenuItem.IsVisible);
+                Assert.False(result.SaveMenuItem.IsVisible);
+                Assert.False(result.EditorModeMenuItem.IsVisible);
+
+                service.UpdateTopMenuVisibility(result, editorMode: true);
+                Assert.True(result.CloseFileMenuItem.IsVisible);
+                Assert.True(result.SaveMenuItem.IsVisible);
+                Assert.True(result.EditorModeMenuItem.IsVisible);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
         [AvaloniaFact(DisplayName = "BuildContextMenuForComponent null component returns empty menu")]
         public void BuildContextMenuForComponent_NullComponent_ReturnsEmptyMenu()
         {
