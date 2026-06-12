@@ -316,7 +316,13 @@
                                 Margin="0,5,0,0"
                                 FontSize="11"
                                 Opacity="0.7"
-                                Text="When enabled, ModSync handles nxm:// links from Nexus Mod Manager Download."
+                                Text="When enabled, ModSync attempts to become the default handler for Nexus Mod Manager Download links."
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                x:Name="RegisterNxmProtocolStatusText"
+                                Margin="0,5,0,0"
+                                FontSize="11"
+                                Opacity="0.85"
                                 TextWrapping="Wrap" />
 
                             <TextBlock
