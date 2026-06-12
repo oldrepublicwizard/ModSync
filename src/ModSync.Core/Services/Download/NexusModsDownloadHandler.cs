@@ -86,8 +86,17 @@ namespace ModSync.Core.Services.Download
 
         public bool CanHandle(string url)
         {
-            bool canHandle = url != null && url.IndexOf("nexusmods.com", StringComparison.OrdinalIgnoreCase) >= 0;
-            return canHandle;
+            if (url is null)
+            {
+                return false;
+            }
+
+            if (NxmUrl.IsNxmUrl(url))
+            {
+                return true;
+            }
+
+            return url.IndexOf("nexusmods.com", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]
@@ -236,6 +245,11 @@ namespace ModSync.Core.Services.Download
 
             try
             {
+                if (NxmUrl.TryParse(url, out NxmUrl nxmUrl))
+                {
+                    await Logger.LogVerboseAsync($"[NexusMods] Detected nxm:// protocol URL: {nxmUrl}").ConfigureAwait(false);
+                    return await DownloadFromNxmAsync(nxmUrl, destinationDirectory, progress, cancellationToken).ConfigureAwait(false);
+                }
 
                 if (!Uri.TryCreate(url, UriKind.Absolute, out Uri validatedUri))
                 {
@@ -495,6 +509,235 @@ namespace ModSync.Core.Services.Download
 
             pageResponse.Dispose();
             return DownloadResult.Failed("Free downloads from Nexus Mods require manual interaction. Please download the mod manually from the website or provide an API key for automated downloads.");
+        }
+
+        /// <summary>
+        /// Downloads a file referenced by an nxm:// protocol URL (from the Nexus Mods
+        /// "Mod Manager Download" button). Resolves the filename via the
+        /// <c>files/{fileId}.json</c> endpoint and the download URI via
+        /// <c>download_link.json</c>, forwarding the one-time <c>key</c>/<c>expires</c>
+        /// pair when present so free (non-Premium) users can download too.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]
+        private async Task<DownloadResult> DownloadFromNxmAsync(
+            NxmUrl nxmUrl,
+            string destinationDirectory,
+            IProgress<DownloadProgress> progress,
+            CancellationToken cancellationToken)
+        {
+            await Logger.LogVerboseAsync($"[NexusMods] Resolving nxm link - game: {nxmUrl.GameDomain}, mod: {nxmUrl.ModId}, file: {nxmUrl.FileId}, has key: {nxmUrl.HasDownloadAuthorization}").ConfigureAwait(false);
+
+            if (string.IsNullOrWhiteSpace(_apiKey) && !nxmUrl.HasDownloadAuthorization)
+            {
+                string noAuthMessage = "The nxm link carries no download key and no Nexus Mods API key is configured. " +
+                                       "Click \"Mod Manager Download\" on the Nexus Mods website again to get a fresh link, " +
+                                       "or configure a Nexus Mods API key.\n\n" +
+                                       $"Mod page: {nxmUrl.ToModPageUrl()}";
+                await Logger.LogErrorAsync($"[NexusMods] {noAuthMessage}").ConfigureAwait(false);
+                progress?.Report(new DownloadProgress
+                {
+                    Status = DownloadStatus.Failed,
+                    ErrorMessage = noAuthMessage,
+                    ProgressPercentage = 100,
+                    EndTime = DateTime.Now,
+                });
+                return DownloadResult.Failed(noAuthMessage);
+            }
+
+            progress?.Report(new DownloadProgress
+            {
+                Status = DownloadStatus.InProgress,
+                StatusMessage = "Resolving nxm link via Nexus Mods API...",
+                ProgressPercentage = 10,
+                StartTime = DateTime.Now,
+            });
+
+            // 1. Resolve the filename from file metadata. Tolerate failure: the
+            //    download URI itself usually contains the filename as a fallback.
+            string fileName = null;
+            string metadataUrl = $"https://api.nexusmods.com/v1/games/{nxmUrl.GameDomain}/mods/{nxmUrl.ModId}/files/{nxmUrl.FileId}.json";
+            try
+            {
+                using (var metadataRequest = new HttpRequestMessage(HttpMethod.Get, metadataUrl))
+                {
+                    SetApiRequestHeaders(metadataRequest);
+                    using (HttpResponseMessage metadataResponse = await MakeApiRequestAsync(metadataRequest, cancellationToken).ConfigureAwait(false))
+                    {
+                        if (metadataResponse.IsSuccessStatusCode)
+                        {
+                            string metadataJson = await metadataResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            var fileData = JObject.Parse(metadataJson);
+                            fileName = (string)fileData["file_name"];
+                            await Logger.LogVerboseAsync($"[NexusMods] Resolved nxm filename from metadata: {fileName}").ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await Logger.LogWarningAsync($"[NexusMods] File metadata request returned {metadataResponse.StatusCode}; will derive filename from download URI").ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
+            catch (Exception metadataEx) when (!(metadataEx is OperationCanceledException))
+            {
+                await Logger.LogWarningAsync($"[NexusMods] Failed to fetch nxm file metadata: {metadataEx.Message}").ConfigureAwait(false);
+            }
+
+            // 2. Resolve the download URI. key/expires authorize free-user downloads;
+            //    the apikey header (when configured) authorizes Premium direct links.
+            string downloadLinkUrl = $"https://api.nexusmods.com/v1/games/{nxmUrl.GameDomain}/mods/{nxmUrl.ModId}/files/{nxmUrl.FileId}/download_link.json";
+            if (nxmUrl.HasDownloadAuthorization)
+            {
+                downloadLinkUrl += $"?key={Uri.EscapeDataString(nxmUrl.Key)}&expires={nxmUrl.Expires}";
+            }
+
+            progress?.Report(new DownloadProgress
+            {
+                Status = DownloadStatus.InProgress,
+                StatusMessage = "Requesting download link...",
+                ProgressPercentage = 20,
+            });
+
+            string downloadUri;
+            using (var linkRequest = new HttpRequestMessage(HttpMethod.Get, downloadLinkUrl))
+            {
+                SetApiRequestHeaders(linkRequest);
+                using (HttpResponseMessage linkResponse = await MakeApiRequestAsync(linkRequest, cancellationToken).ConfigureAwait(false))
+                {
+                    if (!linkResponse.IsSuccessStatusCode)
+                    {
+                        string body = await linkResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        string linkError = $"Nexus Mods refused the nxm download link request ({(int)linkResponse.StatusCode} {linkResponse.StatusCode}). " +
+                                           "The one-time key may have expired - click \"Mod Manager Download\" on the website again.\n\n" +
+                                           $"Mod page: {nxmUrl.ToModPageUrl()}\n\n" +
+                                           $"Technical details: {body}";
+                        await Logger.LogErrorAsync($"[NexusMods] {linkError}").ConfigureAwait(false);
+                        progress?.Report(new DownloadProgress
+                        {
+                            Status = DownloadStatus.Failed,
+                            ErrorMessage = linkError,
+                            ProgressPercentage = 100,
+                            EndTime = DateTime.Now,
+                        });
+                        return DownloadResult.Failed(linkError);
+                    }
+
+                    string linkJson = await linkResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    await Logger.LogVerboseAsync($"[NexusMods] nxm download_link response: {linkJson}").ConfigureAwait(false);
+                    downloadUri = ExtractFirstDownloadUri(linkJson);
+                }
+            }
+
+            if (string.IsNullOrEmpty(downloadUri))
+            {
+                string noUriError = "Nexus Mods returned no download mirror for this nxm link. " +
+                                    $"Please download manually from: {nxmUrl.ToFileUrl()}";
+                await Logger.LogErrorAsync($"[NexusMods] {noUriError}").ConfigureAwait(false);
+                progress?.Report(new DownloadProgress
+                {
+                    Status = DownloadStatus.Failed,
+                    ErrorMessage = noUriError,
+                    ProgressPercentage = 100,
+                    EndTime = DateTime.Now,
+                });
+                return DownloadResult.Failed(noUriError);
+            }
+
+            if (string.IsNullOrEmpty(fileName) && Uri.TryCreate(downloadUri, UriKind.Absolute, out Uri parsedDownloadUri))
+            {
+                fileName = Path.GetFileName(Uri.UnescapeDataString(parsedDownloadUri.AbsolutePath));
+            }
+            if (string.IsNullOrEmpty(fileName))
+            {
+                fileName = $"nexus_{nxmUrl.GameDomain}_{nxmUrl.ModId}_{nxmUrl.FileId}";
+            }
+
+            // 3. Stream the file using the shared temp-file + atomic-move flow.
+            await Logger.LogVerboseAsync($"[NexusMods] Downloading nxm file '{fileName}' from: {downloadUri}").ConfigureAwait(false);
+            progress?.Report(new DownloadProgress
+            {
+                Status = DownloadStatus.InProgress,
+                StatusMessage = $"Downloading {fileName}...",
+                ProgressPercentage = 30,
+            });
+
+            using (var downloadRequest = new HttpRequestMessage(HttpMethod.Get, downloadUri))
+            {
+                downloadRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
+                downloadRequest.Headers.Add("User-Agent", "ModSync/2.0.0a1 (https://github.com/th3w1zard1/ModSync)");
+
+                using (HttpResponseMessage downloadResponse = await _httpClient.SendAsync(downloadRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
+                {
+                    _ = downloadResponse.EnsureSuccessStatusCode();
+
+                    _ = Directory.CreateDirectory(destinationDirectory);
+                    string finalPath = Path.Combine(destinationDirectory, fileName);
+                    string tempPath = DownloadHelper.GetTempFilePath(finalPath);
+                    long totalBytes = downloadResponse.Content.Headers.ContentLength ?? 0;
+
+                    using (Stream contentStream = await downloadResponse.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                    {
+                        await DownloadHelper.DownloadWithProgressAsync(
+                            contentStream,
+                            tempPath,
+                            totalBytes,
+                            fileName,
+                            nxmUrl.OriginalUrl,
+                            progress,
+                            cancellationToken: cancellationToken).ConfigureAwait(false);
+                    }
+
+                    try
+                    {
+                        DownloadHelper.MoveToFinalDestination(tempPath, finalPath);
+                    }
+                    catch (Exception moveEx)
+                    {
+                        await Logger.LogErrorAsync($"[NexusMods] Failed to move temporary file to final destination: {moveEx.Message}").ConfigureAwait(false);
+                        try { File.Delete(tempPath); } catch { }
+                        throw;
+                    }
+
+                    progress?.Report(new DownloadProgress
+                    {
+                        Status = DownloadStatus.Completed,
+                        StatusMessage = $"Downloaded {fileName} from Nexus Mods",
+                        ProgressPercentage = 100,
+                        FilePath = finalPath,
+                        EndTime = DateTime.Now,
+                    });
+
+                    return DownloadResult.Succeeded(finalPath, $"Downloaded {fileName} from Nexus Mods (nxm link)");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Extracts the first mirror URI from a <c>download_link.json</c> response.
+        /// The live API returns a JSON array of mirror objects with a <c>URI</c>
+        /// property; older shapes wrap that array in a <c>download_links</c> field.
+        /// </summary>
+        private static string ExtractFirstDownloadUri(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return null;
+            }
+
+            try
+            {
+                JToken root = JToken.Parse(json);
+                JArray links = root as JArray ?? (root as JObject)?["download_links"] as JArray;
+                if (links is null || links.Count == 0)
+                {
+                    return null;
+                }
+
+                return (string)links[0]["URI"];
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private async Task<HttpResponseMessage> MakeApiRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)

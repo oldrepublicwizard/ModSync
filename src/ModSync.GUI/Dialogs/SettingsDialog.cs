@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia;
@@ -105,6 +106,7 @@ namespace ModSync.Dialogs
             LoadHolopatcherVersionSettings();
             LoadPatcherEngineSettings();
             LoadNexusModsApiKeySettings();
+            LoadNxmProtocolSettings();
             LoadFileWatcherSettings();
 
             Logger.LogVerbose("SettingsDialog.InitializeFromMainWindow end");
@@ -377,6 +379,174 @@ namespace ModSync.Dialogs
             }
         }
 
+        private void LoadNxmProtocolSettings()
+        {
+            try
+            {
+                CheckBox registerCheckBox = this.FindControl<CheckBox>("RegisterNxmProtocolCheckBox");
+                TextBlock helperText = this.FindControl<TextBlock>("RegisterNxmProtocolHelperText");
+                TextBlock statusText = this.FindControl<TextBlock>("RegisterNxmProtocolStatusText");
+                TextBlock macOsTitle = this.FindControl<TextBlock>("NxmMacOsStatusTitle");
+                TextBlock macOsStatus = this.FindControl<TextBlock>("NxmMacOsStatusText");
+                if (registerCheckBox is null)
+                {
+                    return;
+                }
+
+                bool isMacOs = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+                bool runtimeToggleSupported = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    || RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+
+                registerCheckBox.IsVisible = runtimeToggleSupported;
+                if (helperText != null)
+                {
+                    helperText.IsVisible = runtimeToggleSupported;
+                }
+
+                if (statusText != null)
+                {
+                    statusText.IsVisible = runtimeToggleSupported;
+                }
+
+                if (macOsTitle != null)
+                {
+                    macOsTitle.IsVisible = isMacOs;
+                }
+
+                if (macOsStatus != null)
+                {
+                    macOsStatus.IsVisible = isMacOs;
+                    if (isMacOs)
+                    {
+                        macOsStatus.Text =
+                            NxmProtocolRegistrationService.GetMacOsSettingsStatusText() +
+                            "\n\nClicking Mod Manager Download on Nexus opens ModSync and requires a loaded instruction file that lists the mod.";
+                    }
+                }
+
+                if (!runtimeToggleSupported)
+                {
+                    return;
+                }
+
+                Models.AppSettings appSettings = Models.SettingsManager.LoadSettings();
+                bool preference = MainConfigInstance?.registerNxmProtocolHandler ?? appSettings.RegisterNxmProtocolHandler;
+                if (MainConfigInstance != null)
+                {
+                    MainConfigInstance.registerNxmProtocolHandler = preference;
+                }
+
+                registerCheckBox.IsChecked = preference;
+                RefreshNxmProtocolStatusText(statusText, preference);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex, "Failed to load nxm protocol settings");
+            }
+        }
+
+        private static void RefreshNxmProtocolStatusText(TextBlock statusText, bool registrationPreferenceEnabled)
+        {
+            if (statusText is null)
+            {
+                return;
+            }
+
+            NxmHandlerProbeResult probe = NxmHandlerProbe.Probe();
+            statusText.Text = NxmHandlerProbe.BuildSettingsStatusText(probe, registrationPreferenceEnabled);
+        }
+
+        private async Task SaveNxmProtocolSettingsAsync(Models.AppSettings settings)
+        {
+            if (settings is null)
+            {
+                return;
+            }
+
+            try
+            {
+                CheckBox registerCheckBox = this.FindControl<CheckBox>("RegisterNxmProtocolCheckBox");
+                TextBlock statusText = this.FindControl<TextBlock>("RegisterNxmProtocolStatusText");
+                if (registerCheckBox is null || !registerCheckBox.IsVisible)
+                {
+                    return;
+                }
+
+                bool wantRegistered = registerCheckBox.IsChecked == true;
+                bool currentlyRegistered = NxmProtocolRegistrationService.IsRegistered();
+                NxmHandlerProbeResult probe = NxmHandlerProbe.Probe();
+                bool success = true;
+
+                bool shouldApplyRegistration = wantRegistered
+                    && (!currentlyRegistered
+                        || probe.Status == NxmHandlerStatus.CompetitorActive
+                        || probe.Status == NxmHandlerStatus.ModSyncRegisteredNotDefault);
+
+                if (shouldApplyRegistration)
+                {
+                    if (probe.Status == NxmHandlerStatus.CompetitorActive)
+                    {
+                        string competitorName = probe.DisplayName ?? "Another app";
+                        bool? confirmed = await ConfirmationDialog.ShowConfirmationDialogAsync(
+                            this,
+                            $"{competitorName} currently handles Nexus Mod Manager Download links.\n\n" +
+                            "Register ModSync as the default handler on this computer?",
+                            yesButtonText: "Register ModSync",
+                            noButtonText: "Keep current handler");
+
+                        if (confirmed != true)
+                        {
+                            registerCheckBox.IsChecked = false;
+                            wantRegistered = false;
+                            shouldApplyRegistration = false;
+                        }
+                    }
+
+                    if (shouldApplyRegistration)
+                    {
+                        success = NxmProtocolRegistrationService.Register();
+                        if (!success)
+                        {
+                            registerCheckBox.IsChecked = false;
+                            wantRegistered = false;
+                            await InformationDialog.ShowInformationDialogAsync(
+                                this,
+                                "ModSync could not register as the Nexus Mod Manager handler.\n\n" +
+                                "Check the log for details and try again.",
+                                "Nexus Mod Manager registration failed");
+                        }
+                    }
+                }
+                else if (!wantRegistered && currentlyRegistered)
+                {
+                    success = NxmProtocolRegistrationService.Unregister();
+                    if (!success)
+                    {
+                        registerCheckBox.IsChecked = true;
+                        wantRegistered = true;
+                        await InformationDialog.ShowInformationDialogAsync(
+                            this,
+                            "ModSync could not remove the nxm:// handler registration.\n\n" +
+                            "Check the log for details and try again.",
+                            "Nexus Mod Manager registration failed");
+                    }
+                }
+
+                if (MainConfigInstance != null)
+                {
+                    MainConfigInstance.registerNxmProtocolHandler = wantRegistered;
+                }
+
+                settings.RegisterNxmProtocolHandler = wantRegistered;
+                RefreshNxmProtocolStatusText(statusText, wantRegistered && success);
+                Logger.LogVerbose($"[NxmProtocol] Saved preference: RegisterNxmProtocolHandler={wantRegistered}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex, "Failed to save nxm protocol settings");
+            }
+        }
+
         private void LoadNexusModsApiKeySettings()
         {
             try
@@ -532,7 +702,7 @@ namespace ModSync.Dialogs
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]
-        private void SaveAppSettings()
+        private async Task SaveAppSettingsAsync()
         {
             try
             {
@@ -608,6 +778,8 @@ namespace ModSync.Dialogs
                 Logger.LogVerbose(
                     $"[SettingsDialog.SaveAppSettings]   settings.SelectedHolopatcherVersion: '{settings.SelectedHolopatcherVersion}'"
                 );
+
+                await SaveNxmProtocolSettingsAsync(settings);
 
                 Models.SettingsManager.SaveSettings(settings);
 
@@ -798,15 +970,12 @@ namespace ModSync.Dialogs
             Logger.LogVerbose($"File encoding changed to: {encodingTag}");
         }
 
-        private void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        private async void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             try
             {
-                // Save all settings when the dialog closes
                 SaveTelemetrySettings();
-                SaveAppSettings();
-
-                // Notify parent window that settings have been updated
+                await SaveAppSettingsAsync();
                 ParentWindow?.RefreshFromSettings();
             }
             catch (Exception ex)
