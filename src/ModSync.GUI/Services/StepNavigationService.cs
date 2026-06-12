@@ -31,40 +31,14 @@ namespace ModSync.Services
         {
             try
             {
+                (bool step1Complete, bool step2Complete, bool step3Complete, bool step4Complete) =
+                    StepProgressUiHelper.ComputePreparationSteps(_mainConfig.allComponents);
 
-                bool step1Complete = ValidationService.IsStep1Complete();
-                if (!step1Complete)
-                {
-                    return 1;
-                }
-
-                bool step2Complete = _mainConfig.allComponents?.Count > 0;
-                if (!step2Complete)
-                {
-                    return 2;
-                }
-
-                bool step3Complete = _mainConfig.allComponents?.Any(c => c.IsSelected) == true;
-                if (!step3Complete)
-                {
-                    return 3;
-                }
-
-                bool step4Complete = false;
-                if (step3Complete && _mainConfig.allComponents != null)
-                {
-                    var selectedComponents = _mainConfig.allComponents.Where(c => c.IsSelected).ToList();
-                    if (selectedComponents.Count > 0)
-                    {
-                        step4Complete = selectedComponents.All(c => c.IsDownloaded);
-                    }
-                }
-                if (!step4Complete)
-                {
-                    return 4;
-                }
-
-                return 5;
+                return StepProgressUiHelper.GetCurrentIncompleteStep(
+                    step1Complete,
+                    step2Complete,
+                    step3Complete,
+                    step4Complete);
             }
             catch (Exception ex)
             {

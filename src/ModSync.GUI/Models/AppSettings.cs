@@ -89,6 +89,9 @@ namespace ModSync.Models
         [JsonPropertyName("spoilerFreeMode")]
         public bool SpoilerFreeMode { get; set; } = false;
 
+        [JsonPropertyName("registerNxmProtocolHandler")]
+        public bool RegisterNxmProtocolHandler { get; set; }
+
         public AppSettings()
         {
         }
@@ -128,6 +131,7 @@ namespace ModSync.Models
                 KPatcherExecutablePath = mainConfig.kpatcherExecutablePath,
                 EnableFileWatcher = mainConfig.enableFileWatcher,
                 SpoilerFreeMode = spoilerFreeMode,
+                RegisterNxmProtocolHandler = mainConfig.registerNxmProtocolHandler,
             };
         }
 
@@ -179,6 +183,7 @@ namespace ModSync.Models
             mainConfig.patcherEngine = PatcherEngine;
             mainConfig.kpatcherExecutablePath = KPatcherExecutablePath;
             mainConfig.enableFileWatcher = EnableFileWatcher;
+            mainConfig.registerNxmProtocolHandler = RegisterNxmProtocolHandler;
 
             if (!string.IsNullOrEmpty(LastOutputDirectory) && Directory.Exists(LastOutputDirectory))
             {

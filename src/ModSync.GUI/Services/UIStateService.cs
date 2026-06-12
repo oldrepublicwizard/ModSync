@@ -46,45 +46,26 @@ namespace ModSync.Services
             {
                 bool canUpdateProgress = progressBar != null && progressText != null;
 
-                bool step1Complete = ValidationService.IsStep1Complete();
+                (bool step1Complete, bool step2Complete, bool step3Complete, bool step4Complete) =
+                    StepProgressUiHelper.ComputePreparationSteps(_mainConfig.allComponents);
                 UpdateStepCompletion(step1Border, step1Indicator, step1Text, step1Complete);
-
-                bool step2Complete = step1Complete && _mainConfig.allComponents?.Count > 0;
                 UpdateStepCompletion(step2Border, step2Indicator, step2Text, step2Complete);
-
-                bool step3Complete = _mainConfig.allComponents?.Any(c => c.IsSelected) == true;
                 UpdateStepCompletion(step3Border, step3Indicator, step3Text, step3Complete);
-
-                bool step4Complete = false;
-                if (step3Complete && _mainConfig.allComponents != null)
-                {
-                    var selectedComponents = _mainConfig.allComponents.Where(c => c.IsSelected).ToList();
-                    if (selectedComponents.Count > 0)
-                    {
-                        step4Complete = selectedComponents.All(c => c.IsDownloaded);
-                    }
-                }
                 UpdateStepCompletion(step4Border, step4Indicator, step4Text, step4Complete);
 
-                bool step5Complete = false;
-                if (step4Complete && _mainConfig.allComponents != null)
-                {
-                    var selectedComponents = _mainConfig.allComponents.Where(c => c.IsSelected).ToList();
-                    if (selectedComponents.Count > 0)
-                    {
-
-                        bool realTimeValidationPassed = selectedComponents.All(isComponentValidFunc);
-
-                        bool buttonValidationPassed = step5Check?.IsChecked == true;
-
-                        step5Complete = realTimeValidationPassed && buttonValidationPassed;
-                    }
-                }
+                bool step5Complete = StepProgressUiHelper.ComputeStep5Complete(
+                    step4Complete,
+                    _mainConfig.allComponents,
+                    isComponentValidFunc,
+                    step5Check?.IsChecked == true);
                 UpdateStepCompletion(step5Border, step5Indicator, step5Text, step5Complete);
 
-                int completedSteps = (step1Complete ? 1 : 0) + (step2Complete ? 1 : 0) +
-                                        (step3Complete ? 1 : 0) + (step4Complete ? 1 : 0) +
-                                        (step5Complete ? 1 : 0);
+                int completedSteps = StepProgressUiHelper.CountCompletedSteps(
+                    step1Complete,
+                    step2Complete,
+                    step3Complete,
+                    step4Complete,
+                    step5Complete);
 
                 if (!canUpdateProgress)
                 {
@@ -92,15 +73,7 @@ namespace ModSync.Services
                 }
 
                 progressBar.Value = completedSteps;
-
-                string[] messages = {
-                    "Complete the steps above to get started",
-                    "Great start! Continue with the next steps",
-                    "Almost there! Just a few more steps",
-                    "Excellent progress! You're almost ready",
-                    "🎉 All preparation steps completed! You're ready to install mods",
-                };
-                progressText.Text = messages[Math.Min(completedSteps, messages.Length - 1)];
+                progressText.Text = StepProgressUiHelper.FormatGettingStartedProgressMessage(completedSteps);
             }
             catch (Exception exception)
             {

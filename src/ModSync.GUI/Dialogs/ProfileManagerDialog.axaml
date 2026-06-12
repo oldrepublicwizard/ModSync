@@ -1,0 +1,107 @@
+<!--  Copyright 2021-2025 ModSync  -->
+<!--  Licensed under the Business Source License 1.1 (BSL 1.1).  -->
+<!--  See LICENSE.txt file in the project root for full license information.  -->
+<Window
+    x:Class="ModSync.Dialogs.ProfileManagerDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Profile Manager"
+    Width="640"
+    Height="480"
+    MinWidth="520"
+    MinHeight="360"
+    ExtendClientAreaChromeHints="NoChrome"
+    ExtendClientAreaTitleBarHeightHint="-1"
+    ExtendClientAreaToDecorationsHint="True"
+    SystemDecorations="BorderOnly"
+    WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="Auto,*">
+        <!--  Custom window controls row  -->
+        <StackPanel
+            Grid.Row="0"
+            Margin="8,8,8,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Orientation="Horizontal"
+            Spacing="8">
+            <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}" VerticalAlignment="Center" />
+            <Button
+                Width="40"
+                Height="40"
+                Click="CloseButton_Click"
+                Content="X"
+                ToolTip.Tip="Close the profile manager." />
+        </StackPanel>
+
+        <Border
+            Grid.Row="1"
+            Margin="16,0,16,16"
+            Padding="16"
+            CornerRadius="8">
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+                <ListBox
+                    x:Name="ProfilesListBox"
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    SelectionChanged="ProfilesListBox_SelectionChanged"
+                    SelectionMode="Single">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="4" Spacing="2">
+                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Text="{Binding KotorDirectory, StringFormat='Game: {0}'}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding ModDirectory, StringFormat='Mods: {0}'}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding LastUsedUtc, StringFormat='Last used (UTC): {0:yyyy-MM-dd HH:mm}'}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <StackPanel
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="16,0,0,0"
+                    Spacing="8">
+                    <Button
+                        x:Name="SaveCurrentButton"
+                        MinWidth="160"
+                        Click="SaveCurrentButton_Click"
+                        Content="Save Current As..."
+                        ToolTip.Tip="Create a profile from the current directories and mod selections." />
+                    <Button
+                        x:Name="ActivateButton"
+                        MinWidth="160"
+                        Click="ActivateButton_Click"
+                        Content="Activate"
+                        ToolTip.Tip="Apply the selected profile's directories and mod selections." />
+                    <Button
+                        x:Name="CloneButton"
+                        MinWidth="160"
+                        Click="CloneButton_Click"
+                        Content="Clone..."
+                        ToolTip.Tip="Duplicate the selected profile under a new name." />
+                    <Button
+                        x:Name="RenameButton"
+                        MinWidth="160"
+                        Click="RenameButton_Click"
+                        Content="Rename..."
+                        ToolTip.Tip="Rename the selected profile." />
+                    <Button
+                        x:Name="DeleteButton"
+                        MinWidth="160"
+                        Click="DeleteButton_Click"
+                        Content="Delete"
+                        ToolTip.Tip="Delete the selected profile from disk." />
+                </StackPanel>
+
+                <TextBlock
+                    x:Name="StatusTextBlock"
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Margin="0,12,0,0"
+                    TextWrapping="Wrap" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
