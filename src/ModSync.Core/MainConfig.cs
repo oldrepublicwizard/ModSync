@@ -167,6 +167,14 @@ namespace ModSync.Core
         /// <summary>Instance accessor for <see cref="NexusModsApiKey"/>.</summary>
         public string nexusModsApiKey { get => NexusModsApiKey; set => NexusModsApiKey = value; }
 
+        /// <summary>When true, ModSync registers as the OS handler for nxm:// links. Mutate via <see cref="registerNxmProtocolHandler"/>.</summary>
+        public static bool RegisterNxmProtocolHandler { get; private set; }
+        /// <summary>Instance accessor for <see cref="RegisterNxmProtocolHandler"/>.</summary>
+        public bool registerNxmProtocolHandler
+        {
+            get => RegisterNxmProtocolHandler;
+            set => RegisterNxmProtocolHandler = value;
+        }
 
         /// <summary>Active file encoding for configuration serialization. Mutate via <see cref="fileEncoding"/>.</summary>
         public static string FileEncoding { get; private set; } = "utf-8";
