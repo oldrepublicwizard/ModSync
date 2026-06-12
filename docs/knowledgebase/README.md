@@ -44,6 +44,7 @@ Use these when citing findings in plans, PRs, or audits:
 
 - [Install lifecycle](install-lifecycle.md) — wizard page order, `InstallationService`, checkpoints, widescreen, CLI flags
 - [Download system](download-system.md) — ResourceRegistry, handler order, `DownloadCacheService`, GUI vs CLI
+- [nxm protocol handler](nxm-protocol-handler.md) — nxm:// URL parsing, OS scheme registration, single-instance hand-off, free-user download path
 
 ### Architecture and agent parity
 
