@@ -23,14 +23,20 @@ namespace ModSync.Services
     {
         private readonly Window _parentWindow;
         private readonly MainConfig _mainConfig;
+        private readonly DownloadOrchestrationService _downloadOrchestrationService;
         private bool _subscribed;
         private bool _disposed;
         private bool _processing;
 
-        public NxmHandoffService(Window parentWindow, MainConfig mainConfig)
+        public NxmHandoffService(
+            Window parentWindow,
+            MainConfig mainConfig,
+            DownloadOrchestrationService downloadOrchestrationService)
         {
             _parentWindow = parentWindow ?? throw new ArgumentNullException(nameof(parentWindow));
             _mainConfig = mainConfig ?? throw new ArgumentNullException(nameof(mainConfig));
+            _downloadOrchestrationService = downloadOrchestrationService
+                ?? throw new ArgumentNullException(nameof(downloadOrchestrationService));
         }
 
         public void EnsureSubscribed()
@@ -147,7 +153,7 @@ namespace ModSync.Services
                 $"[NxmHandoff] Downloading Nexus file for '{component.Name}' from nxm link...")
                 .ConfigureAwait(true);
 
-            string tempPath = await DownloadOrchestrationService.DownloadModFromUrlAsync(
+            string tempPath = await _downloadOrchestrationService.DownloadModFromUrlWithProgressUiAsync(
                 nxmUrl.OriginalUrl,
                 component).ConfigureAwait(true);
 
