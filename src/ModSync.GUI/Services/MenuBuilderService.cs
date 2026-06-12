@@ -323,6 +323,27 @@ namespace ModSync.Services
                         $"Valid mods: {results.Count(r => r.Value.IsValid)}/{results.Count}");
                 })),
             });
+
+            _ = items.Add(new MenuItem
+            {
+                Header = "⚔️ Analyze File Conflicts",
+                Command = ReactiveCommand.CreateFromTask(async () =>
+                {
+                    try
+                    {
+                        List<ModComponent> allMods = _modManagementService.SearchMods(string.Empty);
+                        (_, List<ModComponent> installOrder) = ModComponent.ConfirmComponentsInstallOrder(allMods);
+                        await ConflictsDialog.ShowAnalysisAsync(_parentWindow, installOrder);
+                    }
+                    catch (KeyNotFoundException ex) when (ex.Message.Contains("Circular dependency", StringComparison.Ordinal))
+                    {
+                        await InformationDialog.ShowInformationDialogAsync(
+                            _parentWindow,
+                            "Cannot analyze file conflicts: circular dependencies prevent a valid install order.\n\n" +
+                            "Resolve dependency cycles first, then try again.");
+                    }
+                }),
+            });
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]

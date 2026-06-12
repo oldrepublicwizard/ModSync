@@ -19,14 +19,24 @@ paths written by more than one selected component during a dry-run install simul
 - The last writer in install order is the winner, matching real install behavior.
 - Deselected components are skipped; dependency-gated components that would not install are skipped.
 
-## Out of scope (later Phase 5 slices)
+## GUI (Plan 120)
 
-- Per-pair conflict rules in profiles, `ConflictsDialog`, ValidatePage badges, `DependencyResolverService` ordering feed-in.
+`[REPO]` `ConflictsDialog` shows analyzer results: destination path, writers in install order, and `(wins)` on the last writer. Entry points: mod list context menu **Analyze File Conflicts** (`MenuBuilderService`) and Mod Management → Validation Operations.
+
+`[UI]` Desktop validation recommended for progress dialog + conflict list layout.
+
+## Still deferred
+
+- Per-pair conflict rules in profiles
+- Mod list conflict badges
+- ValidatePage integration
+- `DependencyResolverService` ordering feed-in
 
 ## Tests
 
-`src/ModSync.Tests/FileConflictAnalyzerTests.cs`
+`FileConflictAnalyzerTests`, `ConflictsDialogPresenterTests`
 
 ```bash
-dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~FileConflictAnalyzer"
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj -f net9.0 --filter "FullyQualifiedName~FileConflictAnalyzer"
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj -f net9.0 --filter "FullyQualifiedName~ConflictsDialogPresenter"
 ```
