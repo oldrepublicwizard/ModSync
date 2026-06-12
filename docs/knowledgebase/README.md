@@ -44,6 +44,7 @@ Use these when citing findings in plans, PRs, or audits:
 
 - [Install lifecycle](install-lifecycle.md) — wizard page order, `InstallationService`, checkpoints, widescreen, CLI flags
 - [Download system](download-system.md) — ResourceRegistry, handler order, `DownloadCacheService`, GUI vs CLI
+- [Mod update checking](update-checking.md) — `NexusApiClient`, `ResourceMetadata` version fields, `ModUpdateCheckService`
 
 ### Architecture and agent parity
 
