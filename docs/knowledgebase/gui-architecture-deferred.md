@@ -59,9 +59,20 @@ Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface refere
 
 | Item | Status | Reference |
 |------|--------|-----------|
+| Directory picker init/sync → `SettingsService` | Done | plan `075`, PR #123 |
+| Mod context menu + global flyout → `MenuBuilderService` | Done | plan `072`, PR #130 |
+
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter ArchiveEnumerationService` (plan `110`).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter ValidationServiceTests` (plan `109`).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter ModListService` (plan `108`).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter FilterUIService` (plan `107`).
+
+**Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/ModSync.GUI/Services/`.
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter DownloadOrchestrationService` (plan `088`); `--filter DownloadIndicatorUiHelper` (plans `090`–`091`); `--filter StepProgressUiHelper` (plan `096`); `--filter StepNavigationService` (plan `093`/`096`); `--filter ValidationDisplayUiHelper` (plan `094`).
 
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter ScrollNavigationService` (plan `100`).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter MarkdownRenderingService` (plan `106`).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter InstructionManagementService` (plan `104`).
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter ComponentEditorService` (plan `105`).
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter ThemeService` (plan `103`).
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter SelectionService` (plan `102`).
