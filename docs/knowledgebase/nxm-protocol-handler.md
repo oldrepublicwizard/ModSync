@@ -12,7 +12,7 @@ Sources: `src/ModSync.Core/Services/Download/NxmUrl.cs`, `src/ModSync.Core/Servi
 
 | Stage | Component | Behavior |
 |-------|-----------|----------|
-| OS registration | `NxmProtocolRegistrationService` | Windows: `HKCU\Software\Classes\nxm` via `reg.exe`; Linux: `~/.local/share/applications/modsync-nxm.desktop` + `xdg-mime default`. Builders are pure/unit-tested; macOS out of scope |
+| OS registration | `NxmProtocolRegistrationService` | Windows: `HKCU\Software\Classes\nxm` via `reg.exe`; Linux: `~/.local/share/applications/modsync-nxm.desktop` + `xdg-mime default`; macOS: `CFBundleURLTypes` in app bundle `Info.plist` (declarative, requires `ModSync.app`) |
 | Launch | `CLIArguments` | `--nxm=<url>` or bare positional `nxm://...` sets `CLIArguments.NxmUrl` |
 | Single instance | `SingleInstanceService` | Per-user named pipe (System.IO.Pipes, cross-platform). Primary claims pipe + listens; secondary forwards the URL and exits (`Program.Main`) |
 | Buffering | `NxmHandoffQueue` | Static thread-safe queue + event; URLs arriving before the main window is ready are retained |
@@ -34,9 +34,17 @@ Sources: `src/ModSync.Core/Services/Download/NxmUrl.cs`, `src/ModSync.Core/Servi
 
 `[UI]` Desktop E2E still recommended for OS registration + browser click.
 
+## Phase 4 (Plan 116)
+
+`[REPO]` Secondary non-nxm launches forward `ApplicationLaunchCoordinator.ActivateMessage` over the named pipe and exit; primary raises `ActivationRequested` so `MainWindow` restores/focuses. Dev escape hatch: `--allow-multiple-instances`.
+
+`[REPO]` macOS: both `Info.plist` files declare `CFBundleURLTypes` → `nxm`. Settings shows an informational **Nexus Mod Manager Download** status block instead of the Win/Linux toggle. `Register()`/`IsRegistered()` on macOS reflect app-bundle execution only.
+
+`[UI]` Desktop E2E still recommended (browser click, single-instance, macOS `.app` bundle).
+
 ## Still deferred
 
-`[REPO]` macOS `Info.plist` registration; strict single-instance for non-nxm launches.
+`[REPO]` Handler conflict detection; macOS release `.app` bundling in CI; in-progress nxm download UI integration.
 
 ## Tests
 

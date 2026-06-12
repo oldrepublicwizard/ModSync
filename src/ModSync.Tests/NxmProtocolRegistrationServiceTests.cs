@@ -95,5 +95,16 @@ namespace ModSync.Tests
         {
             Assert.That(() => NxmProtocolRegistrationService.BuildWindowsRegCommands(exePath), Throws.ArgumentException);
         }
+
+        [Test]
+        public void BuildMacOsUrlTypesPlistFragment_DeclaresNxmScheme()
+        {
+            string fragment = NxmProtocolRegistrationService.BuildMacOsUrlTypesPlistFragment();
+
+            Assert.That(fragment, Does.Contain("CFBundleURLTypes"));
+            Assert.That(fragment, Does.Contain("CFBundleURLSchemes"));
+            Assert.That(fragment, Does.Contain("<string>nxm</string>"));
+        }
     }
 }
+

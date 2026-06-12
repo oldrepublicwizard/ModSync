@@ -112,6 +112,31 @@ namespace ModSync.Tests
         }
 
         [Test]
+        public async Task SendToPrimaryAsync_ActivateMessage_RaisesActivationRequested()
+        {
+            string pipeName = UniquePipeName();
+            bool activationRaised = false;
+            using (var received = new ManualResetEventSlim(false))
+            using (var primary = new SingleInstanceService(pipeName))
+            using (var secondary = new SingleInstanceService(pipeName))
+            {
+                primary.ActivationRequested += (sender, args) =>
+                {
+                    activationRaised = true;
+                    received.Set();
+                };
+
+                Assert.That(primary.TryBecomePrimary(), Is.True);
+
+                bool sent = await secondary.SendToPrimaryAsync(ApplicationLaunchCoordinator.ActivateMessage);
+
+                Assert.That(sent, Is.True);
+                Assert.That(received.Wait(TimeSpan.FromSeconds(10)), Is.True);
+                Assert.That(activationRaised, Is.True);
+            }
+        }
+
+        [Test]
         public void TryBecomePrimary_AfterPreviousPrimaryDisposed_Succeeds()
         {
             string pipeName = UniquePipeName();

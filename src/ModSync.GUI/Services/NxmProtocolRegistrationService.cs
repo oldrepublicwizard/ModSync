@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using ModSync.Core.Utility;
 
 namespace ModSync.Services
 {
@@ -17,7 +18,7 @@ namespace ModSync.Services
     /// registry package dependency).
     /// Linux: a desktop entry at ~/.local/share/applications/modsync-nxm.desktop
     /// plus xdg-mime default for x-scheme-handler/nxm.
-    /// macOS is out of scope (requires app-bundle Info.plist work).
+    /// macOS: declarative registration via CFBundleURLTypes in the app bundle Info.plist.
     ///
     /// Content builders are pure static methods so they stay unit-testable.
     /// </summary>
@@ -47,6 +48,48 @@ namespace ModSync.Services
                    "Terminal=false\n" +
                    "NoDisplay=true\n" +
                    $"MimeType={SchemeHandlerMimeType};\n";
+        }
+
+        /// <summary>
+        /// Returns the CFBundleURLTypes XML fragment declaring the nxm URL scheme for macOS bundles.
+        /// </summary>
+        public static string BuildMacOsUrlTypesPlistFragment()
+        {
+            return "<key>CFBundleURLTypes</key>\n" +
+                   "<array>\n" +
+                   "  <dict>\n" +
+                   "    <key>CFBundleURLName</key>\n" +
+                   "    <string>Nexus Mods Protocol</string>\n" +
+                   "    <key>CFBundleURLSchemes</key>\n" +
+                   "    <array>\n" +
+                   "      <string>nxm</string>\n" +
+                   "    </array>\n" +
+                   "  </dict>\n" +
+                   "</array>";
+        }
+
+        /// <summary>
+        /// macOS status copy for Settings when not using the Win/Linux runtime toggle.
+        /// </summary>
+        public static string GetMacOsSettingsStatusText()
+        {
+            return IsRunningInsideAppBundle()
+                ? "ModSync handles Nexus Mod Manager Download links."
+                : "Nexus Mod Manager Download requires the ModSync app from GitHub Releases. " +
+                  "Terminal and dev builds cannot receive browser links — use --nxm=<url> instead.";
+        }
+
+        /// <summary>
+        /// True when the current process is running inside a macOS .app bundle.
+        /// </summary>
+        public static bool IsRunningInsideAppBundle()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return false;
+            }
+
+            return UtilityHelper.IsRunningInsideAppBundle();
         }
 
         /// <summary>
@@ -95,6 +138,11 @@ namespace ModSync.Services
                     return RegisterLinux(exePath);
                 }
 
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    return RegisterMacOs();
+                }
+
                 Core.Logger.LogWarning("[NxmProtocol] nxm protocol registration is not supported on this platform");
                 return false;
             }
@@ -129,6 +177,11 @@ namespace ModSync.Services
                     return true;
                 }
 
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    return UnregisterMacOs();
+                }
+
                 return false;
             }
             catch (Exception ex)
@@ -155,6 +208,11 @@ namespace ModSync.Services
                     return File.Exists(GetLinuxDesktopFilePath());
                 }
 
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    return IsRegisteredMacOs();
+                }
+
                 return false;
             }
             catch
@@ -176,6 +234,29 @@ namespace ModSync.Services
 
             Core.Logger.Log("[NxmProtocol] Registered nxm:// handler in HKCU\\Software\\Classes\\nxm");
             return true;
+        }
+
+        private static bool RegisterMacOs()
+        {
+            if (IsRunningInsideAppBundle())
+            {
+                Core.Logger.Log("[NxmProtocol] macOS nxm handling is declared in the app bundle Info.plist");
+                return true;
+            }
+
+            Core.Logger.LogWarning("[NxmProtocol] macOS nxm links require running from ModSync.app");
+            return false;
+        }
+
+        private static bool UnregisterMacOs()
+        {
+            Core.Logger.LogVerbose("[NxmProtocol] macOS nxm registration is bundle-declared; unregister is a no-op");
+            return true;
+        }
+
+        private static bool IsRegisteredMacOs()
+        {
+            return IsRunningInsideAppBundle();
         }
 
         private static bool RegisterLinux(string exePath)

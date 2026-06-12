@@ -428,6 +428,11 @@ namespace ModSync
                 }
                 UpdateWorkflowSurfaces();
 
+                if (ApplicationSingleInstanceContext.PrimaryInstance != null)
+                {
+                    ApplicationSingleInstanceContext.PrimaryInstance.ActivationRequested += OnSingleInstanceActivationRequested;
+                }
+
                 Opened += async (s, e) =>
                 {
                     await InitializeTelemetryIfEnabled();
@@ -461,6 +466,11 @@ namespace ModSync
 
                 Closed += (closedSender, closedArgs) =>
                 {
+                    if (ApplicationSingleInstanceContext.PrimaryInstance != null)
+                    {
+                        ApplicationSingleInstanceContext.PrimaryInstance.ActivationRequested -= OnSingleInstanceActivationRequested;
+                    }
+
                     _nxmHandoffService?.Dispose();
                     _nxmHandoffService = null;
                 };
@@ -471,6 +481,21 @@ namespace ModSync
                 _telemetryService?.RecordError("MainWindow.Constructor", e.Message, e.StackTrace);
                 throw;
             }
+        }
+
+        private void OnSingleInstanceActivationRequested(object sender, EventArgs e)
+        {
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (WindowState == WindowState.Minimized)
+                {
+                    WindowState = WindowState.Normal;
+                }
+
+                Activate();
+                Topmost = true;
+                Topmost = false;
+            });
         }
 
         private async Task InitializeTelemetryIfEnabled()
@@ -589,7 +614,9 @@ namespace ModSync
                 UpdateThemeButtonStates();
 
                 if (settings.RegisterNxmProtocolHandler
-                    && !NxmProtocolRegistrationService.IsRegistered())
+                    && !NxmProtocolRegistrationService.IsRegistered()
+                    && (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                        || RuntimeInformation.IsOSPlatform(OSPlatform.Linux)))
                 {
                     _ = NxmProtocolRegistrationService.Register();
                 }

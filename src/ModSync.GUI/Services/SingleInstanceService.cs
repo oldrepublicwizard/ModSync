@@ -33,6 +33,9 @@ namespace ModSync.Services
         /// <summary>Raised for every message received from a secondary instance.</summary>
         public event EventHandler<string> MessageReceived;
 
+        /// <summary>Raised when a secondary instance requests the primary window be activated.</summary>
+        public event EventHandler ActivationRequested;
+
         /// <summary>True after <see cref="TryBecomePrimary"/> succeeded.</summary>
         public bool IsPrimary { get; private set; }
 
@@ -251,6 +254,10 @@ namespace ModSync.Services
             if (trimmed.StartsWith("nxm://", StringComparison.OrdinalIgnoreCase))
             {
                 NxmHandoffQueue.Enqueue(trimmed);
+            }
+            else if (string.Equals(trimmed, ApplicationLaunchCoordinator.ActivateMessage, StringComparison.Ordinal))
+            {
+                ActivationRequested?.Invoke(this, EventArgs.Empty);
             }
 
             MessageReceived?.Invoke(this, trimmed);

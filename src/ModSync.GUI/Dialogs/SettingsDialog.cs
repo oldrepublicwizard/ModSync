@@ -385,20 +385,40 @@ namespace ModSync.Dialogs
             {
                 CheckBox registerCheckBox = this.FindControl<CheckBox>("RegisterNxmProtocolCheckBox");
                 TextBlock helperText = this.FindControl<TextBlock>("RegisterNxmProtocolHelperText");
+                TextBlock macOsTitle = this.FindControl<TextBlock>("NxmMacOsStatusTitle");
+                TextBlock macOsStatus = this.FindControl<TextBlock>("NxmMacOsStatusText");
                 if (registerCheckBox is null)
                 {
                     return;
                 }
 
-                bool supported = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                bool isMacOs = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+                bool runtimeToggleSupported = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                     || RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-                registerCheckBox.IsVisible = supported;
+
+                registerCheckBox.IsVisible = runtimeToggleSupported;
                 if (helperText != null)
                 {
-                    helperText.IsVisible = supported;
+                    helperText.IsVisible = runtimeToggleSupported;
                 }
 
-                if (!supported)
+                if (macOsTitle != null)
+                {
+                    macOsTitle.IsVisible = isMacOs;
+                }
+
+                if (macOsStatus != null)
+                {
+                    macOsStatus.IsVisible = isMacOs;
+                    if (isMacOs)
+                    {
+                        macOsStatus.Text =
+                            NxmProtocolRegistrationService.GetMacOsSettingsStatusText() +
+                            "\n\nClicking Mod Manager Download on Nexus opens ModSync and requires a loaded instruction file that lists the mod.";
+                    }
+                }
+
+                if (!runtimeToggleSupported)
                 {
                     return;
                 }
