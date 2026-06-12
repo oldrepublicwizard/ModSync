@@ -44,6 +44,12 @@ Use these when citing findings in plans, PRs, or audits:
 
 - [Install lifecycle](install-lifecycle.md) — wizard page order, `InstallationService`, checkpoints, widescreen, CLI flags
 - [Download system](download-system.md) — ResourceRegistry, handler order, `DownloadCacheService`, GUI vs CLI
+- [Mod update checking](update-checking.md) — `NexusApiClient`, `ResourceMetadata` version fields, `ModUpdateCheckService`
+- [Install profiles](install-profiles.md) — named loadouts, `ProfileService` capture/apply, `ProfileManagerDialog`
+- [Managed deployment engine](managed-deployment.md) — hardlink deploy, per-component manifests, uninstall/purge (Phase 4 slice 1)
+- [File-level conflicts](file-conflicts.md) — `FileConflictAnalyzer` dry-run VFS attribution and `ConflictsDialog` results UI
+- [FOMOD installer support](fomod-support.md) — ModuleConfig parser, Option/Choose mapping, FomodInstallerDialog GUI
+- [nxm protocol handler](nxm-protocol-handler.md) — nxm:// URL parsing, OS scheme registration, single-instance hand-off, free-user download path
 
 ### Architecture and agent parity
 
@@ -79,6 +85,41 @@ Use these when citing findings in plans, PRs, or audits:
 ### Plans (implementation history)
 
 - [docs/plans/](../plans/) — dated plans with requirements and status frontmatter
+
+#### June 2026 arcs (rebrand closure + MainWindow extraction)
+
+`[SYNTH]` Merged to `master` through PR #125 unless noted. Open PRs are CI-green slices waiting on merge — check `gh pr list` before assuming they landed.
+
+**Merged on `master` (rebrand + legacy compat + extraction):**
+
+| Plan | PR | Topic |
+|------|-----|--------|
+| 067 | [#115](https://github.com/th3w1zard1/ModSync/pull/115) | Rebrand KB + plan 065 footnotes |
+| 068 | [#116](https://github.com/th3w1zard1/ModSync/pull/116) | Telemetry setup guides client paths |
+| 069 | [#117](https://github.com/th3w1zard1/ModSync/pull/117) | `ModSync_Master.md` client strings |
+| 070 | [#118](https://github.com/th3w1zard1/ModSync/pull/118) | Legacy settings path tests |
+| 071 | [#119](https://github.com/th3w1zard1/ModSync/pull/119) | Legacy compat test completion |
+| 073 | [#121](https://github.com/th3w1zard1/ModSync/pull/121) | `GITHUB_SECRET_SETUP.md` client env |
+| 074 | [#122](https://github.com/th3w1zard1/ModSync/pull/122) | Remove dead service instantiations |
+| 075 | [#123](https://github.com/th3w1zard1/ModSync/pull/123) | `SettingsService` directory pickers |
+| 077 | [#125](https://github.com/th3w1zard1/ModSync/pull/125) | Headless `SettingsService` picker tests |
+
+**Open PRs (tests + menus):**
+
+| Plan | PR | Topic |
+|------|-----|--------|
+| 078 / 085 | [#133](https://github.com/th3w1zard1/ModSync/pull/133) | `SettingsService` picker hardening + edge cases |
+| 072 / 082 | [#130](https://github.com/th3w1zard1/ModSync/pull/130) | `MenuBuilderService` wiring |
+| 086 | [#134](https://github.com/th3w1zard1/ModSync/pull/134) | KB closure + agent routing (consolidates closed #131/#132) |
+| 087 | [#135](https://github.com/th3w1zard1/ModSync/pull/135) | `InitializeTopMenu` → `MenuBuilderService` (stacks #130) |
+| 088 | [#136](https://github.com/th3w1zard1/ModSync/pull/136) | `DownloadOrchestrationService` headless tests (`master`) |
+| 090 / 091 / 098 | [#137](https://github.com/th3w1zard1/ModSync/pull/137) | `DownloadIndicatorUiHelper` + headless Getting Started indicators (`master`) |
+| 094 | [#139](https://github.com/th3w1zard1/ModSync/pull/139) | `ValidationDisplayUiHelper` Getting Started summaries (`master`) |
+| 096 | [#140](https://github.com/th3w1zard1/ModSync/pull/140) | `StepProgressUiHelper` + navigation tests (supersedes closed #138) |
+
+Superseded duplicate PRs [#120](https://github.com/th3w1zard1/ModSync/pull/120)–[#129](https://github.com/th3w1zard1/ModSync/pull/129), closed #131/#132/#138 are closed or superseded. Suggested merge order: #133 → #130 → #134 → #135; #136–#140 can land on `master` independently.
+
+KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-architecture-deferred.md](gui-architecture-deferred.md).
 
 ### Always-on rules (do not duplicate here)
 
