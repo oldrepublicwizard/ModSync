@@ -59,12 +59,15 @@ Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface refere
 
 | Item | Status | Reference |
 |------|--------|-----------|
-| Directory picker init/sync → `SettingsService` | Done | plan `075`, PR #123 |
-| Mod context menu + global flyout → `MenuBuilderService` | Done | plan `072`, PR #130 |
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter DownloadOrchestrationService` (plan `088`); `--filter DownloadIndicatorUiHelper` (plans `090`–`091`); `--filter StepProgressUiHelper` (plan `096`); `--filter StepNavigationService` (plan `093`/`096`); `--filter ValidationDisplayUiHelper` (plan `094`).
 
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter ThemeService` (plan `103`).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter SelectionService` (plan `102`).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter GuiPathService` (plan `101`).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter StepProgressUiHelper` (plan `096`); `--filter StepNavigationService` (plan `093`).
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter DownloadOrchestrationService` (plan `088`); `--filter DownloadIndicatorUiHelper` (plan `090`).
 
-**Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/ModSync.GUI/Services/`.
+**Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/ModSync.GUI/Services/`. See [knowledgebase README](README.md) §June 2026 arcs for merge status.
 
 ### Duplicate wizard hosts
 
