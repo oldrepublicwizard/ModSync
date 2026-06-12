@@ -44,13 +44,11 @@ Use these when citing findings in plans, PRs, or audits:
 
 - [Install lifecycle](install-lifecycle.md) — wizard page order, `InstallationService`, checkpoints, widescreen, CLI flags
 - [Download system](download-system.md) — ResourceRegistry, handler order, `DownloadCacheService`, GUI vs CLI
-<<<<<<< HEAD
 - [Mod update checking](update-checking.md) — `NexusApiClient`, `ResourceMetadata` version fields, `ModUpdateCheckService`
-=======
 - [Install profiles](install-profiles.md) — named loadouts, `ProfileService` capture/apply, `ProfileManagerDialog`
 - [File-level conflicts](file-conflicts.md) — `FileConflictAnalyzer` dry-run VFS attribution and `ConflictsDialog` results UI
+- [FOMOD installer support](fomod-support.md) — ModuleConfig parser, Option/Choose mapping, FomodInstallerDialog GUI
 - [nxm protocol handler](nxm-protocol-handler.md) — nxm:// URL parsing, OS scheme registration, single-instance hand-off, free-user download path
->>>>>>> origin/master
 
 ### Architecture and agent parity
 
