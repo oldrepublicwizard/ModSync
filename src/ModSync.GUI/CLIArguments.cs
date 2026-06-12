@@ -32,8 +32,15 @@ namespace ModSync
         public static string InstructionFile { get; set; }
 
         /// <summary>
+        /// nxm:// protocol URL handed to us by the OS (Nexus Mods "Mod Manager Download").
+        /// Set via --nxm=&lt;url&gt; or a bare positional argument starting with nxm://.
+        /// </summary>
+        public static string NxmUrl { get; set; }
+
+        /// <summary>
         /// Parses command-line arguments.
-        /// Supports formats: --kotorPath=value, --modDirectory=value, --instructionFile=value
+        /// Supports formats: --kotorPath=value, --modDirectory=value, --instructionFile=value,
+        /// --nxm=value, and a bare nxm://... positional argument.
         /// </summary>
         public static void Parse(string[] args)
         {
@@ -73,8 +80,18 @@ namespace ModSync
                                 InstructionFile = value;
                                 Core.Logger.Log($"CLI: Set InstructionFile to '{value}'");
                                 break;
+                            case "nxm":
+                                NxmUrl = value;
+                                Core.Logger.Log("CLI: Received nxm URL via --nxm argument");
+                                break;
                         }
                     }
+                }
+                else if (arg.TrimStart().StartsWith("nxm://", StringComparison.OrdinalIgnoreCase))
+                {
+                    // The OS protocol handler passes the nxm URL as a bare positional argument.
+                    NxmUrl = arg.Trim().Trim('"', '\'');
+                    Core.Logger.Log("CLI: Received nxm URL via positional argument");
                 }
             }
         }

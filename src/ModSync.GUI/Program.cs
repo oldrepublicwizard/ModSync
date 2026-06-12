@@ -14,12 +14,34 @@ namespace ModSync
         [STAThread]
         public static void Main(string[] args)
         {
+            Services.SingleInstanceService singleInstance = null;
             try
             {
                 Core.Logger.Initialize();
 
                 // Parse command-line arguments
                 CLIArguments.Parse(args);
+
+                // Single-instance coordination for the nxm:// protocol handler.
+                // The primary instance listens on a per-user named pipe; later
+                // instances launched by the OS for an nxm link forward the URL to
+                // the primary and exit instead of opening a second window.
+                singleInstance = new Services.SingleInstanceService();
+                if (singleInstance.TryBecomePrimary())
+                {
+                    if (!string.IsNullOrEmpty(CLIArguments.NxmUrl))
+                    {
+                        Services.NxmHandoffQueue.Enqueue(CLIArguments.NxmUrl);
+                    }
+                }
+                else if (!string.IsNullOrEmpty(CLIArguments.NxmUrl))
+                {
+                    bool forwarded = singleInstance.SendToPrimaryAsync(CLIArguments.NxmUrl).GetAwaiter().GetResult();
+                    Core.Logger.Log(forwarded
+                        ? "Forwarded nxm URL to the running ModSync instance; exiting."
+                        : "Could not reach the running ModSync instance to forward the nxm URL; exiting.");
+                    return;
+                }
 
                 // Telemetry is initialized lazily inside MainWindow.InitializeTelemetryIfEnabled
                 // (called on window open) so that consent can be obtained from the user first.
@@ -50,6 +72,10 @@ namespace ModSync
                 Core.Services.TelemetryService.Instance.Flush();
 
                 throw;
+            }
+            finally
+            {
+                singleInstance?.Dispose();
             }
         }
 

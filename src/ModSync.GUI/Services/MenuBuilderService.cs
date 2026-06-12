@@ -301,6 +301,12 @@ namespace ModSync.Services
 
             _ = items.Add(new MenuItem
             {
+                Header = "Profiles...",
+                Command = ReactiveCommand.CreateFromTask(() => ProfileManagerDialog.ShowProfileManagerDialogAsync(_parentWindow)),
+            });
+
+            _ = items.Add(new MenuItem
+            {
                 Header = "🔄 Validate All Mods",
                 Command = ReactiveCommand.CreateFromTask((Func<Task>)(async () =>
                 {
