@@ -175,6 +175,35 @@ namespace ModSync.Dialogs
             }
         }
 
+        private async void ConfigureFomodMod_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string[] folders = await _dialogService.ShowFileDialog(
+                    isFolderDialog: true,
+                    windowName: "Select extracted FOMOD mod folder").ConfigureAwait(true);
+                if (folders is null || folders.Length == 0 || string.IsNullOrWhiteSpace(folders[0]))
+                {
+                    return;
+                }
+
+                ModComponent configured = await FomodInstallerDialog.ShowForExtractedArchiveAsync(this, folders[0]).ConfigureAwait(true);
+                if (configured is null)
+                {
+                    return;
+                }
+
+                await _dialogService.ShowInformationDialog(
+                    $"FOMOD configuration saved for '{configured.Name}'.\n\n" +
+                    $"Selected options: {configured.Options.Count(option => option.IsSelected)}/{configured.Options.Count}").ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                await Logger.LogExceptionAsync(ex, "Failed to configure FOMOD mod").ConfigureAwait(true);
+            }
+        }
+
+
         private void SortByName_Click(object sender, RoutedEventArgs e)
         {
             _modManagementService.SortMods(ModManagementService.ModSortCriteria.Name, ModManagementService.SortOrder.Ascending);
