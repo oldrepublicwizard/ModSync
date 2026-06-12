@@ -99,6 +99,9 @@
   <!-- Customization -->
   <ItemGroup>
     <EmbeddedResource Include="icon53.ico" />
+    <Content Include="icon53.icns">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <None Include="Info.plist" Pack="true" PackagePath="Contents\" /> <!-- For .app packaging on mac
     os -->
   </ItemGroup>
