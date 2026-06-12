@@ -115,6 +115,7 @@ namespace ModSync
         private readonly ValidationDisplayService _validationDisplayService;
         private readonly StepNavigationService _stepNavigationService;
         private readonly SettingsService _settingsService;
+        private readonly MenuBuilderService _menuBuilderService;
 
         private readonly TelemetryService _telemetryService;
 
@@ -378,7 +379,7 @@ namespace ModSync
                 _componentSelectionService = new ComponentSelectionService(MainConfigInstance);
                 _guiPathService = new GuiPathService(MainConfigInstance, _componentSelectionService);
                 _dialogService = new DialogService(this);
-                _ = new MenuBuilderService(ModManagementService, this);
+                _menuBuilderService = new MenuBuilderService(ModManagementService, this);
                 _dragDropService = new DragDropService(this, () => MainConfig.AllComponents, () => ProcessComponentsAsync(MainConfig.AllComponents));
                 _fileLoadingService = new Services.FileLoadingService(MainConfigInstance, this);
                 _componentEditorService = new Services.ComponentEditorService(MainConfigInstance, this);
@@ -2463,147 +2464,31 @@ namespace ModSync
             }
         }
 
-        [SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]
-        public ContextMenu BuildContextMenuForComponent(ModComponent component)
+        public ContextMenu BuildContextMenuForComponent(ModComponent component) =>
+            _menuBuilderService.BuildContextMenuForComponent(
+                component,
+                EditorMode,
+                SetCurrentModComponent,
+                SetTabInternal,
+                TabControl,
+                GuiEditTabItem,
+                RawEditTabItem,
+                OnContextMenuComponentSelectionChanged,
+                MoveComponentListItem,
+                (_, __) => RemoveComponentButton_Click(null, null),
+                (_, __) => InstallModSingle_Click(null, null));
+
+        private void OnContextMenuComponentSelectionChanged(ModComponent component)
         {
-            var contextMenu = new ContextMenu();
-            if (component is null)
+            UpdateModCounts();
+            if (component.IsSelected)
             {
-                return contextMenu;
+                ComponentCheckboxChecked(component, new HashSet<ModComponent>());
             }
-
-            _ = contextMenu.Items.Add(new MenuItem
+            else
             {
-                Header = component.IsSelected ? "☑️ Deselect Mod" : "☐ Select Mod",
-                Command = ReactiveCommand.Create(() =>
-                {
-                    component.IsSelected = !component.IsSelected;
-                    UpdateModCounts();
-                    if (component.IsSelected)
-                    {
-                        ComponentCheckboxChecked(component, new HashSet<ModComponent>());
-                    }
-                    else
-                    {
-                        ComponentCheckboxUnchecked(component, new HashSet<ModComponent>());
-                    }
-                }),
-            });
-
-            if (EditorMode)
-            {
-                _ = contextMenu.Items.Add(new Separator());
-
-                _ = contextMenu.Items.Add(new MenuItem
-                {
-                    Header = "⬆️ Move Up",
-                    Command = ReactiveCommand.Create(() => MoveComponentListItem(component, -1)),
-                    InputGesture = new KeyGesture(Key.Up, KeyModifiers.Control),
-                });
-                _ = contextMenu.Items.Add(new MenuItem
-                {
-                    Header = "⬇️ Move Down",
-                    Command = ReactiveCommand.Create(() => MoveComponentListItem(component, 1)),
-                    InputGesture = new KeyGesture(Key.Down, KeyModifiers.Control),
-                });
-                _ = contextMenu.Items.Add(new MenuItem
-                {
-                    Header = "📊 Move to Top",
-                    Command = ReactiveCommand.Create(() => ModManagementService.MoveModToPosition(component, 0)),
-                });
-                _ = contextMenu.Items.Add(new MenuItem
-                {
-                    Header = "📊 Move to Bottom",
-                    Command = ReactiveCommand.Create(() => ModManagementService.MoveModToPosition(component, MainConfig.AllComponents.Count - 1)),
-                });
-                _ = contextMenu.Items.Add(new Separator());
-
-                _ = contextMenu.Items.Add(new MenuItem
-                {
-                    Header = "🗑️ Delete Mod",
-                    Command = ReactiveCommand.CreateFromTask(async () =>
-                    {
-                        SetCurrentModComponent(component);
-                        bool? confirm = await ConfirmationDialog.ShowConfirmationDialogAsync(
-                            this,
-                            confirmText: $"Are you sure you want to delete the mod '{component.Name}'? This action cannot be undone.",
-                            yesButtonText: "Delete",
-                            noButtonText: "Cancel",
-                            yesButtonTooltip: "Delete the mod.",
-                            noButtonTooltip: "Cancel the deletion of the mod.",
-                            closeButtonTooltip: "Cancel the deletion of the mod."
-                        );
-                        if (confirm == true)
-                        {
-                            RemoveComponentButton_Click(null, null);
-                        }
-                    }),
-                });
-                _ = contextMenu.Items.Add(new MenuItem
-                {
-                    Header = "🔄 Duplicate Mod",
-                    Command = ReactiveCommand.Create(() =>
-                    {
-                        ModComponent duplicated = ModManagementService.DuplicateMod(component);
-                        if (duplicated != null)
-                        {
-                            SetCurrentModComponent(duplicated);
-                            SetTabInternal(TabControl, GuiEditTabItem);
-                        }
-                    }),
-                });
-                _ = contextMenu.Items.Add(new Separator());
-
-                _ = contextMenu.Items.Add(new MenuItem
-                {
-                    Header = "📝 Edit Instructions",
-                    Command = ReactiveCommand.Create(() =>
-                    {
-                        SetCurrentModComponent(component);
-                        SetTabInternal(TabControl, GuiEditTabItem);
-                    }),
-                });
-                _ = contextMenu.Items.Add(new MenuItem
-                {
-                    Header = "📄 Edit Raw TOML",
-                    Command = ReactiveCommand.Create(() =>
-                    {
-                        SetCurrentModComponent(component);
-                        SetTabInternal(TabControl, RawEditTabItem);
-                    }),
-                });
-                _ = contextMenu.Items.Add(new Separator());
-
-                _ = contextMenu.Items.Add(new MenuItem
-                {
-                    Header = "🧪 Test Install This Mod",
-                    Command = ReactiveCommand.Create(() =>
-                    {
-                        SetCurrentModComponent(component);
-                        InstallModSingle_Click(null, null);
-                    }),
-                });
-                _ = contextMenu.Items.Add(new MenuItem
-                {
-                    Header = "🔍 Validate Mod Files",
-                    Command = ReactiveCommand.CreateFromTask(async () =>
-                    {
-                        ModValidationResult validation = ModManagementService.ValidateMod(component);
-                        if (!validation.IsValid)
-                        {
-                            await InformationDialog.ShowInformationDialogAsync(this,
-                                $"Validation failed for '{component.Name}':{Environment.NewLine}{Environment.NewLine}" +
-                                string.Join("\n", validation.Errors.Take(5)));
-                        }
-                        else
-                        {
-                            await InformationDialog.ShowInformationDialogAsync(this,
-                                $"✅ '{component.Name}' validation passed!");
-                        }
-                    }),
-                });
+                ComponentCheckboxUnchecked(component, new HashSet<ModComponent>());
             }
-            return contextMenu;
         }
 
         private void BuildGlobalActionsMenu()
@@ -2620,108 +2505,36 @@ namespace ModSync
             }
         }
 
-        private void BuildMenuFlyoutItems(MenuFlyout menu)
+        private void BuildMenuFlyoutItems(MenuFlyout menu) =>
+            _menuBuilderService.BuildGlobalActionsFlyout(
+                menu,
+                EditorMode,
+                () => RefreshComponents_Click(null, null),
+                () => AutoGenerateAllComponentsAsync(),
+                () => AutoGenerateDependenciesAsync(),
+                RemoveAllDependenciesAsync,
+                () => ModManagementService.CreateMod(),
+                SetCurrentModComponent,
+                SetTabInternal,
+                TabControl,
+                GuiEditTabItem,
+                ShowModManagementDialogAsync,
+                ShowModStatisticsDialogAsync,
+                (_, __) => SaveModFileAs_ClickWithFormat(null, null),
+                (_, __) => CloseTOMLFile_Click(null, null));
+
+        private async Task ShowModStatisticsDialogAsync()
         {
-            if (!Dispatcher.UIThread.CheckAccess())
-            {
-                Dispatcher.UIThread.Post(() => BuildMenuFlyoutItems(menu), DispatcherPriority.Normal);
-                return;
-            }
-            menu.Items.Clear();
-
-            _ = menu.Items.Add(new MenuItem
-            {
-                Header = "🔄 Refresh List",
-                Command = ReactiveCommand.Create(() => RefreshComponents_Click(null, null)),
-                InputGesture = new KeyGesture(Key.F5),
-            });
-            _ = menu.Items.Add(new MenuItem
-            {
-                Header = "🔄 Validate All Mods",
-                Command = ReactiveCommand.Create((Func<Task>)(async () =>
-                {
-                    Dictionary<ModComponent, ModValidationResult> results = ModManagementService.ValidateAllMods();
-                    int errorCount = results.Count(r => !r.Value.IsValid);
-                    int warningCount = results.Sum(r => r.Value.Warnings.Count);
-                    await InformationDialog.ShowInformationDialogAsync(this,
-                        "Validation complete!\n\n" +
-                        $"Errors: {errorCount}\n" +
-                        $"Warnings: {warningCount}\n\n" +
-                        $"Valid mods: {results.Count(r => r.Value.IsValid)}/{results.Count}");
-                })),
-            });
-            _ = menu.Items.Add(new MenuItem
-            {
-                Header = "🤖 Generate Instructions from ModLinks",
-                Command = ReactiveCommand.Create((async () => await AutoGenerateAllComponentsAsync())),
-            });
-            _ = menu.Items.Add(new MenuItem
-            {
-                Header = "🔒 Lock Install Order",
-                Command = ReactiveCommand.Create((async () => await AutoGenerateDependenciesAsync())),
-            });
-            _ = menu.Items.Add(new MenuItem
-            {
-                Header = "🗑️ Remove All Dependencies",
-                Command = ReactiveCommand.Create((async () => await RemoveAllDependenciesAsync())),
-            });
-            _ = menu.Items.Add(new Separator());
-            if (EditorMode)
-            {
-
-                _ = menu.Items.Add(new MenuItem
-                {
-                    Header = "➕ Add New Mod",
-                    Command = ReactiveCommand.Create(() =>
-                    {
-                        ModComponent newMod = ModManagementService.CreateMod();
-                        if (newMod is null)
-                        {
-                            return;
-                        }
-
-                        SetCurrentModComponent(newMod);
-                        SetTabInternal(TabControl, GuiEditTabItem);
-                    }),
-                });
-                _ = menu.Items.Add(new Separator());
-
-                _ = menu.Items.Add(new MenuItem
-                {
-                    Header = "⚙️ Mod Management Tools",
-                    Command = ReactiveCommand.Create(async () => await ShowModManagementDialogAsync()),
-                });
-                _ = menu.Items.Add(new MenuItem
-                {
-                    Header = "📈 Mod Statistics",
-                    Command = ReactiveCommand.Create((async () =>
-                    {
-                        ModStatistics stats = ModManagementService.GetModStatistics();
-                        string statsText = "📊 Mod Statistics\n\n" +
-                                           $"Total Mods: {stats.TotalMods}\n" +
-                                           $"Selected: {stats.SelectedMods}\n" +
-                                           $"Downloaded: {stats.DownloadedMods}\n\n" +
-                                           $"Categories:\n{string.Join("\n", stats.Categories.Select(c => $"  • {c.Key}: {c.Value}"))}\n\n" +
-                                           $"Tiers:\n{string.Join("\n", stats.Tiers.Select(t => $"  • {t.Key}: {t.Value}"))}\n\n" +
-                                           $"Average Instructions/Mod: {stats.AverageInstructionsPerMod:F1}\n" +
-                                           $"Average Options/Mod: {stats.AverageOptionsPerMod:F1}";
-                        await InformationDialog.ShowInformationDialogAsync(this, statsText);
-                    })),
-                });
-                _ = menu.Items.Add(new Separator());
-
-                _ = menu.Items.Add(new MenuItem
-                {
-                    Header = "💾 Save Config",
-                    Command = ReactiveCommand.Create(() => SaveModFileAs_ClickWithFormat(null, null)),
-                    InputGesture = new KeyGesture(Key.S, KeyModifiers.Control),
-                });
-                _ = menu.Items.Add(new MenuItem
-                {
-                    Header = "❌ Close TOML",
-                    Command = ReactiveCommand.Create(() => CloseTOMLFile_Click(null, null)),
-                });
-            }
+            ModStatistics stats = ModManagementService.GetModStatistics();
+            string statsText = "📊 Mod Statistics\n\n" +
+                               $"Total Mods: {stats.TotalMods}\n" +
+                               $"Selected: {stats.SelectedMods}\n" +
+                               $"Downloaded: {stats.DownloadedMods}\n\n" +
+                               $"Categories:\n{string.Join("\n", stats.Categories.Select(c => $"  • {c.Key}: {c.Value}"))}\n\n" +
+                               $"Tiers:\n{string.Join("\n", stats.Tiers.Select(t => $"  • {t.Key}: {t.Value}"))}\n\n" +
+                               $"Average Instructions/Mod: {stats.AverageInstructionsPerMod:F1}\n" +
+                               $"Average Options/Mod: {stats.AverageOptionsPerMod:F1}";
+            await InformationDialog.ShowInformationDialogAsync(this, statsText);
         }
 
         private void SetupDragAndDrop()
