@@ -1,6 +1,6 @@
 # Plan 119 — nxm Phase 7 macOS .app CI bundling
 
-**Status:** in progress  
+**Status:** completed  
 **Branch:** `feat/nxm-phase7-macos-app-bundle`  
 **Depends on:** PR #163 (merged)
 
