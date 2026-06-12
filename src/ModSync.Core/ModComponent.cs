@@ -2267,6 +2267,18 @@ namespace ModSync.Core
 
         /// <summary>Last time integrity was verified</summary>
         public DateTime? LastVerified { get; set; }
+
+        /// <summary>Version of the mod this resource was downloaded from (provider-reported)</summary>
+        public string ModVersion { get; set; }
+
+        /// <summary>Latest version reported by the provider during the most recent update check</summary>
+        public string LatestKnownVersion { get; set; }
+
+        /// <summary>Last time an update check queried the provider for this resource</summary>
+        public DateTime? LastUpdateCheck { get; set; }
+
+        /// <summary>True when LatestKnownVersion differs from ModVersion</summary>
+        public bool UpdateAvailable { get; set; }
     }
 
 

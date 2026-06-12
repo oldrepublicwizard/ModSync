@@ -301,6 +301,12 @@ namespace ModSync.Services
 
             _ = items.Add(new MenuItem
             {
+                Header = "Profiles...",
+                Command = ReactiveCommand.CreateFromTask(() => ProfileManagerDialog.ShowProfileManagerDialogAsync(_parentWindow)),
+            });
+
+            _ = items.Add(new MenuItem
+            {
                 Header = "🔄 Validate All Mods",
                 Command = ReactiveCommand.CreateFromTask((Func<Task>)(async () =>
                 {
@@ -316,6 +322,27 @@ namespace ModSync.Services
 
                         $"Valid mods: {results.Count(r => r.Value.IsValid)}/{results.Count}");
                 })),
+            });
+
+            _ = items.Add(new MenuItem
+            {
+                Header = "⚔️ Analyze File Conflicts",
+                Command = ReactiveCommand.CreateFromTask(async () =>
+                {
+                    try
+                    {
+                        List<ModComponent> allMods = _modManagementService.SearchMods(string.Empty);
+                        (_, List<ModComponent> installOrder) = ModComponent.ConfirmComponentsInstallOrder(allMods);
+                        await ConflictsDialog.ShowAnalysisAsync(_parentWindow, installOrder);
+                    }
+                    catch (KeyNotFoundException ex) when (ex.Message.IndexOf("Circular dependency", StringComparison.Ordinal) >= 0)
+                    {
+                        await InformationDialog.ShowInformationDialogAsync(
+                            _parentWindow,
+                            "Cannot analyze file conflicts: circular dependencies prevent a valid install order.\n\n" +
+                            "Resolve dependency cycles first, then try again.");
+                    }
+                }),
             });
         }
 

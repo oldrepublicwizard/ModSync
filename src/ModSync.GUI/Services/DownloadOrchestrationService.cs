@@ -652,9 +652,67 @@ namespace ModSync.Services
             }
         }
 
+        public async Task<string> DownloadModFromUrlWithProgressUiAsync(
+            string url,
+            ModComponent component,
+            CancellationToken cancellationToken = default)
+        {
+            BeginSingleDownloadTracking();
+            SingleUrlDownloadDialog progressDialog = null;
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                progressDialog = new SingleUrlDownloadDialog(component?.Name, url);
+                progressDialog.Show(_parentWindow);
+            });
+
+            string result = null;
+            try
+            {
+                var uiProgress = new Progress<DownloadProgress>(update =>
+                {
+                    Dispatcher.UIThread.Post(() => progressDialog?.ApplyProgress(update));
+                });
+
+                result = await DownloadModFromUrlAsync(
+                    url,
+                    component,
+                    uiProgress,
+                    cancellationToken).ConfigureAwait(false);
+
+                return result;
+            }
+            finally
+            {
+                bool succeeded = !string.IsNullOrEmpty(result) && File.Exists(result);
+                EndSingleDownloadTracking(succeeded);
+                await Dispatcher.UIThread.InvokeAsync(() => progressDialog?.Close());
+            }
+        }
+
+        internal void BeginSingleDownloadTracking()
+        {
+            _totalComponentsToDownload = 1;
+            _completedComponents = 0;
+            IsDownloadInProgress = true;
+            DownloadStateChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        internal void EndSingleDownloadTracking(bool succeeded)
+        {
+            if (succeeded)
+            {
+                _completedComponents = 1;
+            }
+
+            IsDownloadInProgress = false;
+            DownloadStateChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         public static async Task<string> DownloadModFromUrlAsync(
             string url,
             ModComponent component,
+            IProgress<DownloadProgress> externalProgress = null,
             CancellationToken cancellationToken = default
         )
         {
@@ -683,7 +741,6 @@ namespace ModSync.Services
                 var urlToProgressMap = new Dictionary<string, DownloadProgress>(StringComparer.Ordinal) { { url, progress } };
                 var progressReporter = new Progress<DownloadProgress>(update =>
                 {
-
                     progress.Status = update.Status;
                     progress.StatusMessage = update.StatusMessage;
                     progress.ProgressPercentage = update.ProgressPercentage;
@@ -695,6 +752,7 @@ namespace ModSync.Services
                     progress.ErrorMessage = update.ErrorMessage;
                     progress.Exception = update.Exception;
                     progress.ComponentGuid = component?.Guid;
+                    externalProgress?.Report(progress);
                 });
                 List<DownloadResult> results = await downloadManager.DownloadAllWithProgressAsync(
                     urlToProgressMap, tempDir, progressReporter, cancellationToken);

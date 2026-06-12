@@ -156,6 +156,24 @@ namespace ModSync.Dialogs
             }
         }
 
+        private async void AnalyzeFileConflicts_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                (_, List<ModComponent> installOrder) = ModComponent.ConfirmComponentsInstallOrder(_originalComponents);
+                await ConflictsDialog.ShowAnalysisAsync(this, installOrder).ConfigureAwait(true);
+            }
+            catch (KeyNotFoundException ex) when (ex.Message.IndexOf("Circular dependency", StringComparison.Ordinal) >= 0)
+            {
+                await _dialogService.ShowInformationDialog(
+                    "Cannot analyze file conflicts: circular dependencies prevent a valid install order.\n\n" +
+                    "Resolve dependency cycles first, then try again.").ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                await Logger.LogExceptionAsync(ex, "Failed to analyze file conflicts").ConfigureAwait(true);
+            }
+        }
 
         private void SortByName_Click(object sender, RoutedEventArgs e)
         {
