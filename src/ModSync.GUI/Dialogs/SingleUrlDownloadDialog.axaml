@@ -1,0 +1,45 @@
+<!--  Copyright 2021-2025 ModSync  -->
+<!--  Licensed under the Business Source License 1.1 (BSL 1.1).  -->
+<!--  See LICENSE.txt file in the project root for full license information.  -->
+<Window
+    x:Class="ModSync.Dialogs.SingleUrlDownloadDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Nexus Mod Manager Download"
+    Width="520"
+    Height="220"
+    MinWidth="420"
+    MinHeight="180"
+    CanResize="False"
+    WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+        <StackPanel Grid.Row="0" Spacing="6">
+            <TextBlock x:Name="ModNameText" Text="Downloading..." />
+            <TextBlock
+                x:Name="StatusText"
+                Classes="secondary-text"
+                Text="Preparing download..." />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="8">
+            <ProgressBar
+                x:Name="DownloadProgressBar"
+                Height="24"
+                Classes="download-progress"
+                Maximum="100"
+                Minimum="0"
+                Value="0" />
+            <TextBlock
+                x:Name="DetailText"
+                Classes="secondary-text"
+                TextWrapping="Wrap" />
+        </StackPanel>
+
+        <TextBlock
+            Grid.Row="2"
+            x:Name="FooterText"
+            Classes="secondary-text"
+            Text="Download in progress…" />
+    </Grid>
+</Window>
