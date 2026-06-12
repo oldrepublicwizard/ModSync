@@ -38,6 +38,11 @@ namespace ModSync
         public static string NxmUrl { get; set; }
 
         /// <summary>
+        /// When true, skip single-instance enforcement so a second GUI can start (dev/agent workflows).
+        /// </summary>
+        public static bool AllowMultipleInstances { get; set; }
+
+        /// <summary>
         /// Parses command-line arguments.
         /// Supports formats: --kotorPath=value, --modDirectory=value, --instructionFile=value,
         /// --nxm=value, and a bare nxm://... positional argument.
@@ -85,6 +90,11 @@ namespace ModSync
                                 Core.Logger.Log("CLI: Received nxm URL via --nxm argument");
                                 break;
                         }
+                    }
+                    else if (string.Equals(arg, "--allow-multiple-instances", StringComparison.OrdinalIgnoreCase))
+                    {
+                        AllowMultipleInstances = true;
+                        Core.Logger.LogVerbose("CLI: AllowMultipleInstances enabled");
                     }
                 }
                 else if (arg.TrimStart().StartsWith("nxm://", StringComparison.OrdinalIgnoreCase))
