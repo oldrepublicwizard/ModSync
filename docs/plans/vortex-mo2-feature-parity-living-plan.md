@@ -16,9 +16,9 @@ Single authoritative tracker for parity work. Individual slice plans under
 | Phase | Area | Status |
 |-------|------|--------|
 | 1 | nxm protocol handler | Merged (#155–#164) |
-| 2 | Nexus update checks | Core merged (#156); **GUI badges merged** (plan 122) |
+| 2 | Nexus update checks | Core merged (#156); GUI badges in PR #167 (plan 122) |
 | 3 | Profiles | Merged (#157) |
-| 4 | Managed deployment | PR #158 rebased; **merge when CI green**; install wiring deferred |
+| 4 | Managed deployment | **Merged** (#158); install wiring deferred |
 | 5 | File conflicts | Core #160 + GUI #165 merged |
 | 6 | FOMOD | Parser + installer dialog merged (#166); archive hook deferred |
 | 7 | (roadmap tail) | Per slice plans |
