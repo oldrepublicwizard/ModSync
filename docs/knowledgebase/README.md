@@ -44,7 +44,7 @@ Use these when citing findings in plans, PRs, or audits:
 
 - [Install lifecycle](install-lifecycle.md) — wizard page order, `InstallationService`, checkpoints, widescreen, CLI flags
 - [Download system](download-system.md) — ResourceRegistry, handler order, `DownloadCacheService`, GUI vs CLI
-- [Mod update checking](update-checking.md) — `NexusApiClient`, `ResourceMetadata` version fields, `ModUpdateCheckService`
+- [Mod update checking](update-checking.md) — `NexusApiClient`, `ModUpdateCheckService`, mod list update badges, menu check action
 - [Install profiles](install-profiles.md) — named loadouts, `ProfileService` capture/apply, `ProfileManagerDialog`
 - [Managed deployment engine](managed-deployment.md) — hardlink deploy, per-component manifests, uninstall/purge (Phase 4 slice 1)
 - [File-level conflicts](file-conflicts.md) — `FileConflictAnalyzer` dry-run VFS attribution and `ConflictsDialog` results UI
@@ -84,7 +84,7 @@ Use these when citing findings in plans, PRs, or audits:
 
 ### Plans (implementation history)
 
-- [docs/plans/](../plans/) — dated plans with requirements and status frontmatter
+- [docs/plans/](../plans/) — dated plans with requirements and status frontmatter; active parity tracker: [vortex-mo2-feature-parity-living-plan.md](../plans/vortex-mo2-feature-parity-living-plan.md)
 
 #### June 2026 arcs (rebrand closure + MainWindow extraction)
 

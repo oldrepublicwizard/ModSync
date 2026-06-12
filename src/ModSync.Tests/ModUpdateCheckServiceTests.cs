@@ -258,6 +258,25 @@ namespace ModSync.Tests
         }
 
         [Test]
+        public void NexusUpdateAvailable_ReflectsResourceMetadataFlags()
+        {
+            var metadataWithUpdate = new ResourceMetadata { UpdateAvailable = true };
+            var metadataWithoutUpdate = new ResourceMetadata { UpdateAvailable = false };
+            ModComponent withUpdate = CreateComponent(
+                "Has Update",
+                ("https://www.nexusmods.com/kotor/mods/1", metadataWithUpdate));
+            ModComponent withoutUpdate = CreateComponent(
+                "No Update",
+                ("https://www.nexusmods.com/kotor/mods/2", metadataWithoutUpdate));
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(withUpdate.NexusUpdateAvailable, Is.True);
+                Assert.That(withoutUpdate.NexusUpdateAvailable, Is.False);
+            });
+        }
+
+        [Test]
         public void CheckForUpdatesAsync_NullComponents_Throws()
         {
             ModUpdateCheckService service = CreateService(new RoutingHttpMessageHandler());

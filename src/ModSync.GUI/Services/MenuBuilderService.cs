@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 using Avalonia.Controls;
@@ -13,6 +15,7 @@ using Avalonia.Threading;
 
 using ModSync.Core;
 using ModSync.Core.Services;
+using ModSync.Core.Services.Download;
 using ModSync.Dialogs;
 
 using ReactiveUI;
@@ -344,6 +347,63 @@ namespace ModSync.Services
                     }
                 }),
             });
+
+            _ = items.Add(new MenuItem
+            {
+                Header = "🔔 Check for Nexus Updates",
+                Command = ReactiveCommand.CreateFromTask(RunNexusUpdateCheckAsync),
+            });
+        }
+
+        private async Task RunNexusUpdateCheckAsync()
+        {
+            if (string.IsNullOrWhiteSpace(MainConfig.NexusModsApiKey))
+            {
+                await InformationDialog.ShowInformationDialogAsync(
+                    _parentWindow,
+                    "Set a Nexus Mods API key in Settings before checking for updates.");
+                return;
+            }
+
+            List<ModComponent> mods = _modManagementService.SearchMods(string.Empty);
+            using (var httpClient = new HttpClient())
+            {
+                var apiClient = new NexusApiClient(httpClient, MainConfig.NexusModsApiKey);
+                var updateService = new ModUpdateCheckService(apiClient);
+                ModUpdateCheckResult result = await updateService.CheckForUpdatesAsync(mods).ConfigureAwait(true);
+
+                foreach (ModComponent component in mods)
+                {
+                    component.NotifyNexusUpdateStateChanged();
+                }
+
+                string summary = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Nexus update check complete.\n\nChecked: {0}\nSkipped (non-Nexus): {1}\nUpdates found: {2}",
+                    result.CheckedCount,
+                    result.SkippedCount,
+                    result.UpdatesFound.Count);
+
+                if (result.RateLimitReached)
+                {
+                    summary += "\n\nStopped early: Nexus API rate limit reached.";
+                }
+
+                if (result.Errors.Count > 0)
+                {
+                    summary += string.Format(
+                        CultureInfo.InvariantCulture,
+                        "\n\nErrors ({0}):\n{1}",
+                        result.Errors.Count,
+                        string.Join("\n", result.Errors.Take(5)));
+                    if (result.Errors.Count > 5)
+                    {
+                        summary += string.Format(CultureInfo.InvariantCulture, "\n… and {0} more.", result.Errors.Count - 5);
+                    }
+                }
+
+                await InformationDialog.ShowInformationDialogAsync(_parentWindow, summary);
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]
