@@ -83,10 +83,12 @@ namespace ModSync.Dialogs
                 Dictionary<Guid, string> nameLookup = new Dictionary<Guid, string>();
                 foreach (ModComponent component in componentsInInstallOrder)
                 {
-                    if (component?.Guid != Guid.Empty)
+                    if (component == null || component.Guid == Guid.Empty)
                     {
-                        nameLookup[component.Guid] = component.Name ?? string.Empty;
+                        continue;
                     }
+
+                    nameLookup[component.Guid] = component.Name ?? string.Empty;
                 }
 
                 ConflictsDialogSummary summary = ConflictsDialogPresenter.BuildSummary(result, nameLookup);

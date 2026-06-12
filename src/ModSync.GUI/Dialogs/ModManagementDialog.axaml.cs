@@ -163,7 +163,7 @@ namespace ModSync.Dialogs
                 (_, List<ModComponent> installOrder) = ModComponent.ConfirmComponentsInstallOrder(_originalComponents);
                 await ConflictsDialog.ShowAnalysisAsync(this, installOrder).ConfigureAwait(true);
             }
-            catch (KeyNotFoundException ex) when (ex.Message.Contains("Circular dependency", StringComparison.Ordinal))
+            catch (KeyNotFoundException ex) when (ex.Message.IndexOf("Circular dependency", StringComparison.Ordinal) >= 0)
             {
                 await _dialogService.ShowInformationDialog(
                     "Cannot analyze file conflicts: circular dependencies prevent a valid install order.\n\n" +

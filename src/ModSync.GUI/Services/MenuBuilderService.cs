@@ -335,7 +335,7 @@ namespace ModSync.Services
                         (_, List<ModComponent> installOrder) = ModComponent.ConfirmComponentsInstallOrder(allMods);
                         await ConflictsDialog.ShowAnalysisAsync(_parentWindow, installOrder);
                     }
-                    catch (KeyNotFoundException ex) when (ex.Message.Contains("Circular dependency", StringComparison.Ordinal))
+                    catch (KeyNotFoundException ex) when (ex.Message.IndexOf("Circular dependency", StringComparison.Ordinal) >= 0)
                     {
                         await InformationDialog.ShowInformationDialogAsync(
                             _parentWindow,
