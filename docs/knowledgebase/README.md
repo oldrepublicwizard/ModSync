@@ -46,6 +46,7 @@ Use these when citing findings in plans, PRs, or audits:
 - [Download system](download-system.md) — ResourceRegistry, handler order, `DownloadCacheService`, GUI vs CLI
 - [Mod update checking](update-checking.md) — `NexusApiClient`, `ResourceMetadata` version fields, `ModUpdateCheckService`
 - [Install profiles](install-profiles.md) — named loadouts, `ProfileService` capture/apply, `ProfileManagerDialog`
+- [Managed deployment engine](managed-deployment.md) — hardlink deploy, per-component manifests, uninstall/purge (Phase 4 slice 1)
 - [File-level conflicts](file-conflicts.md) — `FileConflictAnalyzer` dry-run VFS attribution and `ConflictsDialog` results UI
 - [FOMOD installer support](fomod-support.md) — ModuleConfig parser, Option/Choose mapping, FomodInstallerDialog GUI
 - [nxm protocol handler](nxm-protocol-handler.md) — nxm:// URL parsing, OS scheme registration, single-instance hand-off, free-user download path
