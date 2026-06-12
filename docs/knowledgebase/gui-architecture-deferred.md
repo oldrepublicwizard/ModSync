@@ -70,6 +70,7 @@ Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface refere
 **Agent guidance:** Do not add new feature logic inline without a plan; prefer `src/ModSync.GUI/Services/`.
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter DownloadOrchestrationService` (plan `088`); `--filter DownloadIndicatorUiHelper` (plans `090`–`091`); `--filter StepProgressUiHelper` (plan `096`); `--filter StepNavigationService` (plan `093`/`096`); `--filter ValidationDisplayUiHelper` (plan `094`).
 
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter ScrollNavigationService` (plan `100`).
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter MarkdownRenderingService` (plan `106`).
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter InstructionManagementService` (plan `104`).
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter ComponentEditorService` (plan `105`).
