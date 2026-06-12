@@ -738,6 +738,31 @@ namespace ModSync.Core
                 OnPropertyChanged();
             }
         }
+
+        /// <summary>
+        /// True when any <see cref="ResourceRegistry"/> entry has
+        /// <see cref="ResourceMetadata.UpdateAvailable"/> set after a Nexus update check.
+        /// </summary>
+        [JsonIgnore]
+        public bool NexusUpdateAvailable
+        {
+            get
+            {
+                foreach (ResourceMetadata metadata in _resourceRegistry.Values)
+                {
+                    if (metadata != null && metadata.UpdateAvailable)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>Raises <see cref="PropertyChanged"/> for <see cref="NexusUpdateAvailable"/> after metadata mutation.</summary>
+        public void NotifyNexusUpdateStateChanged() => OnPropertyChanged(nameof(NexusUpdateAvailable));
+
         public bool WidescreenOnly
         {
             get => _widescreenOnly;
