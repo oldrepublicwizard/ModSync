@@ -379,6 +379,7 @@ chrome/
 *.nettrace
 *.ps1
 !cleanup-code.ps1
+!scripts/ci/*.ps1
 
 # Telemetry signing secrets (NEVER commit these!)
 **/telemetry.key
