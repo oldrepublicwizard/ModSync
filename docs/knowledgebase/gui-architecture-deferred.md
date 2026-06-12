@@ -62,6 +62,7 @@ Plans: `docs/plans/2026-06-03-012`, `021`–`029`, `033`–`057`. Surface refere
 | Directory picker init/sync → `SettingsService` | Done | plan `075`, PR #123 |
 | Mod context menu + global flyout → `MenuBuilderService` | Done | plan `072`, PR #130 |
 
+**Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter ValidationDisplayUiHelper` (plan `094`).
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter DownloadOrchestrationService` (plan `088`).
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter DialogServiceTests` / `FileSystemServiceTests` (plan `113`).
 **Headless tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter SettingsService` (plan `077`); `--filter MenuBuilderService` (plan `072`); `--filter FilterItemModel` (plan `112`).
