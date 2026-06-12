@@ -42,6 +42,7 @@ namespace ModSync.Services
             TabItem guiEditTab,
             TabItem rawEditTab,
             Action<ModComponent> onComponentSelectionChanged,
+            Action<ModComponent, int> onMoveRelative,
             Action<object, object> onRemoveComponent,
             Action<object, object> onInstallSingle)
         {
@@ -64,7 +65,7 @@ namespace ModSync.Services
 
             if (editorMode)
             {
-                AddEditorModeMenuItems(contextMenu, component, setCurrentComponent, setTab, tabControl, guiEditTab, rawEditTab, onRemoveComponent, onInstallSingle);
+                AddEditorModeMenuItems(contextMenu, component, setCurrentComponent, setTab, tabControl, guiEditTab, rawEditTab, onMoveRelative, onRemoveComponent, onInstallSingle);
             }
 
             return contextMenu;
@@ -74,7 +75,9 @@ namespace ModSync.Services
             MenuFlyout menu,
             bool editorMode,
             Action onRefresh,
-            Func<Task> onValidateAll,
+            Func<Task> onGenerateInstructions,
+            Func<Task> onLockInstallOrder,
+            Func<Task> onRemoveAllDependencies,
             Func<ModComponent> onCreate,
             Action<ModComponent> setCurrentComponent,
             Action<TabControl, TabItem> setTab,
@@ -87,18 +90,36 @@ namespace ModSync.Services
         {
             if (!Dispatcher.UIThread.CheckAccess())
             {
-                Dispatcher.UIThread.Post(() => BuildGlobalActionsFlyout(menu, editorMode, onRefresh, onValidateAll, onCreate, setCurrentComponent, setTab, tabControl, guiEditTab, onShowModManagement, onShowStats, onSave, onClose), DispatcherPriority.Normal);
+                Dispatcher.UIThread.Post(() => BuildGlobalActionsFlyout(menu, editorMode, onRefresh, onGenerateInstructions, onLockInstallOrder, onRemoveAllDependencies, onCreate, setCurrentComponent, setTab, tabControl, guiEditTab, onShowModManagement, onShowStats, onSave, onClose), DispatcherPriority.Normal);
                 return;
             }
             menu.Items.Clear();
 
             AddCommonMenuItems(menu.Items, onRefresh);
 
+            menu.Items.Add(new MenuItem
+            {
+                Header = "🤖 Generate Instructions from ModLinks",
+                Command = ReactiveCommand.CreateFromTask(onGenerateInstructions),
+            });
+
+            menu.Items.Add(new MenuItem
+            {
+                Header = "🔒 Lock Install Order",
+                Command = ReactiveCommand.CreateFromTask(onLockInstallOrder),
+            });
+
+            menu.Items.Add(new MenuItem
+            {
+                Header = "🗑️ Remove All Dependencies",
+                Command = ReactiveCommand.CreateFromTask(onRemoveAllDependencies),
+            });
+
             menu.Items.Add(new Separator());
 
             if (editorMode)
             {
-                AddEditorModeFlyoutItems(menu, onCreate, setCurrentComponent, setTab, tabControl, guiEditTab, onShowModManagement, onSave, onClose);
+                AddEditorModeFlyoutItems(menu, onCreate, setCurrentComponent, setTab, tabControl, guiEditTab, onShowModManagement, onShowStats, onSave, onClose);
             }
         }
 
@@ -144,6 +165,7 @@ namespace ModSync.Services
             TabControl tabControl,
             TabItem guiEditTab,
             TabItem rawEditTab,
+            Action<ModComponent, int> onMoveRelative,
             Action<object, object> onRemoveComponent,
             Action<object, object> onInstallSingle)
         {
@@ -152,14 +174,14 @@ namespace ModSync.Services
             contextMenu.Items.Add(new MenuItem
             {
                 Header = "⬆️ Move Up",
-                Command = ReactiveCommand.Create(() => _modManagementService.MoveModRelative(component, -1)),
+                Command = ReactiveCommand.Create(() => onMoveRelative(component, -1)),
                 InputGesture = new KeyGesture(Key.Up, KeyModifiers.Control),
             });
 
             contextMenu.Items.Add(new MenuItem
             {
                 Header = "⬇️ Move Down",
-                Command = ReactiveCommand.Create(() => _modManagementService.MoveModRelative(component, 1)),
+                Command = ReactiveCommand.Create(() => onMoveRelative(component, 1)),
                 InputGesture = new KeyGesture(Key.Down, KeyModifiers.Control),
             });
 
@@ -187,7 +209,10 @@ namespace ModSync.Services
                         _parentWindow,
                         confirmText: $"Are you sure you want to delete the mod '{component.Name}'? This action cannot be undone.",
                         yesButtonText: "Delete",
-                        noButtonText: "Cancel"
+                        noButtonText: "Cancel",
+                        yesButtonTooltip: "Delete the mod.",
+                        noButtonTooltip: "Cancel the deletion of the mod.",
+                        closeButtonTooltip: "Cancel the deletion of the mod."
                     );
 
                     if (confirm == true)
@@ -254,7 +279,7 @@ namespace ModSync.Services
                     if (!validation.IsValid)
                     {
                         await InformationDialog.ShowInformationDialogAsync(_parentWindow,
-                            $"Validation failed for '{component.Name}':\n\n" +
+                            $"Validation failed for '{component.Name}':{Environment.NewLine}{Environment.NewLine}" +
                             string.Join("\n", validation.Errors.Take(5)));
                     }
                     else
@@ -303,7 +328,8 @@ namespace ModSync.Services
             TabControl tabControl,
             TabItem guiEditTab,
             Func<Task> onShowModManagement,
-                        Action<object, object> onSave,
+            Func<Task> onShowStats,
+            Action<object, object> onSave,
             Action<object, object> onClose)
         {
 
@@ -327,26 +353,6 @@ namespace ModSync.Services
 
             menu.Items.Add(new MenuItem
             {
-                Header = "🔎 Select by Name",
-                Command = ReactiveCommand.Create(() => _modManagementService.SortMods()),
-            });
-
-            menu.Items.Add(new MenuItem
-            {
-                Header = "🔎 Select by Category",
-                Command = ReactiveCommand.Create(() => _modManagementService.SortMods(ModSortCriteria.Category)),
-            });
-
-            menu.Items.Add(new MenuItem
-            {
-                Header = "🔎 Select by Tier",
-                Command = ReactiveCommand.Create(() => _modManagementService.SortMods(ModSortCriteria.Tier)),
-            });
-
-            menu.Items.Add(new Separator());
-
-            menu.Items.Add(new MenuItem
-            {
                 Header = "⚙️ Mod Management Tools",
                 Command = ReactiveCommand.CreateFromTask(onShowModManagement),
             });
@@ -354,22 +360,7 @@ namespace ModSync.Services
             menu.Items.Add(new MenuItem
             {
                 Header = "📈 Mod Statistics",
-                Command = ReactiveCommand.CreateFromTask(async () =>
-                {
-                    ModStatistics stats = _modManagementService.GetModStatistics();
-                    string statsText = "📊 Mod Statistics\n\n" +
-                                       $"Total Mods: {stats.TotalMods}\n" +
-                                       $"Selected: {stats.SelectedMods}\n" +
-                                       $"Downloaded: {stats.DownloadedMods}\n\n" +
-                                       $"Categories:\n{string.Join("\n", stats.Categories.Select(c => $"  • {c.Key}: {c.Value}"))}\n\n" +
-                                       $"Tiers:\n{string.Join("\n", stats.Tiers.Select(t => $"  • {t.Key}: {t.Value}"))}\n\n" +
-                                       $"Average Instructions/Mod: {stats.AverageInstructionsPerMod:F1}\n" +
-                                       $"Average Options/Mod: {stats.AverageOptionsPerMod:F1}";
-
-
-
-                    await InformationDialog.ShowInformationDialogAsync(_parentWindow, statsText);
-                }),
+                Command = ReactiveCommand.CreateFromTask(onShowStats),
             });
 
             menu.Items.Add(new Separator());
