@@ -1,6 +1,6 @@
 # Plan 118 — nxm Phase 6 in-progress download UI
 
-**Status:** in progress  
+**Status:** shipped (PR pending)  
 **Branch:** `feat/nxm-phase6-download-ui`  
 **Depends on:** PR #161 (merged)
 
