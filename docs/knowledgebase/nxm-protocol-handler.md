@@ -50,9 +50,15 @@ Sources: `src/ModSync.Core/Services/Download/NxmUrl.cs`, `src/ModSync.Core/Servi
 
 `[REPO]` macOS unchanged: informational status block only; no runtime conflict probe.
 
+## Phase 6 (Plan 118)
+
+`[REPO]` `NxmHandoffService` calls `DownloadOrchestrationService.DownloadModFromUrlWithProgressUiAsync`, which shows `SingleUrlDownloadDialog`, forwards `DownloadProgress` updates, and toggles `IsDownloadInProgress` so Getting Started download indicators reflect nxm hand-off downloads.
+
+`[UI]` Desktop E2E still recommended for browser-click → progress dialog → mod workspace copy.
+
 ## Still deferred
 
-`[REPO]` macOS release `.app` bundling in CI; in-progress nxm download UI integration.
+`[REPO]` macOS release `.app` bundling in CI.
 
 ## Tests
 

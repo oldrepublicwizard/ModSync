@@ -386,7 +386,7 @@ namespace ModSync
                 _componentEditorService = new Services.ComponentEditorService(MainConfigInstance, this);
                 _downloadOrchestrationService = new DownloadOrchestrationService(DownloadCacheService, MainConfigInstance, this);
                 _downloadOrchestrationService.DownloadStateChanged += OnDownloadStateChanged;
-                _nxmHandoffService = new NxmHandoffService(this, MainConfigInstance);
+                _nxmHandoffService = new NxmHandoffService(this, MainConfigInstance, _downloadOrchestrationService);
                 _filterUiService = new FilterUIService(MainConfigInstance);
 
                 InitializeDownloadAnimationTimer();
