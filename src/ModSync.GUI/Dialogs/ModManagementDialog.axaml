@@ -104,6 +104,7 @@
                             IsExpanded="True">
                             <StackPanel Spacing="8" Margin="8,8,8,8">
                                 <Button Click="ValidateAllMods_Click" Content="Validate All Mods" />
+                                <Button Click="AnalyzeFileConflicts_Click" Content="Analyze File Conflicts" />
                             </StackPanel>
                         </Expander>
 
