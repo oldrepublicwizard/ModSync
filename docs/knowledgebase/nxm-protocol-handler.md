@@ -20,9 +20,15 @@ Sources: `src/ModSync.Core/Services/Download/NxmUrl.cs`, `src/ModSync.Core/Servi
 
 `[REPO]` Handler priority order in `DownloadHandlerFactory` is unchanged; nxm URLs are not HTTP(S) so only `NexusModsDownloadHandler` claims them.
 
-## Not yet wired (follow-up slice)
+## MainWindow hand-off (Plan 114)
 
-`[REPO]` MainWindow does not consume `NxmHandoffQueue` yet (needs a desktop validation session), there is no settings toggle for register/unregister, and macOS registration is unimplemented. See the plan doc for the follow-up scope.
+`[REPO]` `NxmHandoffService` drains `NxmHandoffQueue` on window open (after CLI instruction preload when applicable), subscribes to `UrlEnqueued`, matches via `NxmComponentResolver`, downloads with `DownloadOrchestrationService.DownloadModFromUrlAsync` using the **nxm://** URL, and copies the file into `MainConfig.SourcePath`.
+
+`[UI]` Desktop validation still recommended for OS registration + browser click end-to-end.
+
+## Still deferred
+
+`[REPO]` Settings toggle for register/unregister; macOS `Info.plist` registration; automatic `ResourceRegistry` / cache updates after nxm download.
 
 ## Tests
 

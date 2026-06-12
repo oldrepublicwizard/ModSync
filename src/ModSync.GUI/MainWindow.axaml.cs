@@ -109,6 +109,7 @@ namespace ModSync
         private readonly Services.ComponentEditorService _componentEditorService;
         private readonly ComponentSelectionService _componentSelectionService;
         private readonly DownloadOrchestrationService _downloadOrchestrationService;
+        private NxmHandoffService _nxmHandoffService;
         private readonly FilterUIService _filterUiService;
         private readonly InstructionBrowsingService _instructionBrowsingService;
         private readonly InstructionGenerationService _instructionGenerationService;
@@ -385,6 +386,7 @@ namespace ModSync
                 _componentEditorService = new Services.ComponentEditorService(MainConfigInstance, this);
                 _downloadOrchestrationService = new DownloadOrchestrationService(DownloadCacheService, MainConfigInstance, this);
                 _downloadOrchestrationService.DownloadStateChanged += OnDownloadStateChanged;
+                _nxmHandoffService = new NxmHandoffService(this, MainConfigInstance);
                 _filterUiService = new FilterUIService(MainConfigInstance);
 
                 InitializeDownloadAnimationTimer();
@@ -451,6 +453,16 @@ namespace ModSync
                         ShowWizardToggle = false;
                         AutoLoadInstructionFileAsync(CLIArguments.InstructionFile);
                     }
+                    else if (_nxmHandoffService != null)
+                    {
+                        await _nxmHandoffService.ProcessPendingAsync();
+                    }
+                };
+
+                Closed += (closedSender, closedArgs) =>
+                {
+                    _nxmHandoffService?.Dispose();
+                    _nxmHandoffService = null;
                 };
             }
             catch (Exception e)
@@ -4957,6 +4969,11 @@ namespace ModSync
                 if (!EditorMode && WizardMode && MainConfig.AllComponents != null && MainConfig.AllComponents.Count > 0)
                 {
                     EnterWizardMode();
+                }
+
+                if (_nxmHandoffService != null)
+                {
+                    await _nxmHandoffService.ProcessPendingAsync();
                 }
             }
             UpdateWorkflowSurfaces();
