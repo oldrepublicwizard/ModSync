@@ -29,6 +29,13 @@ namespace ModSync.Core.Services.FileSystem
         private readonly object _lockObject = new object();
         public bool IsDryRun => true;
 
+        /// <summary>
+        /// Raised outside the internal lock after a dry-run operation records a file at the
+        /// normalized absolute destination path (copy/move/rename destination, WriteFileAsync,
+        /// or each virtual archive-extract entry).
+        /// </summary>
+        public event Action<string> FileWritten;
+
         [NotNull]
         [ItemNotNull]
         public IReadOnlyList<ValidationIssue> ValidationIssues => _issues.AsReadOnly();
@@ -606,6 +613,7 @@ namespace ModSync.Core.Services.FileSystem
                 }
             }
 
+            RaiseFileWritten(normalizedDestination);
             return Task.CompletedTask;
         }
 
@@ -724,6 +732,7 @@ namespace ModSync.Core.Services.FileSystem
                 Logger.LogVerbose($"[VFS] MoveFileAsync: Operation completed successfully");
             }
 
+            RaiseFileWritten(NormalizePath(destinationPath));
             return Task.CompletedTask;
         }
 
@@ -811,6 +820,7 @@ namespace ModSync.Core.Services.FileSystem
                 }
             }
 
+            RaiseFileWritten(NormalizePath(destinationPath));
             return Task.CompletedTask;
         }
 
@@ -869,6 +879,7 @@ namespace ModSync.Core.Services.FileSystem
                 }
             }
 
+            RaiseFileWritten(normalizedPath);
             return Task.CompletedTask;
         }
 
@@ -951,6 +962,11 @@ namespace ModSync.Core.Services.FileSystem
                         _ = _virtualDirectories.Add(parentDir);
                     }
                 }
+            }
+
+            foreach (string extractedPath in extractedFiles)
+            {
+                RaiseFileWritten(extractedPath);
             }
 
             return extractedFiles;
@@ -1131,6 +1147,20 @@ namespace ModSync.Core.Services.FileSystem
                 }
 
                 _issues.RemoveRange(startIndex, _issues.Count - startIndex);
+            }
+        }
+
+        private void RaiseFileWritten([CanBeNull] string normalizedPath)
+        {
+            if (string.IsNullOrEmpty(normalizedPath))
+            {
+                return;
+            }
+
+            Action<string> handler = FileWritten;
+            if (handler != null)
+            {
+                handler(normalizedPath);
             }
         }
     }
