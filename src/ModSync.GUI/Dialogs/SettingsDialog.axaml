@@ -306,6 +306,39 @@
                                 IsChecked="{Binding filterDownloadsByResolution}"
                                 ToolTip.Tip="When enabled, automatically skips downloading files that don't match your system's screen resolution. For example, if you have a 1920x1080 display, files with '3840x2160' in the name will be skipped. This saves bandwidth and disk space by only downloading resolution-specific files that match your display." />
 
+                            <CheckBox
+                                x:Name="RegisterNxmProtocolCheckBox"
+                                Margin="0,10,0,0"
+                                Content="Register ModSync as Nexus Mod Manager"
+                                ToolTip.Tip="When enabled, clicking Mod Manager Download on Nexus Mods opens ModSync and downloads into your mod workspace. Requires a loaded instruction file that lists the mod." />
+                            <TextBlock
+                                x:Name="RegisterNxmProtocolHelperText"
+                                Margin="0,5,0,0"
+                                FontSize="11"
+                                Opacity="0.7"
+                                Text="When enabled, ModSync attempts to become the default handler for Nexus Mod Manager Download links."
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                x:Name="RegisterNxmProtocolStatusText"
+                                Margin="0,5,0,0"
+                                FontSize="11"
+                                Opacity="0.85"
+                                TextWrapping="Wrap" />
+
+                            <TextBlock
+                                x:Name="NxmMacOsStatusTitle"
+                                Margin="0,10,0,0"
+                                FontWeight="Bold"
+                                IsVisible="False"
+                                Text="Nexus Mod Manager Download" />
+                            <TextBlock
+                                x:Name="NxmMacOsStatusText"
+                                Margin="0,5,0,0"
+                                FontSize="11"
+                                IsVisible="False"
+                                Opacity="0.7"
+                                TextWrapping="Wrap" />
+
                             <TextBlock
                                 Margin="0,15,0,5"
                                 FontWeight="Bold"

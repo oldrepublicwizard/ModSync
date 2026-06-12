@@ -1,0 +1,62 @@
+<!-- Copyright 2021-2025 ModSync -->
+<!-- Licensed under the Business Source License 1.1 (BSL 1.1). -->
+<!-- See LICENSE.txt file in the project root for full license information. -->
+<Window
+    x:Class="ModSync.Dialogs.FomodInstallerDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="FOMOD Installer"
+    Width="720"
+    Height="560"
+    MinWidth="520"
+    MinHeight="400"
+    WindowStartupLocation="CenterOwner">
+    <Grid Margin="16" RowDefinitions="Auto,Auto,*,Auto,Auto">
+        <TextBlock
+            Grid.Row="0"
+            Text="Configure mod installer options"
+            TextWrapping="Wrap" />
+
+        <TextBlock
+            x:Name="StepTitleText"
+            Grid.Row="1"
+            Margin="0,8,0,12"
+            TextWrapping="Wrap" />
+
+        <ScrollViewer
+            Grid.Row="2"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="StepContentPanel" Spacing="16" />
+        </ScrollViewer>
+
+        <TextBlock
+            x:Name="ValidationText"
+            Grid.Row="3"
+            Margin="0,8,0,0"
+            IsVisible="False"
+            TextWrapping="Wrap" />
+
+        <Grid Grid.Row="4" Margin="0,12,0,0" ColumnDefinitions="*,Auto,Auto,Auto">
+            <Button
+                Grid.Column="1"
+                Click="CancelButton_Click"
+                Content="Cancel"
+                MinWidth="90" />
+            <Button
+                x:Name="BackButton"
+                Grid.Column="2"
+                Margin="8,0,0,0"
+                Click="BackButton_Click"
+                Content="Back"
+                MinWidth="90" />
+            <Button
+                x:Name="NextButton"
+                Grid.Column="3"
+                Margin="8,0,0,0"
+                Click="NextButton_Click"
+                Content="Next"
+                MinWidth="90" />
+        </Grid>
+    </Grid>
+</Window>

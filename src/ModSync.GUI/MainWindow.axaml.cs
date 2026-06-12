@@ -109,6 +109,7 @@ namespace ModSync
         private readonly Services.ComponentEditorService _componentEditorService;
         private readonly ComponentSelectionService _componentSelectionService;
         private readonly DownloadOrchestrationService _downloadOrchestrationService;
+        private NxmHandoffService _nxmHandoffService;
         private readonly FilterUIService _filterUiService;
         private readonly InstructionBrowsingService _instructionBrowsingService;
         private readonly InstructionGenerationService _instructionGenerationService;
@@ -385,6 +386,7 @@ namespace ModSync
                 _componentEditorService = new Services.ComponentEditorService(MainConfigInstance, this);
                 _downloadOrchestrationService = new DownloadOrchestrationService(DownloadCacheService, MainConfigInstance, this);
                 _downloadOrchestrationService.DownloadStateChanged += OnDownloadStateChanged;
+                _nxmHandoffService = new NxmHandoffService(this, MainConfigInstance, _downloadOrchestrationService);
                 _filterUiService = new FilterUIService(MainConfigInstance);
 
                 InitializeDownloadAnimationTimer();
@@ -426,6 +428,11 @@ namespace ModSync
                 }
                 UpdateWorkflowSurfaces();
 
+                if (ApplicationSingleInstanceContext.PrimaryInstance != null)
+                {
+                    ApplicationSingleInstanceContext.PrimaryInstance.ActivationRequested += OnSingleInstanceActivationRequested;
+                }
+
                 Opened += async (s, e) =>
                 {
                     await InitializeTelemetryIfEnabled();
@@ -451,6 +458,21 @@ namespace ModSync
                         ShowWizardToggle = false;
                         AutoLoadInstructionFileAsync(CLIArguments.InstructionFile);
                     }
+                    else if (_nxmHandoffService != null)
+                    {
+                        await _nxmHandoffService.ProcessPendingAsync();
+                    }
+                };
+
+                Closed += (closedSender, closedArgs) =>
+                {
+                    if (ApplicationSingleInstanceContext.PrimaryInstance != null)
+                    {
+                        ApplicationSingleInstanceContext.PrimaryInstance.ActivationRequested -= OnSingleInstanceActivationRequested;
+                    }
+
+                    _nxmHandoffService?.Dispose();
+                    _nxmHandoffService = null;
                 };
             }
             catch (Exception e)
@@ -459,6 +481,21 @@ namespace ModSync
                 _telemetryService?.RecordError("MainWindow.Constructor", e.Message, e.StackTrace);
                 throw;
             }
+        }
+
+        private void OnSingleInstanceActivationRequested(object sender, EventArgs e)
+        {
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (WindowState == WindowState.Minimized)
+                {
+                    WindowState = WindowState.Normal;
+                }
+
+                Activate();
+                Topmost = true;
+                Topmost = false;
+            });
         }
 
         private async Task InitializeTelemetryIfEnabled()
@@ -575,6 +612,14 @@ namespace ModSync
                 // Note: Buttons may not exist yet if called before UI is fully loaded,
                 // so we also call this in the Opened event handler
                 UpdateThemeButtonStates();
+
+                if (settings.RegisterNxmProtocolHandler
+                    && !NxmProtocolRegistrationService.IsRegistered()
+                    && (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                        || RuntimeInformation.IsOSPlatform(OSPlatform.Linux)))
+                {
+                    _ = NxmProtocolRegistrationService.Register();
+                }
 
                 Logger.LogVerbose("Settings loaded and applied successfully");
             }
@@ -4958,6 +5003,11 @@ namespace ModSync
                 {
                     EnterWizardMode();
                 }
+
+                if (_nxmHandoffService != null)
+                {
+                    await _nxmHandoffService.ProcessPendingAsync();
+                }
             }
             UpdateWorkflowSurfaces();
             return result;
@@ -7158,8 +7208,7 @@ namespace ModSync
                 if (runningText != null && runningText.IsVisible)
                 {
                     _downloadAnimationDots = (_downloadAnimationDots + 1) % 4;
-                    string dots = new string('.', _downloadAnimationDots);
-                    runningText.Text = $"Running{dots}";
+                    runningText.Text = DownloadIndicatorUiHelper.FormatRunningAnimationText(_downloadAnimationDots);
                 }
             };
         }
@@ -7190,33 +7239,14 @@ namespace ModSync
 
                 bool isDownloadInProgress = _downloadOrchestrationService.IsDownloadInProgress;
 
-                if (ledIndicator != null)
-                {
-                    ledIndicator.Fill = isDownloadInProgress
-                        ? ThemeResourceHelper.DownloadLedActiveBrush
-                        : ThemeResourceHelper.DownloadLedInactiveBrush;
-                }
-
-                if (runningText != null)
-                {
-                    runningText.IsVisible = isDownloadInProgress;
-                }
-
-                if (stopButton != null)
-                {
-                    stopButton.IsVisible = isDownloadInProgress;
-                }
-
-                if (progressText != null)
-                {
-                    progressText.IsVisible = isDownloadInProgress;
-                    if (isDownloadInProgress)
-                    {
-                        int completed = _downloadOrchestrationService.CompletedComponents;
-                        int total = _downloadOrchestrationService.TotalComponentsToDownload;
-                        progressText.Text = $"Downloaded: {completed} / {total} mods";
-                    }
-                }
+                DownloadIndicatorUiHelper.ApplyGettingStartedTabIndicators(
+                    ledIndicator,
+                    runningText,
+                    stopButton,
+                    progressText,
+                    isDownloadInProgress,
+                    _downloadOrchestrationService.CompletedComponents,
+                    _downloadOrchestrationService.TotalComponentsToDownload);
 
                 if (isDownloadInProgress)
                 {
