@@ -42,10 +42,18 @@ Sources: `src/ModSync.Core/Services/Download/NxmUrl.cs`, `src/ModSync.Core/Servi
 
 `[UI]` Desktop E2E still recommended (browser click, single-instance, macOS `.app` bundle).
 
+## Phase 5 (Plan 117)
+
+`[REPO]` `NxmHandlerProbe` reads the active `nxm://` handler on Windows (`reg.exe` query of `HKCU\Software\Classes\nxm\shell\open\command`) and Linux (`xdg-mime query default x-scheme-handler/nxm` + `.desktop` `Exec=`). Classifies MO2, Vortex, ModSync, or other.
+
+`[UI]` Settings → Download Settings shows `RegisterNxmProtocolStatusText` (OS status) separately from the checkbox helper. When a competitor is active and the user enables registration, `ConfirmationDialog` asks before calling `Register()`. Save also re-applies registration when ModSync has an entry but is not the default handler.
+
+`[REPO]` macOS unchanged: informational status block only; no runtime conflict probe.
+
 ## Still deferred
 
-`[REPO]` Handler conflict detection; macOS release `.app` bundling in CI; in-progress nxm download UI integration.
+`[REPO]` macOS release `.app` bundling in CI; in-progress nxm download UI integration.
 
 ## Tests
 
-`[REPO]` `NxmUrlTests`, `NxmProtocolRegistrationServiceTests`, `SingleInstanceServiceTests`, `NexusModsDownloadHandlerTests` in `src/ModSync.Tests`.
+`[REPO]` `NxmUrlTests`, `NxmProtocolRegistrationServiceTests`, `NxmHandlerProbeTests`, `SingleInstanceServiceTests`, `NexusModsDownloadHandlerTests` in `src/ModSync.Tests`.
