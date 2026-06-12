@@ -60,7 +60,7 @@ namespace ModSync.Services
             foreach (string rawLine in regOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 string line = rawLine.Trim();
-                if (!line.Contains("REG_SZ", StringComparison.OrdinalIgnoreCase))
+                if (line.IndexOf("REG_SZ", StringComparison.OrdinalIgnoreCase) < 0)
                 {
                     continue;
                 }
@@ -349,7 +349,7 @@ namespace ModSync.Services
                 }
             }
 
-            int spaceIndex = trimmed.IndexOf(' ', StringComparison.Ordinal);
+            int spaceIndex = trimmed.IndexOf(' ');
             return spaceIndex > 0 ? trimmed.Substring(0, spaceIndex).Trim('"') : trimmed.Trim('"');
         }
 
