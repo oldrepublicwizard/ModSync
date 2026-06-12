@@ -56,9 +56,15 @@ Sources: `src/ModSync.Core/Services/Download/NxmUrl.cs`, `src/ModSync.Core/Servi
 
 `[UI]` Desktop E2E still recommended for browser-click → progress dialog → mod workspace copy.
 
+## Phase 7 (Plan 119)
+
+`[REPO]` Release workflow (`build-and-release.yml`) publishes macOS builds with `-t:BundleApp` (Dotnet.Bundle), runs `scripts/ci/bundle-macos-app.ps1` to install the versioned `Info.plist` (with `CFBundleURLTypes` → `nxm`) and icon, and packages `ModSync.app` into release zips instead of a flat folder.
+
+`[UI]` Desktop E2E still recommended after downloading a macOS release artifact.
+
 ## Still deferred
 
-`[REPO]` macOS release `.app` bundling in CI.
+`[REPO]` macOS code signing / notarization; desktop E2E.
 
 ## Tests
 
