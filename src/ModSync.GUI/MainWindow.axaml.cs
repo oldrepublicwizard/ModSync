@@ -588,6 +588,12 @@ namespace ModSync
                 // so we also call this in the Opened event handler
                 UpdateThemeButtonStates();
 
+                if (settings.RegisterNxmProtocolHandler
+                    && !NxmProtocolRegistrationService.IsRegistered())
+                {
+                    _ = NxmProtocolRegistrationService.Register();
+                }
+
                 Logger.LogVerbose("Settings loaded and applied successfully");
             }
             catch (Exception ex)

@@ -26,9 +26,17 @@ Sources: `src/ModSync.Core/Services/Download/NxmUrl.cs`, `src/ModSync.Core/Servi
 
 `[UI]` Desktop validation still recommended for OS registration + browser click end-to-end.
 
+## Phase 3 (Plan 115)
+
+`[REPO]` **Settings → Download Settings** checkbox `Register ModSync as Nexus Mod Manager` persists `registerNxmProtocolHandler` in `AppSettings`. On save, calls `NxmProtocolRegistrationService.Register()` / `Unregister()`. On startup, `MainWindow.LoadSettings` re-registers when the preference is on but OS state drifted (e.g. after an app update).
+
+`[REPO]` After a successful nxm hand-off copy, `NxmHandoffService` calls `DownloadCacheService.UpdateResourceMetadataWithFilenamesAsync` with the matched **HTTPS** registry URL from `NxmComponentResolver.TryResolve`.
+
+`[UI]` Desktop E2E still recommended for OS registration + browser click.
+
 ## Still deferred
 
-`[REPO]` Settings toggle for register/unregister; macOS `Info.plist` registration; automatic `ResourceRegistry` / cache updates after nxm download.
+`[REPO]` macOS `Info.plist` registration; strict single-instance for non-nxm launches.
 
 ## Tests
 

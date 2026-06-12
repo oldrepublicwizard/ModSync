@@ -3,11 +3,13 @@
 // See LICENSE.txt file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using ModSync.Core;
+using ModSync.Core.Services;
 using ModSync.Core.Services.Download;
 using ModSync.Dialogs;
 
@@ -100,23 +102,46 @@ namespace ModSync.Services
                     "[NxmHandoff] Components not loaded yet; re-queuing nxm URL for later.")
                     .ConfigureAwait(true);
                 NxmHandoffQueue.Enqueue(rawUrl);
-                return;
-            }
-
-            ModComponent component = NxmComponentResolver.FindComponentForNxmUrl(
-                nxmUrl,
-                _mainConfig.allComponents);
-
-            if (component is null)
-            {
                 await ShowInfoAsync(
-                    "Mod not found in loaded instructions",
-                    "No mod in the currently loaded instruction file matches this Nexus link.\n\n" +
-                    $"Load the correct instruction file, then click Mod Manager Download again.\n\n" +
+                    "Waiting for instruction file",
+                    "ModSync received a Nexus Mod Manager link but no instruction file is loaded yet.\n\n" +
+                    "Load your instruction file and the download will start automatically.\n\n" +
+                    "If the link expires before then, click Mod Manager Download again on Nexus.\n\n" +
                     $"Mod page: {nxmUrl.ToModPageUrl()}")
                     .ConfigureAwait(true);
                 return;
             }
+
+            NxmComponentResolveStatus resolveStatus = NxmComponentResolver.TryResolve(
+                nxmUrl,
+                _mainConfig.allComponents,
+                out NxmComponentMatch match);
+
+            if (resolveStatus == NxmComponentResolveStatus.Ambiguous)
+            {
+                await ShowInfoAsync(
+                    "Ambiguous mod match",
+                    "More than one mod in the loaded instruction file matches this Nexus link.\n\n" +
+                    "Remove duplicate entries or load a more specific instruction file, then click " +
+                    "Mod Manager Download again on Nexus.\n\n" +
+                    $"Mod page: {nxmUrl.ToModPageUrl()}")
+                    .ConfigureAwait(true);
+                return;
+            }
+
+            if (resolveStatus != NxmComponentResolveStatus.Matched || match?.Component is null)
+            {
+                await ShowInfoAsync(
+                    "Mod not found in loaded instructions",
+                    "No mod in the currently loaded instruction file matches this Nexus link.\n\n" +
+                    "Load the correct instruction file, then click Mod Manager Download again on Nexus.\n\n" +
+                    $"Mod page: {nxmUrl.ToModPageUrl()}")
+                    .ConfigureAwait(true);
+                return;
+            }
+
+            ModComponent component = match.Component;
+            string registryUrl = match.RegistryUrl;
 
             await Logger.LogAsync(
                 $"[NxmHandoff] Downloading Nexus file for '{component.Name}' from nxm link...")
@@ -155,6 +180,22 @@ namespace ModSync.Services
                     $"Temp file: {tempPath}\n\n{ex.Message}")
                     .ConfigureAwait(true);
                 return;
+            }
+
+            string fileName = Path.GetFileName(destinationPath);
+            if (!string.IsNullOrEmpty(registryUrl))
+            {
+                await DownloadCacheService.UpdateResourceMetadataWithFilenamesAsync(
+                    component,
+                    registryUrl,
+                    new List<string> { fileName }).ConfigureAwait(true);
+
+                if (component.ResourceRegistry != null
+                    && component.ResourceRegistry.TryGetValue(registryUrl, out ResourceMetadata resourceMeta)
+                    && resourceMeta.Files != null)
+                {
+                    resourceMeta.Files[fileName] = true;
+                }
             }
 
             await ShowInfoAsync(

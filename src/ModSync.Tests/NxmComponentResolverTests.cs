@@ -76,5 +76,39 @@ namespace ModSync.Tests
             _ = NxmUrl.TryParse("nxm://kotor/mods/1/files/2", out NxmUrl nxm);
             Assert.That(NxmComponentResolver.FindComponentForNxmUrl(nxm, new List<ModComponent>()), Is.Null);
         }
+
+        [Test]
+        public void TryResolve_MatchingRegistryKey_ReturnsRegistryUrl()
+        {
+            const string registryUrl = "https://www.nexusmods.com/kotor/mods/1234?tab=files";
+            _ = NxmUrl.TryParse("nxm://kotor/mods/1234/files/5678?key=a&expires=99", out NxmUrl nxm);
+            var components = new List<ModComponent>
+            {
+                CreateComponent("Target", registryUrl),
+            };
+
+            NxmComponentResolveStatus status = NxmComponentResolver.TryResolve(nxm, components, out NxmComponentMatch match);
+
+            Assert.That(status, Is.EqualTo(NxmComponentResolveStatus.Matched));
+            Assert.That(match, Is.Not.Null);
+            Assert.That(match.RegistryUrl, Is.EqualTo(registryUrl));
+            Assert.That(match.Component.Name, Is.EqualTo("Target"));
+        }
+
+        [Test]
+        public void TryResolve_AmbiguousDifferentComponents_ReturnsAmbiguous()
+        {
+            _ = NxmUrl.TryParse("nxm://kotor/mods/1234/files/1", out NxmUrl nxm);
+            var components = new List<ModComponent>
+            {
+                CreateComponent("A", "https://www.nexusmods.com/kotor/mods/1234"),
+                CreateComponent("B", "https://nexusmods.com/kotor/mods/1234?tab=description"),
+            };
+
+            NxmComponentResolveStatus status = NxmComponentResolver.TryResolve(nxm, components, out NxmComponentMatch match);
+
+            Assert.That(status, Is.EqualTo(NxmComponentResolveStatus.Ambiguous));
+            Assert.That(match, Is.Null);
+        }
     }
 }
