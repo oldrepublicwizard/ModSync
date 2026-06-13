@@ -31,7 +31,7 @@ PR #169 added GUI post-download FOMOD detection and optional configuration, but 
 
 **Non-interactive behavior**
 
-- R6: When stdin is not an interactive TTY (CI, agents, redirected I/O), default mode is **warn and continue**: emit a structured `WARN:` line per detected FOMOD archive and proceed without persisting dismiss state.
+- R6: When stdin is not an interactive TTY (CI, agents, redirected I/O), default mode is **warn and continue**: emit a structured `WARN:` line per detected FOMOD archive, persist `MarkWarned` so the warning is not repeated, and proceed without configuring. **Warned does not satisfy the validation/install gate** (see R16–R21).
 - R7: Global `--fomod-skip` (and equivalent env/settings) persists `MarkDismissed` for archives handled under that skip policy in the session.
 - R8: Non-interactive mode is configurable globally via environment variable, CLI startup/global flags, and ModSync settings dialog; v1 ships the `warn-continue` mode but the resolution pipeline must accept future modes without redesign.
 
@@ -54,6 +54,15 @@ PR #169 added GUI post-download FOMOD detection and optional configuration, but 
 - R14: Applying wizard selections must not merge plugins from steps that are no longer visible after condition-flag changes (hidden-step parity with visible validation).
 - R15: Re-configuring the same archive updates existing option selections and replaces superseded FOMOD-generated instructions instead of silently skipping duplicate option GUIDs.
 
+**FOMOD validation gate (configured-only)**
+
+- R16: On all validate and install entry points (GUI wizard Validate, Getting Started Validate, GUI install start, CLI `validate`, CLI `install`), scan **selected** components plus transitive **hard dependencies** for downloaded archives where `FomodArchiveProbe` detects FOMOD.
+- R17: If a detected FOMOD archive's `fomodPromptStatus` is not `configured`, emit a **validation error** that blocks proceed — not a log-only warning.
+- R18: `dismissed`, `warned`, and missing status all fail the gate; only `configured` passes.
+- R19: Post-download dismiss (`MarkDismissed`), warn-continue (`MarkWarned`), and `--fomod-skip` may still affect download-time prompting but **do not** clear the gate.
+- R20: Error text names the mod and archive and points users to Fetch Downloads / post-download FOMOD wizard (no in-validate configure button in this slice).
+- R21: Gate runs inside `InstallationValidationPipeline` (shared CLI/GUI) and `InstallationService.InstallAllSelectedComponentsAsync` (install safety net); wizard `InstallStartPage` blocks Next when gate fails.
+
 ## Success Criteria
 
 - Headless `install -d` against a fixture with a FOMOD archive prompts on TTY, applies choices, and proceeds to validation with merged options.
@@ -62,6 +71,8 @@ PR #169 added GUI post-download FOMOD detection and optional configuration, but 
 - `--fomod-choices` configures a FOMOD mod without TTY and marks configured state.
 - GUI **Fetch Downloads** behavior unchanged after GUI delegates to the Core orchestrator.
 - `docs/knowledgebase/agent-action-parity.md` documents post-download FOMOD configure for CLI.
+- Validate/install fail with a clear error when a selected mod has a downloaded FOMOD archive that is not `configured`; passing after full FOMOD wizard merge.
+- Dismissed or warned archives still block validate/install until configured.
 
 ## Scope Boundaries
 
@@ -73,10 +84,10 @@ PR #169 added GUI post-download FOMOD detection and optional configuration, but 
 
 **Deferred for later**
 
-- Validation blocking when FOMOD choices are unset.
 - Plugin images in terminal wizard.
 - Download scope alignment so CLI only downloads `IsSelected` components (separate download-system change).
 - Additional non-TTY modes beyond `warn-continue` (fail-fast, auto-dismiss-all) once v1 config plumbing exists.
+- In-validate **Configure FOMOD** action and `fomod configure` CLI verb (recovery hints in error text only for now).
 
 **Outside this product's identity**
 
@@ -89,6 +100,7 @@ PR #169 added GUI post-download FOMOD detection and optional configuration, but 
 - Config precedence: CLI flags > environment variables > `settings.json` > TTY-derived default.
 - Selected-only FOMOD scan even when download fetched more components.
 - Convert/merge output persistence uses existing `-o` / output path; no silent in-place overwrite of input without documented flag.
+- Validation/install gate is **configured-only**; skip/dismiss paths are download-time only.
 
 ## Dependencies / Assumptions
 

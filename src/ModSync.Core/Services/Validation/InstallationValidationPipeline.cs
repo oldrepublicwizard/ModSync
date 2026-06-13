@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 using ModSync.Core.Services.FileSystem;
+using ModSync.Core.Services.Fomod;
 
 namespace ModSync.Core.Services.Validation
 {
@@ -149,6 +150,28 @@ namespace ModSync.Core.Services.Validation
                 }
             }
 
+            if (!options.SkipFomodConfigurationGate)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                step++;
+                progress?.Invoke(ValidationPipelineStage.FomodConfiguration, step, totalSteps, "Checking FOMOD configuration...");
+                ValidationPipelineStageResult fomodStage = RunFomodConfigurationStage(
+                    componentsToValidate,
+                    allComponents,
+                    options);
+                result.Stages.Add(fomodStage);
+                if (!fomodStage.Passed)
+                {
+                    result.HasCriticalErrors = true;
+                    result.ErrorCount += fomodStage.Messages.Count;
+                    result.IsSuccess = false;
+                }
+                else
+                {
+                    result.PassedCount++;
+                }
+            }
+
             bool runDryRun = options.DryRun || options.DryRunOnly;
             if (runDryRun)
             {
@@ -220,6 +243,11 @@ namespace ModSync.Core.Services.Validation
             }
 
             if (!options.DryRunOnly)
+            {
+                count++;
+            }
+
+            if (!options.SkipFomodConfigurationGate)
             {
                 count++;
             }
@@ -389,6 +417,48 @@ namespace ModSync.Core.Services.Validation
                     : "All components passed archive validation.";
 
             return (stage, errors, warnings);
+        }
+
+        [NotNull]
+        private static ValidationPipelineStageResult RunFomodConfigurationStage(
+            [NotNull][ItemNotNull] List<ModComponent> componentsToValidate,
+            [NotNull][ItemNotNull] IReadOnlyList<ModComponent> allComponents,
+            [NotNull] ValidationPipelineOptions options)
+        {
+            var stage = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.FomodConfiguration,
+                Passed = true,
+            };
+
+            MainConfig config = options.MainConfig ?? MainConfig.Instance;
+            string modDirectory = config?.sourcePath?.FullName;
+            if (string.IsNullOrWhiteSpace(modDirectory) || !System.IO.Directory.Exists(modDirectory))
+            {
+                stage.Summary = "Skipped FOMOD configuration check (mod directory not set).";
+                return stage;
+            }
+
+            FomodConfigurationGate.GateResult gateResult = FomodConfigurationGate.Validate(
+                allComponents,
+                componentsToValidate,
+                modDirectory);
+
+            if (gateResult.Passed)
+            {
+                stage.Summary = "All detected FOMOD archives are configured.";
+                return stage;
+            }
+
+            stage.Passed = false;
+            stage.Summary = $"{gateResult.Issues.Count} unconfigured FOMOD archive(s).";
+            foreach (FomodConfigurationGate.GateIssue issue in gateResult.Issues)
+            {
+                stage.Messages.Add(
+                    $"ERROR: {issue.Component.Name}: {FomodConfigurationGate.FormatIssueMessage(issue)}");
+            }
+
+            return stage;
         }
 
         [NotNull]
