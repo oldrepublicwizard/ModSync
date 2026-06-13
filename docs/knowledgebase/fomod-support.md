@@ -49,8 +49,16 @@ GUI (`src/ModSync.GUI/`):
 
 ## Deferred `[OPEN]`
 
-- CLI download/install parity for FOMOD post-download prompts.
 - Plugin images from `image path`.
+
+## Planned: CLI post-download parity `[REPO]`
+
+Requirements: [docs/brainstorms/2026-06-14-fomod-cli-download-prompts-requirements.md](../brainstorms/2026-06-14-fomod-cli-download-prompts-requirements.md)
+
+Plan: [docs/plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md)
+
+- Core `FomodPostDownloadOrchestrator` + CLI console host + `--fomod-skip` / `--fomod-choices`
+- Full TTY wizard; non-TTY default warn-continue; convert output persists FOMOD state
 
 ## Post-download hook `[REPO]`
 

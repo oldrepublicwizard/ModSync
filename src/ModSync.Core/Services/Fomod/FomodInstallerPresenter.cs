@@ -8,10 +8,7 @@ using System.Linq;
 
 using JetBrains.Annotations;
 
-using ModSync.Core;
-using ModSync.Core.Services.Fomod;
-
-namespace ModSync.Services
+namespace ModSync.Core.Services.Fomod
 {
     /// <summary>
     /// Headless FOMOD installer wizard state: maps parsed config to component options,
@@ -241,8 +238,10 @@ namespace ModSync.Services
                 option.IsSelected = false;
             }
 
-            foreach (FomodInstallerStepModel step in session.Steps)
+            IReadOnlyList<int> visibleStepIndices = GetVisibleStepIndices(session);
+            foreach (int stepIndex in visibleStepIndices)
             {
+                FomodInstallerStepModel step = session.Steps[stepIndex];
                 foreach (FomodInstallerGroupModel group in step.Groups)
                 {
                     foreach (FomodInstallerPluginModel plugin in group.Plugins.Where(plugin => plugin.IsSelected))

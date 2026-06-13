@@ -16,6 +16,12 @@ All verbs inherit from `BaseOptions`:
 |------|-------------|
 | `-v` / `--verbose` | Verbose logging |
 | `--plaintext` | Plain-text log output (no ANSI) |
+| `--fomod-skip` | Skip FOMOD post-download configuration; marks archives dismissed for this run |
+| `--fomod-choices` | JSON sidecar with FOMOD plugin selections (see [fomod-support.md](fomod-support.md)) |
+| `--interactive` | Force interactive FOMOD prompts when I/O is redirected |
+| `--non-interactive` | Force warn-continue FOMOD behavior (no TTY wizard) |
+
+Environment: `MODSYNC_FOMOD_CHOICES` (choices file path), `MODSYNC_FOMOD_POST_DOWNLOAD_MODE` (`warn-continue` or `skip`). Settings key: `fomodPostDownloadMode` in `%AppData%/ModSync/settings.json`.
 
 ## Verbs
 

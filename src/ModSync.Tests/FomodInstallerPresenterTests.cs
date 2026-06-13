@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ModSync.Core;
 using ModSync.Core.Services.Fomod;
-using ModSync.Services;
 using NUnit.Framework;
 
 namespace ModSync.Tests
@@ -126,6 +125,58 @@ namespace ModSync.Tests
             FomodInstallerPresenter.TrySetPluginSelected(session, 0, 0, 0, true);
             IReadOnlyList<int> afterHigh = FomodInstallerPresenter.GetVisibleStepIndices(session);
             Assert.That(afterHigh, Is.EqualTo(new[] { 0, 1 }));
+        }
+
+        [Test]
+        public void ApplySelectionsToComponent_IgnoresSelectionsFromHiddenSteps()
+        {
+            FomodModuleConfig config = FomodParser.ParseModuleConfigXml("""
+                <config>
+                  <installSteps order="Explicit">
+                    <installStep name="Textures">
+                      <optionalFileGroups order="Explicit">
+                        <group name="Quality" type="SelectExactlyOne">
+                          <plugins order="Explicit">
+                            <plugin name="High">
+                              <conditionFlags><flag name="Tier">High</flag></conditionFlags>
+                            </plugin>
+                            <plugin name="Low" />
+                          </plugins>
+                        </group>
+                      </optionalFileGroups>
+                    </installStep>
+                    <installStep name="Extras">
+                      <visible>
+                        <dependencies operator="And">
+                          <flagDependency flag="Tier" value="High" />
+                        </dependencies>
+                      </visible>
+                      <optionalFileGroups order="Explicit">
+                        <group name="Bonus" type="SelectAny">
+                          <plugins order="Explicit">
+                            <plugin name="Extra Files" />
+                          </plugins>
+                        </group>
+                      </optionalFileGroups>
+                    </installStep>
+                  </installSteps>
+                </config>
+                """);
+
+            ModComponent component = FomodToComponentMapper.Map(null, config, ArchiveFileName);
+            FomodInstallerSession session = FomodInstallerPresenter.CreateSession(config, component);
+
+            FomodInstallerPresenter.TrySetPluginSelected(session, 0, 0, 0, true);
+            FomodInstallerPresenter.TrySetPluginSelected(session, 1, 0, 0, true);
+
+            FomodInstallerPresenter.TrySetPluginSelected(session, 0, 0, 0, false);
+            FomodInstallerPresenter.TrySetPluginSelected(session, 0, 0, 1, true);
+
+            FomodInstallerPresenter.ApplySelectionsToComponent(session);
+
+            Option extraOption = component.Options.First(option => option.Name == "Extra Files");
+            Assert.That(extraOption.IsSelected, Is.False);
+            Assert.That(component.Options.First(option => option.Name == "Low").IsSelected, Is.True);
         }
     }
 }

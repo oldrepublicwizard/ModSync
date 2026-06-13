@@ -15,7 +15,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | 5 | `GameDirectoryPage` | Pick game dir | `-g` / `--kotorPath=` | Full |
 | 6 | `AspyrNoticePage` | Acknowledge (K2) | No CLI equivalent | UI |
 | 7 | `ModSelectionPage` | Select mods, filters | `install` without `--select` = select all; `install --select category:X` / `tier:X` | Full (install); Partial (subset only with `--select`) |
-| 8 | `DownloadsExplainPage` | Continue (downloads may run) | `install -d` or `convert -d` | Partial — see [download-system.md](download-system.md) |
+| 8 | `DownloadsExplainPage` | Continue (downloads may run) | `install -d` or `convert -d` | Partial — see [download-system.md](download-system.md); FOMOD post-download configure is GUI-only until [Plan 123](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md) |
 | 9 | `ValidatePage` | Run validation | `validate --full --dry-run --use-file-selection` (same Core `InstallationValidationPipeline` as GUI) | Full |
 | 10 | `InstallStartPage` | Confirm install | `install -y` (runs `InstallationValidationPipeline` / `WizardFull` pre-check unless `--skip-validation`) | Full |
 | 11 | `InstallingPage` | Watch progress | `install` (console progress) | Full — see [install-lifecycle.md](install-lifecycle.md) |
@@ -30,7 +30,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | `Step1ModDirectoryPicker` | `--modDirectory=` / `-s` | Full |
 | `Step1KotorDirectoryPicker` | `--kotorPath=` / `-g` | Full |
 | `Step2Button` (load file) | `--instructionFile=` / `-i` | Full |
-| `ScrapeDownloadsButton` | `install -d` or `convert -d` | Partial |
+| `ScrapeDownloadsButton` | `install -d` or `convert -d` | Partial — FOMOD configure after download: GUI (PR #169); CLI planned Plan 123 |
 | `ValidateButton` | `validate --full --dry-run --use-file-selection` (via `InstallationValidationPipeline`) | Full |
 | `OpenModDirectoryButton` | `ls` / file tools on mod dir | Full |
 | Download status / stop | No first-class CLI | UI |
@@ -72,5 +72,6 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 6. **CI test coverage** — green CI runs subsets only; local `run_headless_tests.sh` is broader. See [ci-test-matrix.md](ci-test-matrix.md).
 7. **Validation pipeline fail-fast** — `InstallationValidationPipeline` stops after environment failure (no conflict/order/archive/dry-run stages). GUI and CLI both use `ValidationPipelineResult.IsSuccess`; do not infer pass from an empty dry-run result.
 8. **Install pre-check opt-out** — `install --skip-validation` and `install_best_effort.sh` skip the wizard-equivalent pipeline; default `install` does not.
+9. **FOMOD post-download** — GUI prompts after Fetch Downloads (PR #169). CLI parity: TTY wizard, `--fomod-skip`, `--fomod-choices` / `MODSYNC_FOMOD_CHOICES` per [Plan 123](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md).
 
 See [agent-native-audit.md](agent-native-audit.md) for scored principles and [core-cli-reference.md](core-cli-reference.md) for flags.

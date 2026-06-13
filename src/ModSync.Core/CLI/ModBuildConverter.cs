@@ -17,6 +17,7 @@ using JetBrains.Annotations;
 
 using ModSync.Core.Services;
 using ModSync.Core.Services.Download;
+using ModSync.Core.Services.Fomod;
 using ModSync.Core.Services.Validation;
 using ModSync.Core.Utility;
 
@@ -178,6 +179,8 @@ namespace ModSync.Core.CLI
                             {
                                 s_config.kpatcherExecutablePath = settings.KPatcherExecutablePath;
                             }
+
+                            s_fomodPostDownloadMode = settings.FomodPostDownloadMode;
 
                             Logger.LogVerbose("Settings loaded successfully from settings.json");
                         }
@@ -346,7 +349,12 @@ namespace ModSync.Core.CLI
 
             [JsonProperty("kpatcherExecutablePath")]
             public string KPatcherExecutablePath { get; set; }
+
+            [JsonProperty("fomodPostDownloadMode")]
+            public string FomodPostDownloadMode { get; set; }
         }
+
+        private static string s_fomodPostDownloadMode;
 
         public class BaseOptions
         {
@@ -355,6 +363,18 @@ namespace ModSync.Core.CLI
 
             [Option("plaintext", Required = false, HelpText = "Use plaintext output instead of fancy ANSI progress display.")]
             public bool PlainText { get; set; }
+
+            [Option("fomod-skip", Required = false, HelpText = "Skip FOMOD post-download configuration and mark archives dismissed for this run.")]
+            public bool FomodSkip { get; set; }
+
+            [Option("fomod-choices", Required = false, HelpText = "Path to JSON file with FOMOD plugin selections for non-interactive runs.")]
+            public string FomodChoices { get; set; }
+
+            [Option("interactive", Required = false, HelpText = "Force interactive terminal prompts even when I/O is redirected.")]
+            public bool Interactive { get; set; }
+
+            [Option("non-interactive", Required = false, HelpText = "Force non-interactive FOMOD behavior (warn-continue or choices file).")]
+            public bool NonInteractive { get; set; }
         }
 
         [Verb("convert", HelpText = "Convert between formats or merge instruction sets, output to stdout or file")]
@@ -959,6 +979,27 @@ namespace ModSync.Core.CLI
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]
+        private static async Task RunFomodPostDownloadHookAsync(
+            [NotNull] List<ModComponent> components,
+            [NotNull] string modDirectory,
+            [NotNull] BaseOptions opts)
+        {
+            if (components is null || components.Count == 0 || string.IsNullOrWhiteSpace(modDirectory))
+            {
+                return;
+            }
+
+            FomodPostDownloadOptions fomodOptions = FomodPostDownloadOptionsResolver.Resolve(
+                opts.FomodSkip,
+                opts.FomodChoices,
+                opts.Interactive,
+                opts.NonInteractive,
+                s_fomodPostDownloadMode);
+
+            IFomodPostDownloadHost host = FomodPostDownloadOptionsResolver.CreateHost(fomodOptions);
+            await FomodPostDownloadOrchestrator.ProcessAsync(components, modDirectory, host).ConfigureAwait(false);
+        }
+
         private static async Task<DownloadCacheService> DownloadAllModFilesAsync(List<ModComponent> components, string destinationDirectory, bool verbose, bool sequential = true, CancellationToken cancellationToken = default)
         {
             int componentCount = components.Count(c => c.ResourceRegistry != null && c.ResourceRegistry.Count > 0);
@@ -2024,6 +2065,11 @@ componentName: null,
 
                 ApplySelectionFilters(components, opts.Select);
 
+                if (opts.Download && !string.IsNullOrWhiteSpace(opts.SourcePath))
+                {
+                    await RunFomodPostDownloadHookAsync(components, opts.SourcePath, opts).ConfigureAwait(false);
+                }
+
                 // Apply spoiler-free content if provided
                 if (!string.IsNullOrEmpty(opts.SpoilerFreePath))
                 {
@@ -2441,6 +2487,11 @@ componentName: null,
                 await ApplyAutoGenerateLocalIfRequestedAsync(components, opts.AutoGenerateLocal, opts.SourcePath).ConfigureAwait(false);
 
                 ApplySelectionFilters(components, opts.Select);
+
+                if (opts.Download && !string.IsNullOrWhiteSpace(opts.SourcePath))
+                {
+                    await RunFomodPostDownloadHookAsync(components, opts.SourcePath, opts).ConfigureAwait(false);
+                }
 
                 // Apply spoiler-free content if provided
                 if (!string.IsNullOrEmpty(opts.SpoilerFreePath))
@@ -3058,6 +3109,7 @@ componentName: null,
                     }
 
                     LogAllErrors(s_globalDownloadCache, forceConsoleOutput: true);
+                    await RunFomodPostDownloadHookAsync(components, sourceDir, opts).ConfigureAwait(false);
                 }
 
                 int selectedCount = components.Count(c => c.IsSelected);
