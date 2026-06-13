@@ -9,7 +9,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 | Metric | Value |
 |--------|-------|
 | Principles scored | 8 / 8 |
-| Weighted average | **62%** |
+| Weighted average | **65%** |
 | Headless agent readiness | Strong for Core CLI + tests |
 | Desktop-only gap | GUI wizard, downloads UX, widescreen flow |
 
@@ -17,7 +17,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 
 | # | Principle | Score | Summary |
 |---|-----------|-------|---------|
-| 1 | **Parity** | 14/25 (56%) | Core paths (`validate`, `install`, convert) are CLI-accessible; many wizard-only flows lack headless equivalents. |
+| 1 | **Parity** | 17/25 (68%) | Core paths plus CLI FOMOD post-download (Plan 123) close a major GUI-only gap; widescreen/Aspyr remain UI-only. |
 | 2 | **Granularity** | 16/20 (80%) | CLI verbs are composable; scripts wrap common combos without hiding primitives. |
 | 3 | **Composability** | 12/15 (80%) | New agent workflows combine `dotnet run` + scripts + tests without code changes. |
 | 4 | **Emergent capability** | 10/15 (67%) | Agents can fix TOMLs and run installs; limited without Nexus keys, real game dirs, or desktop. |
@@ -38,6 +38,8 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 | Set mod / game directories | GUI preload or CLI `-g` / `-s` | Yes |
 | Run validation | `ValidatePage` or `validate --full` | Yes (full needs dirs) |
 | Fetch downloads | Wizard / `ScrapeDownloadsButton` | Partial — CLI `install -d` / `convert -d` |
+| Post-download FOMOD configure | GUI after Fetch Downloads (PR #169) | Partial — Plan 123: TTY wizard, `--fomod-choices`, `--fomod-skip` |
+| FOMOD step wizard | `FomodInstallerDialog` | Partial — GUI today; Plan 123 terminal wizard |
 | Install mods | Wizard or `install` | Yes |
 | Mod selection / filters | `ModSelectionPage` UI | Partial — CLI `--select` |
 | Widescreen-only install block | Dynamic wizard pages | No — desktop only |
@@ -46,9 +48,9 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 
 **Strengths:** `[REPO]` `ModBuildConverter` covers validate/install/convert/merge; `install_best_effort.sh` documents a full-build-style headless path.
 
-**Gaps:** `[OPEN]` No headless API for every wizard button; widescreen and Aspyr notice flows are `[UI]` only.
+**Gaps:** `[OPEN]` No headless API for every wizard button; widescreen and Aspyr notice flows are `[UI]` only. FOMOD post-download configure is GUI-only until Plan 123 (`docs/plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md`).
 
-**Recommendations (Tier 1):** Keep `agent-action-parity.md` current when wizard pages change. Document `--select` examples for tier/category installs.
+**Recommendations (Tier 1):** Keep `agent-action-parity.md` current when wizard pages change. Ship Plan 123 to close FOMOD action-parity gap; document `--fomod-choices` in `core-cli-reference.md`.
 
 ---
 

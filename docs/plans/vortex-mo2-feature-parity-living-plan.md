@@ -20,7 +20,7 @@ Single authoritative tracker for parity work. Individual slice plans under
 | 3 | Profiles | Merged (#157) |
 | 4 | Managed deployment | **Merged** (#158 core); install wiring deferred |
 | 5 | File conflicts | Core #160 + GUI #165 merged |
-| 6 | FOMOD | Parser + installer dialog merged (#166); archive hook deferred |
+| 6 | FOMOD | Parser + installer dialog merged (#166); GUI + CLI post-download in PR #169 |
 | 7 | (roadmap tail) | Per slice plans |
 
 ## Delta update (2026-06-14)
@@ -35,16 +35,16 @@ Single authoritative tracker for parity work. Individual slice plans under
 
 ### Partial
 
-- Deployment: `DeploymentService` not wired into install execution; no GUI toggle.
-- FOMOD: no automatic archive enumeration hook in download flow.
+- Deployment: `DeploymentService` not wired into install execution; no GUI toggle (see PR #168).
+- FOMOD post-download: GUI dialog + CLI orchestrator (`--fomod-choices`, settings `fomodPostDownloadMode`) in PR #169.
 - Update checking: no endorsement UI; check results not persisted via `DownloadCacheService`.
-- Desktop validation skipped for update badges (headless agent).
+- Desktop validation skipped for FOMOD prompts and update badges (headless agent).
 
 ### Next
 
-1. Wire `DeploymentService` into install execution + optional GUI toggle (plan 116 slice 2).
-2. FOMOD archive discovery hook in download/archive enumeration.
-3. Migrate `NexusModsDownloadHandler` to `NexusApiClient` when download handler branch is stable.
+1. Merge managed deployment install wiring (#168) when ready.
+2. Migrate `NexusModsDownloadHandler` to `NexusApiClient` when download handler branch is stable.
+3. Managed deployment P2: dry-run/VFS staging parity or document install-only validation.
 
 ## Superseded
 

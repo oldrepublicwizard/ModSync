@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 using ModSync.Core;
+using ModSync.Core.Services.Fomod;
 using ModSync.Core.Utility;
 using ModSync.Models;
 
@@ -92,6 +93,7 @@ namespace ModSync.Services
                 IsArchive = true,
                 IsDirectory = false,
                 IsExpanded = false,
+                IsFomodInstaller = FomodArchiveProbe.TryDetectInArchive(filePath, out _),
             };
 
             try

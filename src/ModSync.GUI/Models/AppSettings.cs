@@ -92,6 +92,10 @@ namespace ModSync.Models
         [JsonPropertyName("registerNxmProtocolHandler")]
         public bool RegisterNxmProtocolHandler { get; set; }
 
+        [JsonPropertyName("fomodPostDownloadMode")]
+        [CanBeNull]
+        public string FomodPostDownloadMode { get; set; } = "warn-continue";
+
         public AppSettings()
         {
         }
@@ -108,6 +112,8 @@ namespace ModSync.Models
             Logger.LogVerbose($"[AppSettings.FromCurrentState] DestinationPath: '{mainConfig.destinationPathFullName}'");
             Logger.LogVerbose($"[AppSettings.FromCurrentState] Theme: '{currentTheme}'");
             Logger.LogVerbose($"[AppSettings.FromCurrentState] SpoilerFreeMode: '{spoilerFreeMode}'");
+
+            AppSettings persisted = SettingsManager.LoadSettings();
 
             return new AppSettings
             {
@@ -132,6 +138,9 @@ namespace ModSync.Models
                 EnableFileWatcher = mainConfig.enableFileWatcher,
                 SpoilerFreeMode = spoilerFreeMode,
                 RegisterNxmProtocolHandler = mainConfig.registerNxmProtocolHandler,
+                FomodPostDownloadMode = string.IsNullOrWhiteSpace(persisted.FomodPostDownloadMode)
+                    ? "warn-continue"
+                    : persisted.FomodPostDownloadMode,
             };
         }
 

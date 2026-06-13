@@ -306,6 +306,17 @@
                                 IsChecked="{Binding filterDownloadsByResolution}"
                                 ToolTip.Tip="When enabled, automatically skips downloading files that don't match your system's screen resolution. For example, if you have a 1920x1080 display, files with '3840x2160' in the name will be skipped. This saves bandwidth and disk space by only downloading resolution-specific files that match your display." />
 
+                            <TextBlock
+                                Margin="0,10,0,5"
+                                Text="FOMOD after downloads (CLI)" />
+                            <ComboBox
+                                x:Name="FomodPostDownloadModeComboBox"
+                                SelectionChanged="FomodPostDownloadModeComboBox_SelectionChanged"
+                                ToolTip.Tip="Controls headless CLI behavior after install/convert/merge -d when a FOMOD archive is detected. The desktop GUI always shows the FOMOD installer dialog when downloads finish.">
+                                <ComboBoxItem Content="Warn and continue without configuring" Tag="warn-continue" />
+                                <ComboBoxItem Content="Skip FOMOD configuration prompts" Tag="skip" />
+                            </ComboBox>
+
                             <CheckBox
                                 x:Name="RegisterNxmProtocolCheckBox"
                                 Margin="0,10,0,0"

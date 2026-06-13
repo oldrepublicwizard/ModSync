@@ -46,6 +46,11 @@ namespace ModSync.Models
         public bool IsArchive { get; set; }
 
         /// <summary>
+        /// True when an archive listing contains a FOMOD installer package.
+        /// </summary>
+        public bool IsFomodInstaller { get; set; }
+
+        /// <summary>
         /// The archive file path if this node or its parent is from an archive.
         /// </summary>
         public string ArchiveSource { get; set; }

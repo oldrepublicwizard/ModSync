@@ -60,6 +60,17 @@ Helper: **`scripts/agents/cli_validate.sh`** does not download; use **`install -
 
 **Parity gap**: CLI can download archives; it does not replicate the GUI download status panel or stop button. See [agent-action-parity.md](agent-action-parity.md).
 
+## FOMOD post-download (CLI + GUI)
+
+`[REPO]` After downloads complete, selected components with FOMOD archives may be configured before validation/install:
+
+| Surface | Behavior |
+|---------|----------|
+| GUI | `DownloadOrchestrationService` → `FomodPostDownloadPromptService` → `FomodGuiPostDownloadHost` (installer dialog) |
+| CLI `install -d` / `convert -d` / `merge -d` | `FomodPostDownloadOrchestrator` with TTY wizard, warn-continue, skip, or `--fomod-choices` / `MODSYNC_FOMOD_CHOICES` |
+
+**Settings** (`settings.json` key `fomodPostDownloadMode`): `warn-continue` (default) or `skip` — affects headless CLI only; GUI always prompts. Also: `--fomod-skip`, `--interactive` / `--non-interactive`, env `MODSYNC_FOMOD_POST_DOWNLOAD_MODE`. See [fomod-support.md](fomod-support.md) and [core-cli-reference.md](core-cli-reference.md).
+
 ## Typical agent workflow
 
 1. Clone **`./mod-builds`** at repo root if testing full builds — [mod-builds-sources.md](mod-builds-sources.md).
