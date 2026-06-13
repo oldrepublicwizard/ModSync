@@ -37,6 +37,8 @@ namespace ModSync.Dialogs
         private bool _isDownloading = false;
         private string _selectedHolopatcherVersion;
 
+        private string _fomodPostDownloadMode = "warn-continue";
+
         private sealed class GitHubRelease
         {
             public string TagName { get; set; }
@@ -108,6 +110,7 @@ namespace ModSync.Dialogs
             LoadNexusModsApiKeySettings();
             LoadNxmProtocolSettings();
             LoadFileWatcherSettings();
+            LoadFomodPostDownloadSettings();
 
             Logger.LogVerbose("SettingsDialog.InitializeFromMainWindow end");
         }
@@ -326,6 +329,35 @@ namespace ModSync.Dialogs
             catch (Exception ex)
             {
                 Logger.LogException(ex, "Failed to load HoloPatcher version settings");
+            }
+        }
+
+        private void LoadFomodPostDownloadSettings()
+        {
+            try
+            {
+                ComboBox modeComboBox = this.FindControl<ComboBox>("FomodPostDownloadModeComboBox");
+                if (modeComboBox == null)
+                {
+                    return;
+                }
+
+                Models.AppSettings appSettings = Models.SettingsManager.LoadSettings();
+                _fomodPostDownloadMode = string.IsNullOrWhiteSpace(appSettings.FomodPostDownloadMode)
+                    ? "warn-continue"
+                    : appSettings.FomodPostDownloadMode;
+
+                int selectedIndex = string.Equals(
+                    _fomodPostDownloadMode,
+                    "skip",
+                    StringComparison.OrdinalIgnoreCase)
+                    ? 1
+                    : 0;
+                modeComboBox.SelectedIndex = selectedIndex;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex, "Failed to load FOMOD post-download settings");
             }
         }
 
@@ -781,6 +813,8 @@ namespace ModSync.Dialogs
 
                 await SaveNxmProtocolSettingsAsync(settings);
 
+                settings.FomodPostDownloadMode = _fomodPostDownloadMode;
+
                 Models.SettingsManager.SaveSettings(settings);
 
                 Logger.Log(
@@ -945,6 +979,23 @@ namespace ModSync.Dialogs
             {
                 await Logger.LogExceptionAsync(ex, "Failed to change theme");
             }
+        }
+
+        [UsedImplicitly]
+        private void FomodPostDownloadModeComboBox_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e
+        )
+        {
+            if (
+                !(sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
+            )
+            {
+                return;
+            }
+
+            _fomodPostDownloadMode = selectedItem.Tag?.ToString() ?? "warn-continue";
+            Logger.LogVerbose($"FOMOD post-download mode changed to: {_fomodPostDownloadMode}");
         }
 
         [UsedImplicitly]

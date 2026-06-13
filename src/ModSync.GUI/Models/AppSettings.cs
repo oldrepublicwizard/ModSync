@@ -92,6 +92,10 @@ namespace ModSync.Models
         [JsonPropertyName("registerNxmProtocolHandler")]
         public bool RegisterNxmProtocolHandler { get; set; }
 
+        [JsonPropertyName("fomodPostDownloadMode")]
+        [CanBeNull]
+        public string FomodPostDownloadMode { get; set; } = "warn-continue";
+
         public AppSettings()
         {
         }
