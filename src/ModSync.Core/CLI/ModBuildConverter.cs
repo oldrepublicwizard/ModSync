@@ -2760,6 +2760,28 @@ componentName: null,
                         await Logger.LogAsync("Validation Summary:").ConfigureAwait(false);
                         await Logger.LogAsync($"  Total components validated: {componentCount}").ConfigureAwait(false);
                         break;
+                    case ValidationPipelineStage.FomodConfiguration:
+                        await Logger.LogAsync("Checking FOMOD configuration...").ConfigureAwait(false);
+                        await Logger.LogAsync(new string('-', 50)).ConfigureAwait(false);
+                        if (stage.Passed)
+                        {
+                            await Logger.LogAsync("✓ All detected FOMOD archives are configured").ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await Logger.LogErrorAsync(stage.Summary ?? "Unconfigured FOMOD archives detected").ConfigureAwait(false);
+                            foreach (string message in stage.Messages)
+                            {
+                                if (message.StartsWith("ERROR:", StringComparison.Ordinal))
+                                {
+                                    await Logger.LogErrorAsync(message.Substring(6).Trim()).ConfigureAwait(false);
+                                }
+                            }
+                        }
+
+                        await Logger.LogAsync(new string('-', 50)).ConfigureAwait(false);
+                        await Logger.LogAsync().ConfigureAwait(false);
+                        break;
                     case ValidationPipelineStage.DryRun:
                         await Logger.LogAsync("\nRunning dry-run validation...").ConfigureAwait(false);
                         if (pipelineResult.DryRunResult != null)

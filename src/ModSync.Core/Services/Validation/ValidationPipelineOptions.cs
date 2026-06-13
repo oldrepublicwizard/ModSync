@@ -38,6 +38,9 @@ namespace ModSync.Core.Services.Validation
         /// <summary>Skip per-component archive validation (tests that only need graph checks).</summary>
         public bool SkipComponentArchiveValidation { get; set; }
 
+        /// <summary>Skip FOMOD configured-only gate (tests without FOMOD fixtures).</summary>
+        public bool SkipFomodConfigurationGate { get; set; }
+
         [CanBeNull]
         public MainConfig MainConfig { get; set; }
 
