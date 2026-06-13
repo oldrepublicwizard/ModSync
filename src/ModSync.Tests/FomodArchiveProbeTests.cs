@@ -101,11 +101,13 @@ namespace ModSync.Tests
             FomodDownloadPromptState.MarkDismissed(component, "ExampleMod.zip");
             Assert.That(FomodDownloadPromptState.ShouldPrompt(component, "ExampleMod.zip"), Is.False);
 
-            component.ResourceRegistry["https://example.test/mod2.zip"] = new ResourceMetadata
+            var registry = new Dictionary<string, ResourceMetadata>(component.ResourceRegistry);
+            registry["https://example.test/mod2.zip"] = new ResourceMetadata
             {
                 Files = new Dictionary<string, bool?> { ["OtherMod.zip"] = true },
                 HandlerMetadata = new Dictionary<string, object>(),
             };
+            component.ResourceRegistry = registry;
             FomodDownloadPromptState.MarkConfigured(component, "OtherMod.zip");
             Assert.That(FomodDownloadPromptState.ShouldPrompt(component, "OtherMod.zip"), Is.False);
         }

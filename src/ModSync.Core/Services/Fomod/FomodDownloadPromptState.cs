@@ -40,13 +40,20 @@ namespace ModSync.Core.Services.Fomod
         [CanBeNull]
         public static string GetStatus([NotNull] ModComponent component, [NotNull] string archiveFileName)
         {
-            if (TryGetStatusDictionary(component, out Dictionary<string, string> statuses)
-                && statuses.TryGetValue(NormalizeFileName(archiveFileName), out string status))
+            if (!TryGetResourceForArchive(component, archiveFileName, out ResourceMetadata resource))
             {
-                return status;
+                return null;
             }
 
-            return null;
+            if (resource.HandlerMetadata is null
+                || !TryGetStatusDictionaryFromMetadata(resource.HandlerMetadata, out Dictionary<string, string> statuses))
+            {
+                return null;
+            }
+
+            return statuses.TryGetValue(NormalizeFileName(archiveFileName), out string status)
+                ? status
+                : null;
         }
 
         public static void MarkDismissed([NotNull] ModComponent component, [NotNull] string archiveFileName)
@@ -79,51 +86,46 @@ namespace ModSync.Core.Services.Fomod
                 throw new ArgumentException("Status cannot be null or whitespace.", nameof(status));
             }
 
-            foreach (ResourceMetadata resource in component.ResourceRegistry.Values)
+            if (!TryGetResourceForArchive(component, archiveFileName, out ResourceMetadata resource))
             {
-                if (resource?.Files is null
-                    || !resource.Files.ContainsKey(archiveFileName))
-                {
-                    continue;
-                }
-
-                if (resource.HandlerMetadata is null)
-                {
-                    resource.HandlerMetadata = new Dictionary<string, object>(StringComparer.Ordinal);
-                }
-
-                if (!TryGetStatusDictionaryFromMetadata(resource.HandlerMetadata, out Dictionary<string, string> statuses))
-                {
-                    statuses = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                    resource.HandlerMetadata[HandlerMetadataKey] = statuses;
-                }
-
-                statuses[NormalizeFileName(archiveFileName)] = status;
                 return;
             }
+
+            if (resource.HandlerMetadata is null)
+            {
+                resource.HandlerMetadata = new Dictionary<string, object>(StringComparer.Ordinal);
+            }
+
+            if (!TryGetStatusDictionaryFromMetadata(resource.HandlerMetadata, out Dictionary<string, string> statuses))
+            {
+                statuses = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                resource.HandlerMetadata[HandlerMetadataKey] = statuses;
+            }
+
+            statuses[NormalizeFileName(archiveFileName)] = status;
         }
 
-        private static bool TryGetStatusDictionary(
+        private static bool TryGetResourceForArchive(
             [NotNull] ModComponent component,
-            out Dictionary<string, string> statuses)
+            [NotNull] string archiveFileName,
+            out ResourceMetadata resource)
         {
-            statuses = null;
+            resource = null;
             if (component.ResourceRegistry is null)
             {
                 return false;
             }
 
-            foreach (ResourceMetadata resource in component.ResourceRegistry.Values)
+            foreach (ResourceMetadata candidate in component.ResourceRegistry.Values)
             {
-                if (resource?.HandlerMetadata is null)
+                if (candidate?.Files is null
+                    || !candidate.Files.ContainsKey(archiveFileName))
                 {
                     continue;
                 }
 
-                if (TryGetStatusDictionaryFromMetadata(resource.HandlerMetadata, out statuses))
-                {
-                    return true;
-                }
+                resource = candidate;
+                return true;
             }
 
             return false;
