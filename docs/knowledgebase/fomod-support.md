@@ -49,8 +49,15 @@ GUI (`src/ModSync.GUI/`):
 
 ## Deferred `[OPEN]`
 
-- Detection hook in `DownloadCacheService`/`ArchiveEnumerationService` that offers
-  the guided flow when `FomodDetector` matches an archive.
+- CLI download/install parity for FOMOD post-download prompts.
+- Plugin images from `image path`.
+
+## Post-download hook `[REPO]`
+
+- `FomodArchiveProbe` detects `fomod/ModuleConfig.xml` inside downloaded archives via entry listing.
+- `FomodPostDownloadPromptService` runs after GUI **Fetch Downloads** completes; optional prompt per archive.
+- `FomodDownloadPromptState` stores dismissed/configured outcomes in resource handler metadata.
+- `ArchiveEnumerationService` sets `FileTreeNode.IsFomodInstaller` when an archive contains FOMOD metadata.
 
 ## Verification
 

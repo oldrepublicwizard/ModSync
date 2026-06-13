@@ -329,8 +329,17 @@ namespace ModSync.Services
                             IsDownloadInProgress = false;
                             await Dispatcher.UIThread.InvokeAsync(() => DownloadStateChanged?.Invoke(this, EventArgs.Empty));
 
-                            await Logger.LogVerboseAsync("[DownloadOrchestration] Running post-download validation");
-                            await Dispatcher.UIThread.InvokeAsync(() => onScanComplete?.Invoke());
+                            await Logger.LogVerboseAsync("[DownloadOrchestration] Running post-download FOMOD prompts");
+                            await Dispatcher.UIThread.InvokeAsync(async () =>
+                            {
+                                await FomodPostDownloadPromptService.PromptForDetectedArchivesAsync(
+                                    _parentWindow,
+                                    selectedComponents,
+                                    _mainConfig.sourcePath.FullName).ConfigureAwait(true);
+
+                                await Logger.LogVerboseAsync("[DownloadOrchestration] Running post-download validation");
+                                onScanComplete?.Invoke();
+                            });
                         }
                     }
                     catch (Exception ex)
