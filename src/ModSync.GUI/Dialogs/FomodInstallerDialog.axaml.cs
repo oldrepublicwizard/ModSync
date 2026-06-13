@@ -16,7 +16,6 @@ using JetBrains.Annotations;
 
 using ModSync.Core;
 using ModSync.Core.Services.Fomod;
-using ModSync.Core.Services.Fomod;
 
 namespace ModSync.Dialogs
 {
