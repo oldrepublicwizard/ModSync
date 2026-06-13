@@ -427,6 +427,22 @@ namespace ModSync.Core
             }
             RealDestinationPath = thisDestination;
         }
+
+        internal bool TryGetResolvedDestinationFullName([CanBeNull] out string fullName)
+        {
+            fullName = RealDestinationPath?.FullName;
+            return !string.IsNullOrWhiteSpace(fullName);
+        }
+
+        internal void RedirectResolvedDestination([NotNull] string newFullPath)
+        {
+            if (string.IsNullOrWhiteSpace(newFullPath))
+            {
+                throw new ArgumentException("Destination path cannot be null or whitespace.", nameof(newFullPath));
+            }
+
+            RealDestinationPath = new DirectoryInfo(Path.GetFullPath(newFullPath));
+        }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]
         public async Task<ActionExitCode> ExtractFileAsync(
             DirectoryInfo argDestinationPath = null,

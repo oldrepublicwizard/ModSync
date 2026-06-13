@@ -29,6 +29,7 @@ using ModSync.Controls;
 using ModSync.Core;
 using ModSync.Core.FileSystemUtils;
 using ModSync.Core.Services;
+using ModSync.Core.Services.Installation;
 using ModSync.Core.Utility;
 using ModSync.Dialogs;
 using ModSync.Models;
@@ -3792,6 +3793,18 @@ namespace ModSync
                     else
                     {
                         await Logger.LogAsync($"Successfully installed '{name}'");
+                        string managedSummary = ManagedInstallSummaryFormatter.FormatWizardSummary(
+                            InstallationService.LastManagedInstallResult);
+                        if (!string.IsNullOrWhiteSpace(managedSummary))
+                        {
+                            await InformationDialog.ShowInformationDialogAsync(
+                                this,
+                                $"Successfully installed '{name}'."
+                                + Environment.NewLine
+                                + Environment.NewLine
+                                + managedSummary);
+                        }
+
                         await UpdateStepProgressAsync();
                     }
                 }

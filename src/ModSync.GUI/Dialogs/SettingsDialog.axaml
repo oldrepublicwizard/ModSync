@@ -418,6 +418,32 @@
                         </StackPanel>
                     </Border>
 
+                    <!--  Deployment Settings Section  -->
+                    <Border
+                        Padding="15"
+                        BorderThickness="2"
+                        CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="Deployment" />
+
+                            <CheckBox
+                                x:Name="ManagedDeploymentCheckBox"
+                                Content="Managed deployment"
+                                ToolTip.Tip="When enabled, file-operation mods stage under the active profile then deploy via hardlink/copy. Only installs after enable are tracked; manifests are not yet actionable for uninstall." />
+
+                            <TextBlock
+                                x:Name="ManagedDeploymentHelperText"
+                                Margin="0,8,0,0"
+                                Opacity="0.8"
+                                Text="Requires an active profile. Open Profiles to activate one before enabling managed deployment."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
                     <!--  PyKotor/HoloPatcher Settings Section  -->
                     <Border
                         Padding="15"

@@ -92,6 +92,13 @@ namespace ModSync.Models
         [JsonPropertyName("registerNxmProtocolHandler")]
         public bool RegisterNxmProtocolHandler { get; set; }
 
+        [JsonPropertyName("managedDeploymentEnabled")]
+        public bool ManagedDeploymentEnabled { get; set; }
+
+        [JsonPropertyName("activeProfileName")]
+        [CanBeNull]
+        public string ActiveProfileName { get; set; }
+
         public AppSettings()
         {
         }

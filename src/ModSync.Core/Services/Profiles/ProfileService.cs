@@ -97,6 +97,16 @@ namespace ModSync.Core.Services.Profiles
         private string GetProfileFilePath([NotNull] string profileName) =>
             Path.Combine(_profilesDirectory, SanitizeProfileFileName(profileName) + ProfileFileExtension);
 
+        /// <summary>
+        /// Root directory for managed-deployment artifacts (staging, manifests) for
+        /// the named profile. Sibling to the profile JSON file in <c>profiles/</c>.
+        /// </summary>
+        [NotNull]
+        public string GetProfileArtifactDirectory([NotNull] string profileName)
+        {
+            return Path.Combine(_profilesDirectory, SanitizeProfileFileName(profileName));
+        }
+
         /// <summary>Returns all profiles on disk, ordered by name. Corrupt files are skipped.</summary>
         [NotNull]
         [ItemNotNull]

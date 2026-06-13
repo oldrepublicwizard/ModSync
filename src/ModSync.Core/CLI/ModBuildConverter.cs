@@ -17,6 +17,7 @@ using JetBrains.Annotations;
 
 using ModSync.Core.Services;
 using ModSync.Core.Services.Download;
+using ModSync.Core.Services.Installation;
 using ModSync.Core.Services.Validation;
 using ModSync.Core.Utility;
 
@@ -346,6 +347,12 @@ namespace ModSync.Core.CLI
 
             [JsonProperty("kpatcherExecutablePath")]
             public string KPatcherExecutablePath { get; set; }
+
+            [JsonProperty("managedDeploymentEnabled")]
+            public bool ManagedDeploymentEnabled { get; set; }
+
+            [JsonProperty("activeProfileName")]
+            public string ActiveProfileName { get; set; }
         }
 
         public class BaseOptions
@@ -626,6 +633,9 @@ namespace ModSync.Core.CLI
 
             [Option("ignore-errors", Required = false, Default = false, HelpText = "Ignore dependency resolution errors and attempt to load components in the best possible order")]
             public bool IgnoreErrors { get; set; }
+
+            [Option("profile", Required = false, HelpText = "Active profile name for managed deployment (overrides settings.json activeProfileName)")]
+            public string Profile { get; set; }
         }
 
         [Verb("set-nexus-api-key", HelpText = "Set and validate your Nexus Mods API key")]
@@ -3135,8 +3145,17 @@ componentName: null,
                     async (currentIndex, total, componentName) =>
                     {
                         await Logger.LogAsync($"[{currentIndex + 1}/{total}] Installing: {componentName}").ConfigureAwait(false);
-                    }
+                    },
+                    profileOverride: opts.Profile
                 ).ConfigureAwait(false);
+
+                string managedWarning = ManagedInstallSummaryFormatter.FormatCliWarningLine(
+                    InstallationService.LastManagedInstallResult);
+                if (!string.IsNullOrWhiteSpace(managedWarning))
+                {
+                    await Logger.LogWarningAsync(managedWarning).ConfigureAwait(false);
+                    await Console.Error.WriteLineAsync(managedWarning).ConfigureAwait(false);
+                }
 
                 await Logger.LogAsync(new string('=', 50)).ConfigureAwait(false);
 

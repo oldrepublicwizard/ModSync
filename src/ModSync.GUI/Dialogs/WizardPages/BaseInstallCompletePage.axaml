@@ -171,6 +171,11 @@
                                 Opacity="0.8"
                                 Text="&#x2022; Remember to credit mod authors if you share content"
                                 TextWrapping="Wrap" />
+                            <TextBlock
+                                x:Name="ManagedDeploymentSummaryText"
+                                FontSize="13"
+                                IsVisible="False"
+                                TextWrapping="Wrap" />
                         </StackPanel>
                     </StackPanel>
                 </Border>

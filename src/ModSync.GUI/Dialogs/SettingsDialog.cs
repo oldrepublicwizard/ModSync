@@ -108,6 +108,7 @@ namespace ModSync.Dialogs
             LoadNexusModsApiKeySettings();
             LoadNxmProtocolSettings();
             LoadFileWatcherSettings();
+            LoadManagedDeploymentSettings();
 
             Logger.LogVerbose("SettingsDialog.InitializeFromMainWindow end");
         }
@@ -610,6 +611,33 @@ namespace ModSync.Dialogs
             }
         }
 
+        private void LoadManagedDeploymentSettings()
+        {
+            try
+            {
+                CheckBox managedDeploymentCheckBox = this.FindControl<CheckBox>("ManagedDeploymentCheckBox");
+                TextBlock helperText = this.FindControl<TextBlock>("ManagedDeploymentHelperText");
+                if (managedDeploymentCheckBox is null)
+                {
+                    return;
+                }
+
+                Models.AppSettings appSettings = Models.SettingsManager.LoadSettings();
+                managedDeploymentCheckBox.IsChecked = appSettings.ManagedDeploymentEnabled;
+
+                bool hasActiveProfile = !string.IsNullOrWhiteSpace(appSettings.ActiveProfileName);
+                managedDeploymentCheckBox.IsEnabled = hasActiveProfile;
+                if (helperText != null)
+                {
+                    helperText.IsVisible = !hasActiveProfile;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex, "Failed to load managed deployment settings");
+            }
+        }
+
         private void LoadThemeSettings()
         {
             try
@@ -780,6 +808,12 @@ namespace ModSync.Dialogs
                 );
 
                 await SaveNxmProtocolSettingsAsync(settings);
+
+                CheckBox managedDeploymentCheckBox = this.FindControl<CheckBox>("ManagedDeploymentCheckBox");
+                if (managedDeploymentCheckBox != null)
+                {
+                    settings.ManagedDeploymentEnabled = managedDeploymentCheckBox.IsChecked == true;
+                }
 
                 Models.SettingsManager.SaveSettings(settings);
 

@@ -18,7 +18,7 @@ Single authoritative tracker for parity work. Individual slice plans under
 | 1 | nxm protocol handler | Merged (#155–#164) |
 | 2 | Nexus update checks | **Merged** (#156 core, #167 GUI badges) |
 | 3 | Profiles | Merged (#157) |
-| 4 | Managed deployment | **Merged** (#158 core); install wiring deferred |
+| 4 | Managed deployment | **In PR** (#158 core merged); install wiring + GUI toggle (plan 123) |
 | 5 | File conflicts | Core #160 + GUI #165 merged |
 | 6 | FOMOD | Parser + installer dialog merged (#166); archive hook deferred |
 | 7 | (roadmap tail) | Per slice plans |
@@ -28,6 +28,7 @@ Single authoritative tracker for parity work. Individual slice plans under
 ### Landed
 
 - Managed deployment engine core (#158).
+- Managed deployment install wiring (P0+P1): opt-in staging, deploy hooks, settings toggle, wizard/single-mod/CLI parity (plan 123, in PR).
 - Nexus update badges + **Check for Nexus Updates** menu action (#167, plan 122).
 - FOMOD installer dialog + parser stack (#166).
 - Conflicts analysis GUI (#165).
@@ -35,16 +36,16 @@ Single authoritative tracker for parity work. Individual slice plans under
 
 ### Partial
 
-- Deployment: `DeploymentService` not wired into install execution; no GUI toggle.
 - FOMOD: no automatic archive enumeration hook in download flow.
 - Update checking: no endorsement UI; check results not persisted via `DownloadCacheService`.
-- Desktop validation skipped for update badges (headless agent).
+- Desktop validation skipped for managed deployment + update badges (headless agent).
+- Managed deployment: uninstall/purge GUI and dry-run staging parity deferred (P2).
 
 ### Next
 
-1. Wire `DeploymentService` into install execution + optional GUI toggle (plan 116 slice 2).
-2. FOMOD archive discovery hook in download/archive enumeration.
-3. Migrate `NexusModsDownloadHandler` to `NexusApiClient` when download handler branch is stable.
+1. FOMOD archive discovery hook in download/archive enumeration.
+2. Migrate `NexusModsDownloadHandler` to `NexusApiClient` when download handler branch is stable.
+3. Managed deployment P2: dry-run/VFS staging parity or document install-only validation.
 
 ## Superseded
 
