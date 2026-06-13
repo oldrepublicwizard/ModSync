@@ -21,6 +21,8 @@ namespace ModSync.Core.Services.Fomod
 
         public const string StatusConfigured = "configured";
 
+        public const string StatusWarned = "warned";
+
         public static bool ShouldPrompt([NotNull] ModComponent component, [NotNull] string archiveFileName)
         {
             if (component is null)
@@ -66,6 +68,11 @@ namespace ModSync.Core.Services.Fomod
             SetStatus(component, archiveFileName, StatusConfigured);
         }
 
+        public static void MarkWarned([NotNull] ModComponent component, [NotNull] string archiveFileName)
+        {
+            SetStatus(component, archiveFileName, StatusWarned);
+        }
+
         private static void SetStatus(
             [NotNull] ModComponent component,
             [NotNull] string archiveFileName,
@@ -99,10 +106,10 @@ namespace ModSync.Core.Services.Fomod
             if (!TryGetStatusDictionaryFromMetadata(resource.HandlerMetadata, out Dictionary<string, string> statuses))
             {
                 statuses = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                resource.HandlerMetadata[HandlerMetadataKey] = statuses;
             }
 
             statuses[NormalizeFileName(archiveFileName)] = status;
+            resource.HandlerMetadata[HandlerMetadataKey] = statuses;
         }
 
         private static bool TryGetResourceForArchive(

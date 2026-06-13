@@ -23,6 +23,7 @@ namespace ModSync.Core.CLI
                 $"WARN: FOMOD installer detected in '{context.ArchiveFileName}' for mod '{context.Component.Name}'. "
                 + "Configure later via GUI or re-run with --fomod-choices.";
             Console.Error.WriteLine(message);
+            FomodDownloadPromptState.MarkWarned(context.Component, context.ArchiveFileName);
             return Task.FromResult(FomodConfigurePromptResult.AlreadyHandled);
         }
 
@@ -94,7 +95,10 @@ namespace ModSync.Core.CLI
             FomodPromptContext context,
             CancellationToken cancellationToken = default)
         {
-            ModComponent configured = FomodConsoleWizard.Run(extractedArchiveDirectory, context.Component.Name);
+            ModComponent configured = FomodConsoleWizard.Run(
+                extractedArchiveDirectory,
+                context.Component.Name,
+                context.ArchiveFileName);
             return Task.FromResult(configured);
         }
 

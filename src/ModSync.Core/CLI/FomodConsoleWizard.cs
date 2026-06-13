@@ -19,7 +19,10 @@ namespace ModSync.Core.CLI
     public static class FomodConsoleWizard
     {
         [CanBeNull]
-        public static ModComponent Run([NotNull] string extractedArchiveDirectory, [CanBeNull] string componentDisplayName)
+        public static ModComponent Run(
+            [NotNull] string extractedArchiveDirectory,
+            [CanBeNull] string componentDisplayName,
+            [CanBeNull] string archiveFileName = null)
         {
             string moduleConfigPath = FomodArchiveDiscovery.FindModuleConfigPath(extractedArchiveDirectory);
             if (moduleConfigPath is null)
@@ -36,8 +39,10 @@ namespace ModSync.Core.CLI
                 info = FomodParser.ParseInfoXmlFile(infoPath);
             }
 
-            string archiveFileName = Path.GetFileName(extractedArchiveDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)) + ".zip";
-            ModComponent component = FomodToComponentMapper.Map(info, config, archiveFileName);
+            string resolvedArchiveFileName = !string.IsNullOrWhiteSpace(archiveFileName)
+                ? archiveFileName
+                : Path.GetFileName(extractedArchiveDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)) + ".zip";
+            ModComponent component = FomodToComponentMapper.Map(info, config, resolvedArchiveFileName);
             FomodInstallerSession session = FomodInstallerPresenter.CreateSession(config, component);
 
             string title = string.IsNullOrWhiteSpace(componentDisplayName)

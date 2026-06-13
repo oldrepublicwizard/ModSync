@@ -3,8 +3,11 @@
 // See LICENSE.txt file in the project root for full license information.
 
 using System.Text.Json;
+
+using ModSync.Core;
 using ModSync.Core.Services.Fomod;
 using ModSync.Models;
+
 using NUnit.Framework;
 
 namespace ModSync.Tests
@@ -35,6 +38,24 @@ namespace ModSync.Tests
             string json = JsonSerializer.Serialize(settings);
 
             Assert.That(json, Does.Contain(FomodPostDownloadOptionsResolver.SettingsKey));
+        }
+
+        [Test]
+        public void FomodPostDownloadMode_FromCurrentState_PreservesPersistedValue()
+        {
+            AppSettings original = SettingsManager.LoadSettings();
+            try
+            {
+                SettingsManager.SaveSettings(new AppSettings { FomodPostDownloadMode = "skip" });
+
+                AppSettings roundTrip = AppSettings.FromCurrentState(new MainConfig(), "/Styles/LightStyle.axaml");
+
+                Assert.That(roundTrip.FomodPostDownloadMode, Is.EqualTo("skip"));
+            }
+            finally
+            {
+                SettingsManager.SaveSettings(original);
+            }
         }
     }
 }

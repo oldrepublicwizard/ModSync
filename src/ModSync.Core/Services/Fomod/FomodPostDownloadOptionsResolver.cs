@@ -53,7 +53,27 @@ namespace ModSync.Core.Services.Fomod
                 return new FomodPostDownloadOptions { Mode = FomodPostDownloadMode.SkipAll };
             }
 
-            if (ConsoleInteractionCapabilities.IsInteractiveTerminal(forceInteractive, forceNonInteractive))
+            if (forceInteractive)
+            {
+                return new FomodPostDownloadOptions
+                {
+                    Mode = FomodPostDownloadMode.Interactive,
+                    ForceInteractive = forceInteractive,
+                    ForceNonInteractive = forceNonInteractive,
+                };
+            }
+
+            if (string.Equals(mode, "warn-continue", StringComparison.OrdinalIgnoreCase))
+            {
+                return new FomodPostDownloadOptions
+                {
+                    Mode = FomodPostDownloadMode.WarnContinue,
+                    ForceInteractive = forceInteractive,
+                    ForceNonInteractive = forceNonInteractive,
+                };
+            }
+
+            if (ConsoleInteractionCapabilities.IsInteractiveTerminal(false, forceNonInteractive))
             {
                 return new FomodPostDownloadOptions
                 {

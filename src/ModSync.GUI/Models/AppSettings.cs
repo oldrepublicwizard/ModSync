@@ -113,6 +113,8 @@ namespace ModSync.Models
             Logger.LogVerbose($"[AppSettings.FromCurrentState] Theme: '{currentTheme}'");
             Logger.LogVerbose($"[AppSettings.FromCurrentState] SpoilerFreeMode: '{spoilerFreeMode}'");
 
+            AppSettings persisted = SettingsManager.LoadSettings();
+
             return new AppSettings
             {
                 Theme = currentTheme ?? "/Styles/LightStyle.axaml",
@@ -136,6 +138,9 @@ namespace ModSync.Models
                 EnableFileWatcher = mainConfig.enableFileWatcher,
                 SpoilerFreeMode = spoilerFreeMode,
                 RegisterNxmProtocolHandler = mainConfig.registerNxmProtocolHandler,
+                FomodPostDownloadMode = string.IsNullOrWhiteSpace(persisted.FomodPostDownloadMode)
+                    ? "warn-continue"
+                    : persisted.FomodPostDownloadMode,
             };
         }
 

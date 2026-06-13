@@ -36,5 +36,31 @@ namespace ModSync.Tests
 
             Assert.That(options.Mode, Is.EqualTo(FomodPostDownloadMode.WarnContinue));
         }
+
+        [Test]
+        public void Resolve_SettingsWarnContinue_ReturnsWarnContinueEvenWhenForceInteractiveFalse()
+        {
+            FomodPostDownloadOptions options = FomodPostDownloadOptionsResolver.Resolve(
+                fomodSkip: false,
+                fomodChoicesPath: null,
+                forceInteractive: false,
+                forceNonInteractive: false,
+                settingsMode: "warn-continue");
+
+            Assert.That(options.Mode, Is.EqualTo(FomodPostDownloadMode.WarnContinue));
+        }
+
+        [Test]
+        public void Resolve_ForceInteractive_OverridesSettingsWarnContinue()
+        {
+            FomodPostDownloadOptions options = FomodPostDownloadOptionsResolver.Resolve(
+                fomodSkip: false,
+                fomodChoicesPath: null,
+                forceInteractive: true,
+                forceNonInteractive: false,
+                settingsMode: "warn-continue");
+
+            Assert.That(options.Mode, Is.EqualTo(FomodPostDownloadMode.Interactive));
+        }
     }
 }

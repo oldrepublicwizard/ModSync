@@ -111,5 +111,38 @@ namespace ModSync.Tests
             FomodDownloadPromptState.MarkConfigured(component, "OtherMod.zip");
             Assert.That(FomodDownloadPromptState.ShouldPrompt(component, "OtherMod.zip"), Is.False);
         }
+
+        [Test]
+        public void MarkConfigured_UpdatesStatus_WhenHandlerMetadataUsesObjectDictionary()
+        {
+            var component = new ModComponent
+            {
+                ResourceRegistry = new Dictionary<string, ResourceMetadata>
+                {
+                    ["https://example.test/mod.zip"] = new ResourceMetadata
+                    {
+                        Files = new Dictionary<string, bool?> { ["ExampleMod.zip"] = true },
+                        HandlerMetadata = new Dictionary<string, object>
+                        {
+                            [FomodDownloadPromptState.HandlerMetadataKey] = new Dictionary<string, object>
+                            {
+                                ["ExampleMod.zip"] = FomodDownloadPromptState.StatusDismissed,
+                            },
+                        },
+                    },
+                },
+            };
+
+            FomodDownloadPromptState.MarkConfigured(component, "ExampleMod.zip");
+
+            Assert.That(
+                FomodDownloadPromptState.GetStatus(component, "ExampleMod.zip"),
+                Is.EqualTo(FomodDownloadPromptState.StatusConfigured));
+
+            ResourceMetadata resource = component.ResourceRegistry["https://example.test/mod.zip"];
+            Assert.That(
+                resource.HandlerMetadata[FomodDownloadPromptState.HandlerMetadataKey],
+                Is.InstanceOf<Dictionary<string, string>>());
+        }
     }
 }

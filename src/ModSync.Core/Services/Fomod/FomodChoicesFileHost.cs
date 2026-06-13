@@ -27,6 +27,9 @@ namespace ModSync.Core.Services.Fomod
             FomodArchiveChoices archiveChoices = FomodChoicesApplier.FindArchiveChoices(_choicesFile, context.ArchiveFileName);
             if (archiveChoices is null)
             {
+                Console.Error.WriteLine(
+                    $"WARN: No FOMOD choices entry for archive '{context.ArchiveFileName}' in the choices file.");
+                FomodDownloadPromptState.MarkWarned(context.Component, context.ArchiveFileName);
                 return Task.FromResult(FomodConfigurePromptResult.AlreadyHandled);
             }
 
