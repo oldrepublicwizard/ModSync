@@ -184,9 +184,7 @@ namespace ModSync.Dialogs
                 if (selectedTargets.Count != 1)
                 {
                     await _dialogService.ShowInformationDialog(
-                        "Select exactly one mod in the list, then choose Configure FOMOD Mod again.
-
-"
+                        "Select exactly one mod in the list, then choose Configure FOMOD Mod again.\n\n"
                         + "The wizard output is merged into that mod and marked configured for validate/install.")
                         .ConfigureAwait(true);
                     return;
@@ -221,9 +219,7 @@ namespace ModSync.Dialogs
                 ModificationsApplied = true;
 
                 await _dialogService.ShowInformationDialog(
-                    $"FOMOD configuration applied to '{target.Name}' from '{archiveFileName}'.
-
-" +
+                    $"FOMOD configuration applied to '{target.Name}' from '{archiveFileName}'.\n\n" +
                     $"Selected options: {configured.Options.Count(option => option.IsSelected)}/{configured.Options.Count}")
                     .ConfigureAwait(true);
             }
