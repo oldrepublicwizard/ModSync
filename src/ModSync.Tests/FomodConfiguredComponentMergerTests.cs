@@ -47,7 +47,7 @@ namespace ModSync.Tests
                 Action = Instruction.ActionType.Copy,
                 Source = new System.Collections.ObjectModel.ObservableCollection<string>
                 {
-                    "<<modDirectory>>\ExampleMod\file.tga",
+                    @"<<modDirectory>>\ExampleMod\file.tga",
                 },
                 Destination = "<<kotorDirectory>>/Override",
             });
@@ -63,7 +63,7 @@ namespace ModSync.Tests
             Assert.That(
                 target.Instructions.Any(i =>
                     i.Source != null
-                    && i.Source.Any(s => s != null && s.IndexOf("ExampleMod\\file.tga", StringComparison.OrdinalIgnoreCase) >= 0)),
+                    && i.Source.Any(s => s != null && s.IndexOf(@"ExampleMod\file.tga", StringComparison.OrdinalIgnoreCase) >= 0)),
                 Is.False,
                 "Prior backslash-prefixed FOMOD sources must be removed on reconfigure.");
         }
