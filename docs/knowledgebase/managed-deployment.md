@@ -27,5 +27,9 @@ to TOML instruction definitions only, not to internal services.
 patcher provenance capture (ImmutableCheckpoint), the `AppSettings` classic-vs-managed
 toggle, and GUI surfaces are later Phase 4 slices.
 
+Remaining work units (install wiring, managed dry-run/VFS parity, uninstall GUI,
+provenance): [docs/plans/2026-07-13-004-managed-deployment-validation-plan.md](../plans/2026-07-13-004-managed-deployment-validation-plan.md).
+Open install-wiring PR: [#168](https://github.com/th3w1zard1/ModSync/pull/168).
+
 Tests: `src/ModSync.Tests/DeploymentServiceTests.cs`
 (`dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~DeploymentService"`).

@@ -45,6 +45,8 @@ Other flags:
 |--------|-----------|
 | `SkipEnvironmentValidation` | Tests, headless fixtures without HoloPatcher |
 | `SkipComponentArchiveValidation` | Graph-only tests |
+
+`[REPO]` `CountStages` must match stages actually executed: when `SkipEnvironmentValidation` or `SkipComponentArchiveValidation` is set, progress `totalSteps` omits those stages (avoids inflated progress denominators in tests and wizard UI).
 | `ErrorsOnly` | `--errors-only` |
 | `UseFileSelection` | `--use-file-selection` (default true in options type; CLI defaults differ — see below) |
 
