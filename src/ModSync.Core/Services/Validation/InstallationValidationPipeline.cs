@@ -239,10 +239,16 @@ namespace ModSync.Core.Services.Validation
             int count = 0;
             if (options.FullValidation)
             {
-                count += 3;
+                if (!options.SkipEnvironmentValidation)
+                {
+                    count++;
+                }
+
+                // Conflicts + InstallOrder always run under FullValidation.
+                count += 2;
             }
 
-            if (!options.DryRunOnly)
+            if (!options.DryRunOnly && !options.SkipComponentArchiveValidation)
             {
                 count++;
             }
