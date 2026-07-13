@@ -34,6 +34,7 @@ Use these when citing findings in plans, PRs, or audits:
 ### Domain model (start here for TOML and validation)
 
 - [Product overview](product-overview.md) — what ModSync is, audiences, workflows
+- [Product vision](product-vision.md) — origin, full vision, vision-vs-current-state gaps (see also root `STRATEGY.md`)
 - [Instruction file format](instruction-format.md) — path placeholders, action types, minimal examples
 - [Mod component model](mod-component-model.md) — component/instruction fields, selection semantics
 - [Validation pipeline](validation-pipeline.md) — five stages, fail-fast, CLI/GUI mapping

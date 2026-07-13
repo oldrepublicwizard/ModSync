@@ -57,6 +57,7 @@ KOTOR modding often requires dozens of repetitive, order-sensitive steps per mod
 
 ## Related
 
+- [product-vision.md](product-vision.md) — origin, full vision, and vision-vs-current-state gaps
 - [instruction-format.md](instruction-format.md) — authoring instruction files
 - [mod-component-model.md](mod-component-model.md) — component fields and selection
 - [validation-pipeline.md](validation-pipeline.md) — validate before install
