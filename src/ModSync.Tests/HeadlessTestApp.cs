@@ -4,9 +4,11 @@
 
 using System;
 using Avalonia;
+using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Media;
 using Avalonia.ReactiveUI;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
@@ -51,6 +53,10 @@ namespace ModSync.Tests
             AppBuilder.Configure<HeadlessAvaloniaApp>()
                 .UseReactiveUI()
                 .WithInterFont()
+                .With(new FontManagerOptions
+                {
+                    DefaultFamilyName = "Inter",
+                })
                 .UseHeadless(new AvaloniaHeadlessPlatformOptions
                 {
                     UseHeadlessDrawing = true,
