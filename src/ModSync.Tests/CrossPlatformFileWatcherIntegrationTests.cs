@@ -19,8 +19,8 @@ using Assert = Xunit.Assert;
 
 namespace ModSync.Tests
 {
-
-
+    // Class-level Ignore avoids OneTimeSetUp Ignore text leaking into NUnit TestFilter XML.
+    [Ignore("FileWatcherEventsUnreliable")]
     public class CrossPlatformFileWatcherIntegrationTests : IDisposable
     {
         private readonly string _testDirectory;

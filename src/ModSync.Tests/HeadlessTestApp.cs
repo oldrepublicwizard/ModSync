@@ -50,6 +50,7 @@ namespace ModSync.Tests
         public static AppBuilder BuildAvaloniaApp() =>
             AppBuilder.Configure<HeadlessAvaloniaApp>()
                 .UseReactiveUI()
+                .WithInterFont()
                 .UseHeadless(new AvaloniaHeadlessPlatformOptions
                 {
                     UseHeadlessDrawing = true,

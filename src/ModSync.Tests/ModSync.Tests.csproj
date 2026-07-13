@@ -55,6 +55,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Avalonia.Headless.XUnit" Version="11.3.16" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.16" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.16" />
   </ItemGroup>
 

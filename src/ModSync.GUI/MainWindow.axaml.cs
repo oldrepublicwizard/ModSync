@@ -375,6 +375,8 @@ namespace ModSync
                 _menuBuilderService = new MenuBuilderService(ModManagementService, this);
                 InitializeTopMenu();
                 UpdateMenuVisibility();
+                // SettingsService must exist before directory pickers are wired (ctor previously NRE'd here).
+                _settingsService = new SettingsService(MainConfigInstance, this);
                 InitializeDirectoryPickers();
                 InitializeModListBox();
                 _selectionService = new SelectionService(MainConfigInstance);
@@ -394,7 +396,6 @@ namespace ModSync
                 _instructionBrowsingService = new InstructionBrowsingService(MainConfigInstance, _dialogService);
                 _instructionGenerationService = new InstructionGenerationService(MainConfigInstance, this);
                 _validationDisplayService = new ValidationDisplayService(_validationService, () => MainConfig.AllComponents);
-                _settingsService = new SettingsService(MainConfigInstance, this);
                 _stepNavigationService = new StepNavigationService(MainConfigInstance, _validationService);
 
                 _telemetryService = TelemetryService.Instance;
