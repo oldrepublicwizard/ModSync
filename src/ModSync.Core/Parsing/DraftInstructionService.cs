@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 
 using JetBrains.Annotations;
@@ -114,6 +115,7 @@ namespace ModSync.Core.Parsing
 
                 if (added > 0)
                 {
+                    ApplyReviewFlag(component);
                     info($"[DraftInstructions] Drafted {added} instruction(s) from prose for '{component.Name}' - flagged for review.");
                     results.Add(new DraftInstructionResult(component, added));
                 }
@@ -125,7 +127,9 @@ namespace ModSync.Core.Parsing
         /// <summary>
         /// Normalizes placeholders and enforces the path-sandboxing rules on a draft instruction:
         /// every Source entry and any non-empty Destination must start with
-        /// <c>&lt;&lt;modDirectory&gt;&gt;</c> or <c>&lt;&lt;kotorDirectory&gt;&gt;</c>.
+        /// <c>&lt;&lt;modDirectory&gt;&gt;</c> or <c>&lt;&lt;kotorDirectory&gt;&gt;</c>,
+        /// followed by a separator when a relative path is present, and must not contain
+        /// <c>..</c> segments, rooted segments, or drive letters after the placeholder.
         /// </summary>
         /// <returns>false when the instruction cannot be made sandbox-safe and must be dropped.</returns>
         public static bool TrySanitizeInstruction([NotNull] Instruction instruction)
@@ -153,7 +157,8 @@ namespace ModSync.Core.Parsing
                 instruction.Action == Instruction.ActionType.Delete ||
                 instruction.Action == Instruction.ActionType.Rename ||
                 instruction.Action == Instruction.ActionType.Extract ||
-                instruction.Action == Instruction.ActionType.Execute;
+                instruction.Action == Instruction.ActionType.Execute ||
+                instruction.Action == Instruction.ActionType.Patcher;
 
             if (sourceRequired && sanitizedSources.Count == 0)
             {
@@ -174,6 +179,30 @@ namespace ModSync.Core.Parsing
             return true;
         }
 
+        /// <summary>
+        /// Attaches <see cref="ReviewFlagMessage"/> to a component that received draft instructions so
+        /// install-review surfaces (GUI warnings and CLI validation-issue serialization) can see it.
+        /// Does not overwrite an existing identical flag.
+        /// </summary>
+        public static void ApplyReviewFlag([NotNull] ModComponent component)
+        {
+            if (component is null)
+            {
+                throw new ArgumentNullException(nameof(component));
+            }
+
+            if (string.IsNullOrWhiteSpace(component.InstallationWarning))
+            {
+                component.InstallationWarning = ReviewFlagMessage;
+                return;
+            }
+
+            if (component.InstallationWarning.IndexOf(ReviewFlagMessage, StringComparison.Ordinal) < 0)
+            {
+                component.InstallationWarning = ReviewFlagMessage + Environment.NewLine + component.InstallationWarning;
+            }
+        }
+
         [NotNull]
         private static string NormalizePlaceholders([CanBeNull] string path)
         {
@@ -185,10 +214,63 @@ namespace ModSync.Core.Parsing
             return path.Replace(LegacyGameDirectoryPlaceholder, KotorDirectoryPlaceholder);
         }
 
-        private static bool IsSandboxedPath([NotNull] string path)
+        /// <summary>
+        /// Returns true when <paramref name="path"/> is confined to a placeholder root:
+        /// starts with <c>&lt;&lt;modDirectory&gt;&gt;</c> or <c>&lt;&lt;kotorDirectory&gt;&gt;</c>,
+        /// optionally followed by <c>/</c> or <c>\</c> and relative segments that do not escape
+        /// (mirrors <c>FomodToComponentMapper.NormalizeRelativePath</c> rejection rules).
+        /// </summary>
+        internal static bool IsSandboxedPath([NotNull] string path)
         {
-            return path.StartsWith(ModDirectoryPlaceholder, StringComparison.Ordinal)
-                || path.StartsWith(KotorDirectoryPlaceholder, StringComparison.Ordinal);
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
+            string placeholder;
+            if (path.StartsWith(ModDirectoryPlaceholder, StringComparison.Ordinal))
+            {
+                placeholder = ModDirectoryPlaceholder;
+            }
+            else if (path.StartsWith(KotorDirectoryPlaceholder, StringComparison.Ordinal))
+            {
+                placeholder = KotorDirectoryPlaceholder;
+            }
+            else
+            {
+                return false;
+            }
+
+            if (path.Length == placeholder.Length)
+            {
+                return true;
+            }
+
+            char separator = path[placeholder.Length];
+            if (separator != '/' && separator != '\\')
+            {
+                // Require an explicit separator after the placeholder (reject "<<modDirectory>>../x").
+                return false;
+            }
+
+            string remainder = path.Substring(placeholder.Length + 1).Replace('\\', '/');
+            foreach (string segment in remainder.Split('/'))
+            {
+                if (segment.Length == 0 || string.Equals(segment, ".", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                // Reject traversal, drive letters (e.g. "C:"), and rooted segments after the placeholder.
+                if (string.Equals(segment, "..", StringComparison.Ordinal)
+                    || segment.IndexOf(':') >= 0
+                    || Path.IsPathRooted(segment))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

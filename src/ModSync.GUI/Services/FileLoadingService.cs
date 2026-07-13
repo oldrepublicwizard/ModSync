@@ -557,8 +557,12 @@ namespace ModSync.Services
 
             foreach (DraftInstructionResult draftResult in draftResults)
             {
+                // ApplyReviewFlag runs inside GenerateDraftInstructions; re-apply is idempotent and keeps
+                // InstallationWarning aligned with CLI ReviewFlagMessage / validation-issue text.
+                DraftInstructionService.ApplyReviewFlag(draftResult.Component);
 #pragma warning disable MA0004 // Use Task.
-                await Logger.LogWarningAsync($"'{draftResult.Component.Name}': {draftResult.DraftInstructionCount} draft instruction(s) parsed from guide prose - review before installing (never auto-trusted).");
+                await Logger.LogWarningAsync(
+                    $"'{draftResult.Component.Name}': {draftResult.DraftInstructionCount} draft instruction(s). {DraftInstructionService.ReviewFlagMessage}");
 #pragma warning restore MA0004 // Use Task.
             }
         }

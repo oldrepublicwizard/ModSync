@@ -96,22 +96,20 @@ ___
         {
             foreach (string source in instruction.Source)
             {
-                Assert.That(
-                    source.StartsWith(ModDirectoryPlaceholder, StringComparison.Ordinal)
-                    || source.StartsWith(KotorDirectoryPlaceholder, StringComparison.Ordinal),
-                    Is.True,
-                    $"Source '{source}' must start with {ModDirectoryPlaceholder} or {KotorDirectoryPlaceholder}");
+                Assert.That(DraftInstructionService.IsSandboxedPath(source), Is.True,
+                    $"Source '{source}' must be confined to a placeholder root without '..' / rooted escapes");
                 Assert.That(source, Does.Not.Contain("<<gameDirectory>>"), "Legacy placeholder must be normalized away");
+                Assert.That(source.Replace('\\', '/').Split('/'), Does.Not.Contain(".."),
+                    $"Source '{source}' must not contain '..' segments");
             }
 
             if (!string.IsNullOrEmpty(instruction.Destination))
             {
-                Assert.That(
-                    instruction.Destination.StartsWith(ModDirectoryPlaceholder, StringComparison.Ordinal)
-                    || instruction.Destination.StartsWith(KotorDirectoryPlaceholder, StringComparison.Ordinal),
-                    Is.True,
-                    $"Destination '{instruction.Destination}' must start with {ModDirectoryPlaceholder} or {KotorDirectoryPlaceholder}");
+                Assert.That(DraftInstructionService.IsSandboxedPath(instruction.Destination), Is.True,
+                    $"Destination '{instruction.Destination}' must be confined to a placeholder root without '..' / rooted escapes");
                 Assert.That(instruction.Destination, Does.Not.Contain("<<gameDirectory>>"), "Legacy placeholder must be normalized away");
+                Assert.That(instruction.Destination.Replace('\\', '/').Split('/'), Does.Not.Contain(".."),
+                    $"Destination '{instruction.Destination}' must not contain '..' segments");
             }
         }
 
@@ -244,6 +242,103 @@ ___
                 Assert.That(DraftInstructionService.TrySanitizeInstruction(absoluteDestination), Is.False,
                     "A Move whose destination escapes the sandbox must be dropped");
             });
+        }
+
+        [Test]
+        public void TrySanitizeInstruction_RejectsParentDirectoryTraversalAfterPlaceholder()
+        {
+            var traversalSource = new Instruction
+            {
+                Action = Instruction.ActionType.Move,
+                Source = new List<string> { "<<modDirectory>>/../outside" },
+                Destination = "<<kotorDirectory>>/Override",
+            };
+
+            var traversalDestination = new Instruction
+            {
+                Action = Instruction.ActionType.Move,
+                Source = new List<string> { @"<<modDirectory>>\textures\*" },
+                Destination = @"<<kotorDirectory>>\..\Windows",
+            };
+
+            var gluedTraversal = new Instruction
+            {
+                Action = Instruction.ActionType.Move,
+                Source = new List<string> { "<<modDirectory>>../outside" },
+                Destination = "<<kotorDirectory>>/Override",
+            };
+
+            var driveAfterPlaceholder = new Instruction
+            {
+                Action = Instruction.ActionType.Move,
+                Source = new List<string> { @"<<modDirectory>>\C:\Windows\evil.dll" },
+                Destination = @"<<kotorDirectory>>\Override",
+            };
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(DraftInstructionService.IsSandboxedPath("<<modDirectory>>/../outside"), Is.False);
+                Assert.That(DraftInstructionService.IsSandboxedPath(@"<<kotorDirectory>>\..\Windows"), Is.False);
+                Assert.That(DraftInstructionService.IsSandboxedPath("<<modDirectory>>../outside"), Is.False);
+                Assert.That(DraftInstructionService.IsSandboxedPath(@"<<modDirectory>>\C:\Windows\evil.dll"), Is.False);
+                Assert.That(DraftInstructionService.IsSandboxedPath("<<modDirectory>>/textures/*"), Is.True);
+                Assert.That(DraftInstructionService.TrySanitizeInstruction(traversalSource), Is.False,
+                    "Source with '..' after placeholder must be dropped");
+                Assert.That(DraftInstructionService.TrySanitizeInstruction(traversalDestination), Is.False,
+                    "Destination with '..' after placeholder must be dropped");
+                Assert.That(DraftInstructionService.TrySanitizeInstruction(gluedTraversal), Is.False,
+                    "Missing separator before '..' must be dropped");
+                Assert.That(DraftInstructionService.TrySanitizeInstruction(driveAfterPlaceholder), Is.False,
+                    "Drive letter segment after placeholder must be dropped");
+            });
+        }
+
+        [Test]
+        public void DraftInstructions_TraversalProse_DoesNotKeepEscapingPaths()
+        {
+            ModComponent escapeComponent = CreateComponent(
+                "Move everything from <<modDirectory>>/../outside to your Override.");
+            ModComponent bareDotDot = CreateComponent(
+                "Move .. to override.");
+
+            IReadOnlyList<DraftInstructionResult> escapeResults =
+                DraftInstructionService.GenerateDraftInstructions(new[] { escapeComponent });
+            IReadOnlyList<DraftInstructionResult> bareResults =
+                DraftInstructionService.GenerateDraftInstructions(new[] { bareDotDot });
+
+            Assert.Multiple(() =>
+            {
+                foreach (Instruction instruction in escapeComponent.Instructions)
+                {
+                    AssertInstructionIsSandboxed(instruction);
+                }
+
+                foreach (Instruction instruction in bareDotDot.Instructions)
+                {
+                    AssertInstructionIsSandboxed(instruction);
+                }
+
+                if (escapeResults.Count > 0)
+                {
+                    Assert.That(escapeComponent.InstallationWarning, Does.Contain(DraftInstructionService.ReviewFlagMessage));
+                }
+
+                if (bareResults.Count > 0)
+                {
+                    Assert.That(bareDotDot.InstallationWarning, Does.Contain(DraftInstructionService.ReviewFlagMessage));
+                }
+            });
+        }
+
+        [Test]
+        public void DraftInstructions_SuccessfulDraft_AppliesReviewFlagMessage()
+        {
+            ModComponent component = CreateComponent(MoveFoldersProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.InstallationWarning, Is.EqualTo(DraftInstructionService.ReviewFlagMessage));
         }
 
         #endregion
