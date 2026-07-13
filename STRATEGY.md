@@ -31,7 +31,7 @@ Encode install guides as machine-executable instruction files built on HoloPatch
 
 ### Guide ingestion
 
-Turning existing human-written install guides (markdown, pasted text) into instruction files with draft executable instructions.
+Turning existing human-written install guides (markdown, pasted text) into instruction files with draft executable instructions. **Shipped** (paste/clipboard + `convert --stdin --parse-directions`) — see [guide-ingestion.md](docs/knowledgebase/guide-ingestion.md) and [brainstorm](docs/brainstorms/2026-07-13-guide-paste-ingestion-requirements.md).
 
 _Why it serves the approach:_ Authors never re-enter what they already wrote; the encoded-build supply grows from guides that already exist.
 
@@ -43,13 +43,13 @@ _Why it serves the approach:_ The instruction file stays the single source of tr
 
 ### "Install with ModSync" entry points
 
-One-click handoff from where mods live into the installer: `nxm://` protocol handling is shipped; a `modsync://` scheme for build links is future work.
+One-click handoff from where mods live into the installer: `nxm://` protocol handling is shipped; `modsync://` Phase 1 (parse + CLI + handoff) is shipped; Phase 2 (OS registration + MainWindow consume) is open — see [modsync-protocol-handler.md](docs/knowledgebase/modsync-protocol-handler.md) and [brainstorm](docs/brainstorms/2026-07-13-modsync-protocol-requirements.md).
 
 _Why it serves the approach:_ Removes the manual download-and-place chain that causes most order-sensitive failures.
 
 ### Multi-author builds
 
-Merge tooling, install profiles, and (future) publish/share flows so any author's build can be combined, compatibility-fixed, and distributed.
+Merge tooling and install profiles are shipped; publish/share flows remain open ([plan stub](docs/plans/2026-07-13-003-feat-multi-author-publish-share-plan.md)). Prefer finishing `modsync://` Phase 2 consume/registration first so share links have an open path.
 
 _Why it serves the approach:_ Breaks the single-curator bottleneck — the crux of the target problem.
 
