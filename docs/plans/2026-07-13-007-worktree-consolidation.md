@@ -6,10 +6,10 @@ Non-interactive cherry-pick consolidation of parallel `ModSync-*` agent worktree
 
 | Source worktree / commit | Destination | Tip SHA | Notes |
 |---|---|---|---|
-| `ModSync-fomod-gate-tests` `18254ddb` | `feat/fomod-configuration-gate` | `6129e297a5b07f8013334e7e42465199cce0d613` | Already present as `16d8904ad6006d6e67dc9d0de02fa64b48614572` (identical patch-id); no new cherry-pick |
+| `ModSync-fomod-gate-tests` `18254ddb` | `feat/fomod-configuration-gate` | `ac367caf6377b558095cfb3b4ff1acd0f610f5ed` | Already present as `16d8904ad6006d6e67dc9d0de02fa64b48614572` (identical patch-id); no new cherry-pick |
 | `ModSync-gui-smoke-headless` `9165e691` | `feat/guide-paste-ingestion` | `647205782e6b7a4e0302e43b2975c9951db39ef1` | Merged FOMOD tip into guide-paste, then cherry-picked as `3b470d9b1f171d43bb5ccc2c9aa116bae7256ce2`; conflicts resolved in KB README + DownloadsExplainPage |
 | `ModSync-managed-deploy-audit` `c02ee89c` | `fix/validation-progress-count` (from master) | `e51537efac94d6cd745367e50970b1f4b0589ad6` | Master-safe CountStages + progress test + plan 004; FOMOD-only UI tests omitted |
-| same `c02ee89c` (full) | `feat/fomod-configuration-gate` | `6129e297a5b07f8013334e7e42465199cce0d613` | Full cherry-pick `c02ee89c658321acebb645cff9c82821df782e82` → `6129e297` on live FOMOD tip |
+| same `c02ee89c` (full) | `feat/fomod-configuration-gate` | `ac367caf6377b558095cfb3b4ff1acd0f610f5ed` | Full cherry-pick `c02ee89c` → `6129e297` (tip later advanced by concurrent FOMOD agent) |
 | same `c02ee89c` (full) | `feat/guide-paste-ingestion` | `647205782e6b7a4e0302e43b2975c9951db39ef1` | Full cherry-pick → `d38352c2` on stacked paste tip |
 
 ## Tests run
