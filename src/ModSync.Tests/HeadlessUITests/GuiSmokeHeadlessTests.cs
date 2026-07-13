@@ -3,6 +3,7 @@
 // See LICENSE.txt file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -11,19 +12,40 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ModSync.Controls;
+using ModSync.Core;
 using ModSync.Dialogs.WizardPages;
+using ModSync.Services;
 using Xunit;
 
 namespace ModSync.Tests.HeadlessUITests
 {
     /// <summary>
-    /// Headless Avalonia smoke coverage for paste-import entry points and
-    /// wizard page-0 layout constraints. Prefer these over a real desktop
-    /// session for agent GUI UX smoke.
+    /// Headless Avalonia smoke coverage for paste-import entry points,
+    /// wizard page-order key controls, and compact-host layout constraints.
+    /// Prefer these over a real desktop session for agent GUI UX smoke.
     /// </summary>
     [Collection(HeadlessTestApp.CollectionName)]
     public sealed class GuiSmokeHeadlessTests
     {
+        private const string SampleClipboardMarkdown = @"### Example Clipboard Mod
+
+**Name:** [Example Clipboard Mod](https://deadlystream.com/files/file/9999-example-clipboard-mod/)
+
+**Author:** Headless Smoke Author
+
+**Description:** Minimal markdown guide used by GuiSmokeHeadlessTests to exercise LoadInstructionTextAsync without a real OS clipboard.
+
+**Category & Tier:** Immersion / 1 - Essential
+
+**Non-English Functionality:** YES
+
+**Installation Method:** Loose-File Mod
+
+**Installation Instructions:** Copy the files into Override.
+
+___
+";
+
         [AvaloniaFact(DisplayName = "GettingStarted Import from Clipboard button exists and raises event")]
         public async Task ImportFromClipboardButton_Exists_And_IsInvokable()
         {
@@ -53,11 +75,146 @@ namespace ModSync.Tests.HeadlessUITests
             }
         }
 
+        [AvaloniaFact(DisplayName = "LoadInstructionTextAsync imports sample markdown without real clipboard")]
+        public async Task LoadInstructionTextAsync_SampleMarkdown_ImportsComponents()
+        {
+            List<ModComponent> previousComponents = MainConfig.AllComponents;
+            MainConfig.AllComponents = new List<ModComponent>();
+
+            Window window = await Dispatcher.UIThread.InvokeAsync(
+                () =>
+                {
+                    var host = new Window { Width = 640, Height = 480 };
+                    host.Show();
+                    return host;
+                },
+                DispatcherPriority.Background);
+            await PumpEventsAsync();
+
+            try
+            {
+                var config = new MainConfig();
+                var service = new FileLoadingService(config, window);
+                int componentsLoadedCallbacks = 0;
+                int autoGenerateCallbacks = 0;
+
+                bool loaded = await service.LoadInstructionTextAsync(
+                    SampleClipboardMarkdown,
+                    editorMode: false,
+                    onComponentsLoaded: () =>
+                    {
+                        componentsLoadedCallbacks++;
+                        return Task.CompletedTask;
+                    },
+                    tryAutoGenerate: _ =>
+                    {
+                        autoGenerateCallbacks++;
+                        return Task.CompletedTask;
+                    },
+                    sourceDescription: "headless sample markdown");
+
+                Assert.True(loaded);
+                Assert.NotEmpty(MainConfig.AllComponents);
+                Assert.Contains(
+                    MainConfig.AllComponents,
+                    c => (c.Name ?? string.Empty).Contains("Clipboard", StringComparison.OrdinalIgnoreCase));
+                Assert.True(autoGenerateCallbacks >= 1 || componentsLoadedCallbacks >= 1);
+            }
+            finally
+            {
+                MainConfig.AllComponents = previousComponents;
+                await CloseWindowAsync(window);
+            }
+        }
+
+        [AvaloniaFact(DisplayName = "Wizard pages Welcome through ValidatePage expose key controls")]
+        public async Task WizardPageOrder_WelcomeThroughValidate_KeyControlsPresent()
+        {
+            List<ModComponent> previousComponents = MainConfig.AllComponents;
+            var components = new List<ModComponent>
+            {
+                new ModComponent
+                {
+                    Guid = Guid.NewGuid(),
+                    Name = "Smoke Mod",
+                    IsSelected = true,
+                    Category = new List<string> { "Test" },
+                    Tier = "1 - Essential",
+                },
+            };
+            MainConfig.AllComponents = components;
+            var config = new MainConfig();
+
+            try
+            {
+                Control[] pages =
+                {
+                    new WelcomePage(),
+                    new ModDirectoryPage(config),
+                    new GameDirectoryPage(config),
+                    new ModSelectionPage(components),
+                    new DownloadsExplainPage(components),
+                    new ValidatePage(components, config),
+                };
+
+                string[][] requiredNames =
+                {
+                    Array.Empty<string>(),
+                    new[] { "SourcePathPicker" },
+                    new[] { "DestinationPathPicker" },
+                    new[] { "SelectAllButton", "DeselectAllButton", "SearchTextBox" },
+                    new[] { "SelectionSummaryText" },
+                    new[] { "ValidateButton", "LogExpander", "SummaryText", "ErrorCountBadge" },
+                };
+
+                for (int i = 0; i < pages.Length; i++)
+                {
+                    Control page = pages[i];
+                    Window window = await HostInWindowAsync(page, width: 1100, height: 800);
+                    try
+                    {
+                        await PumpEventsAsync();
+
+                        if (page is WelcomePage)
+                        {
+                            TextBlock title = page.GetVisualDescendants()
+                                .OfType<TextBlock>()
+                                .FirstOrDefault(tb => string.Equals(tb.Text, "Welcome to ModSync", StringComparison.Ordinal));
+                            Assert.NotNull(title);
+                            Assert.True(title.IsVisible);
+                        }
+
+                        if (page is DownloadsExplainPage downloads)
+                        {
+                            await downloads.OnNavigatedToAsync(default);
+                            await PumpEventsAsync();
+                            TextBlock summary = downloads.FindControl<TextBlock>("SelectionSummaryText");
+                            Assert.NotNull(summary);
+                            Assert.False(string.IsNullOrWhiteSpace(summary.Text));
+                        }
+
+                        foreach (string name in requiredNames[i])
+                        {
+                            Control control = page.FindControl<Control>(name);
+                            Assert.True(control != null, $"Expected control '{name}' on {page.GetType().Name}");
+                        }
+                    }
+                    finally
+                    {
+                        await CloseWindowAsync(window);
+                    }
+                }
+            }
+            finally
+            {
+                MainConfig.AllComponents = previousComponents;
+            }
+        }
+
         [AvaloniaFact(DisplayName = "WelcomePage fits compact host via ScrollViewer without clipping primary title")]
         public async Task WelcomePage_CompactHost_KeepsTitleReachable()
         {
             var page = new WelcomePage();
-            // Compact wizard content host size (below design 1280x720).
             Window window = await HostInWindowAsync(page, width: 960, height: 540);
 
             try
@@ -71,14 +228,50 @@ namespace ModSync.Tests.HeadlessUITests
                     .OfType<TextBlock>()
                     .FirstOrDefault(tb => string.Equals(tb.Text, "Welcome to ModSync", StringComparison.Ordinal));
                 Assert.NotNull(title);
-
-                // Layout should resolve without throwing; title remains in the visual tree.
                 Assert.True(title.IsVisible);
                 Assert.True(page.Bounds.Height > 0 || window.Bounds.Height > 0);
+
+                WrapPanel badgeRow = page.GetVisualDescendants().OfType<WrapPanel>().FirstOrDefault();
+                Assert.NotNull(badgeRow);
             }
             finally
             {
                 await CloseWindowAsync(window);
+            }
+        }
+
+        [AvaloniaFact(DisplayName = "Early wizard pages stay scrollable in a compact host")]
+        public async Task EarlyWizardPages_CompactHost_UseScrollViewer()
+        {
+            var config = new MainConfig();
+            Control[] pages =
+            {
+                new WelcomePage(),
+                new ModDirectoryPage(config),
+                new GameDirectoryPage(config),
+                new DownloadsExplainPage(new List<ModComponent>()),
+            };
+
+            foreach (Control page in pages)
+            {
+                Window window = await HostInWindowAsync(page, width: 720, height: 420);
+                try
+                {
+                    await PumpEventsAsync();
+
+                    ScrollViewer scrollViewer = page.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
+                    Assert.True(
+                        scrollViewer != null,
+                        $"{page.GetType().Name} should host a ScrollViewer for compact-window overflow");
+                    Assert.Equal(
+                        Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+                        scrollViewer.VerticalScrollBarVisibility);
+                    Assert.True(page.Bounds.Width <= window.Bounds.Width + 1 || window.Bounds.Width > 0);
+                }
+                finally
+                {
+                    await CloseWindowAsync(window);
+                }
             }
         }
 
@@ -124,7 +317,6 @@ namespace ModSync.Tests.HeadlessUITests
                 Assert.NotNull(splitter);
                 Assert.NotNull(logScroll);
                 Assert.Equal(GridResizeDirection.Rows, splitter.ResizeDirection);
-                // Fixed MaxHeight was the old non-resizable constraint; star+splitter replaces it.
                 Assert.True(double.IsNaN(logScroll.MaxHeight) || logScroll.MaxHeight > 500);
             }
             finally

@@ -41,7 +41,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | Goal | Recommended path |
 |------|------------------|
 | Smoke-test repo | `./scripts/agents/run_headless_tests.sh` |
-| GUI UX smoke (paste button, page-0 layout, validate log splitter) | `./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"` (Avalonia.Headless — **no desktop**) |
+| GUI UX smoke (paste import, wizard page order, page-0 layout, validate log splitter) | `./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~Headless\|FullyQualifiedName~GuiSmoke"` (Avalonia.Headless — **no desktop**) |
 | Validate TOML structure only | `./scripts/agents/cli_validate.sh --input path.toml` |
 | Full validation | `cli_validate.sh` with `--game-dir`, `--source-dir`, `--full` |
 | Validate only TOML-selected mods | `cli_validate.sh` … `--use-file-selection` (matches GUI Mod Selection) |
@@ -57,7 +57,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | CLI install | `CliInstallIntegrationTests`, `ValidationPipelineParityTests` | End-to-end install; install pre-check uses same pipeline as wizard |
 | VFS validation | `VirtualFileSystemDryRunValidationTests` | Dry-run matches VFS rules |
 | Wizard UI | `WizardFlowHeadlessTests` | Page flow without full desktop |
-| GUI UX smoke | `GuiSmokeHeadlessTests` | Paste-import button, Welcome/Landing scroll layout, ValidatePage log splitter |
+| GUI UX smoke | `GuiSmokeHeadlessTests` | Paste-import button + `LoadInstructionTextAsync` markdown (no clipboard), Welcome→ValidatePage key controls, compact ScrollViewer layout, ValidatePage log splitter |
 | Wizard validation UX | `WizardValidationStagePresenter`, `ValidationPipelineDialogMapper` | Stage cards / dialog mapper parity ([PR #110](https://github.com/th3w1zard1/ModSync/pull/110)) |
 | Version alignment | `ReleaseVersionAlignmentTests` | Release metadata consistency |
 

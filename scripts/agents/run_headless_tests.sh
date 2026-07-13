@@ -13,6 +13,18 @@ Options:
   --filter EXPR          dotnet test filter (default: exclude LongRunning)
   --configuration NAME   Debug or Release (default: Debug)
   -h, --help             Show this help
+
+Examples:
+  # All non-LongRunning tests
+  ./scripts/agents/run_headless_tests.sh
+
+  # Expanded Avalonia GUI smoke (GuiSmoke + all *Headless* suites; no X11)
+  ./scripts/agents/run_headless_tests.sh \
+    --filter "FullyQualifiedName~Headless|FullyQualifiedName~GuiSmoke"
+
+  # Narrow paste / page-0 / wizard-order smoke only
+  ./scripts/agents/run_headless_tests.sh \
+    --filter "FullyQualifiedName~GuiSmokeHeadlessTests"
 EOF
 }
 

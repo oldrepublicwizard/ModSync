@@ -51,13 +51,18 @@ Optional filter:
 
 ### Avalonia GUI UX smoke (no desktop / no X11)
 
-Uses `Avalonia.Headless.XUnit` via `HeadlessTestApp` — do **not** launch the real GUI for paste-flow or page-0 layout smoke:
+Uses `Avalonia.Headless.XUnit` via `HeadlessTestApp` — do **not** launch the real GUI for paste-flow, wizard page-order, or page-0 layout smoke:
 
 ```bash
+# Expanded filter: GuiSmokeHeadlessTests + all *Headless* suites
+./scripts/agents/run_headless_tests.sh \
+  --filter "FullyQualifiedName~Headless|FullyQualifiedName~GuiSmoke"
+
+# Narrow GuiSmoke only (paste import, wizard order, compact layout, ValidatePage splitter)
 ./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"
 ```
 
-Covers: `ImportFromClipboardButton` invokable, Welcome/Landing scroll layout in a compact host, ValidatePage log `GridSplitter`.
+`GuiSmokeHeadlessTests` covers: `ImportFromClipboardButton`, `LoadInstructionTextAsync` sample markdown (no OS clipboard), Welcome→ValidatePage key controls, Welcome/Landing/early-page ScrollViewer layout, ValidatePage log `GridSplitter`.
 
 ### Validate instruction file
 

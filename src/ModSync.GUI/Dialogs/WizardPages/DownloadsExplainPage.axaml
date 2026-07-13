@@ -8,19 +8,34 @@
 
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="16,12" Spacing="12">
-            <TextBlock HorizontalAlignment="Center" Text="⬇️ Downloading Mod Files" TextAlignment="Center" />
-            <TextBlock MaxWidth="600" Text="ModSync will now begin downloading the required mod files in the background." TextWrapping="Wrap" />
-            <TextBlock x:Name="SelectionSummaryText" TextWrapping="Wrap" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                Text="⬇️ Downloading Mod Files"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+
+            <TextBlock
+                MaxWidth="600"
+                Text="ModSync will now begin downloading the required mod files in the background."
+                TextWrapping="Wrap" />
+
+            <TextBlock
+                x:Name="SelectionSummaryText"
+                TextWrapping="Wrap" />
+
             <Border Padding="14,12" CornerRadius="8">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="What's happening:" />
+                    <TextBlock Text="What's happening:" TextWrapping="Wrap" />
                     <TextBlock Text="• Mod files are being downloaded from their respective sources" TextWrapping="Wrap" />
                     <TextBlock Text="• Downloads will continue while you proceed through the wizard" TextWrapping="Wrap" />
                     <TextBlock Text="• You can view download progress using the 'Show Downloads' button" TextWrapping="Wrap" />
                     <TextBlock Text="• Installation will wait for downloads to complete if needed" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
-            <TextBlock Text="💡 Tip: You can continue to the next steps while downloads are in progress." TextWrapping="Wrap" />
+
+            <TextBlock
+                Text="💡 Tip: You can continue to the next steps while downloads are in progress."
+                TextWrapping="Wrap" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

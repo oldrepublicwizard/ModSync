@@ -138,6 +138,9 @@ KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-archite
 # Standard non-long-running tests
 ./scripts/agents/run_headless_tests.sh
 
+# Avalonia headless GUI UX smoke (no X11)
+./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~Headless\|FullyQualifiedName~GuiSmoke"
+
 # Validate an instruction file (full validation needs game + mod dirs)
 ./scripts/agents/cli_validate.sh --input ./mod-builds/TOMLs/KOTOR1_Full.toml \
   --game-dir ./tmp/kotor_template --source-dir ./tmp/mod_downloads --full
