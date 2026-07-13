@@ -20,10 +20,9 @@ Draft instructions are **review-flagged** in output (never auto-trusted). Paths 
 dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
   convert -i ./path/to/guide.md --parse-directions -f toml -o ./tmp/draft.toml
 
-# Pipe pasted text (Linux example)
-xclip -o | dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+# Or pipe pasted text
+cat clipboard.txt | dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
   convert --stdin --parse-directions -f toml -o ./tmp/draft.toml
-# Or: cat clipboard.txt | …
 ```
 
 Then review drafts, fix TOML as needed, and use `validate` / `install` as usual.
@@ -37,7 +36,7 @@ dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~
 
 ## Related
 
+- Requirements (completed): [docs/brainstorms/2026-07-13-guide-paste-ingestion-requirements.md](../brainstorms/2026-07-13-guide-paste-ingestion-requirements.md)
+- Plan (completed): [docs/plans/2026-07-13-001-feat-guide-paste-ingestion-plan.md](../plans/2026-07-13-001-feat-guide-paste-ingestion-plan.md)
 - [agent-action-parity.md](agent-action-parity.md)
-- [instruction-format.md](instruction-format.md)
-- Requirements: [docs/brainstorms/2026-07-13-guide-paste-ingestion-requirements.md](../brainstorms/2026-07-13-guide-paste-ingestion-requirements.md)
-- Plan: [docs/plans/2026-07-13-001-feat-guide-paste-ingestion-plan.md](../plans/2026-07-13-001-feat-guide-paste-ingestion-plan.md)
+- [product-vision.md](product-vision.md)

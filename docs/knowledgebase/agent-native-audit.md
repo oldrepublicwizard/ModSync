@@ -17,7 +17,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 
 | # | Principle | Score | Summary |
 |---|-----------|-------|---------|
-| 1 | **Parity** | 17/25 (68%) | Core paths plus CLI FOMOD post-download (Plan 123) close a major GUI-only gap; widescreen/Aspyr remain UI-only. |
+| 1 | **Parity** | 17/25 (68%) | Core paths plus shipped CLI FOMOD post-download and guide ingest close major GUI-only gaps; widescreen/Aspyr remain UI-only. |
 | 2 | **Granularity** | 16/20 (80%) | CLI verbs are composable; scripts wrap common combos without hiding primitives. |
 | 3 | **Composability** | 12/15 (80%) | New agent workflows combine `dotnet run` + scripts + tests without code changes. |
 | 4 | **Emergent capability** | 10/15 (67%) | Agents can fix TOMLs and run installs; limited without Nexus keys, real game dirs, or desktop. |
@@ -38,7 +38,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 | Paste / ingest guide | GUI clipboard; CLI `convert --stdin` / `-i` + `--parse-directions` | Yes (OS clipboard still `[UI]`) |
 | Set mod / game directories | GUI preload or CLI `-g` / `-s` | Yes |
 | Run validation | `ValidatePage` or `validate --full` | Yes (full needs dirs) |
-| Fetch downloads | Wizard / `ScrapeDownloadsButton` | Partial — CLI `install -d` / `convert -d` (no live status UI) |
+| Fetch downloads | Wizard / `ScrapeDownloadsButton` | Partial — CLI `install -d` / `convert -d` |
 | Post-download FOMOD configure | GUI after Fetch Downloads (PR #169) | Yes — CLI TTY wizard, `--fomod-choices`, `--fomod-skip`; non-TTY warn-continue still gated at validate/install |
 | FOMOD step wizard | `FomodInstallerDialog` / CLI `FomodConsoleWizard` | Yes (TTY); non-TTY needs choices file |
 | Install mods | Wizard or `install` | Yes |
@@ -49,7 +49,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 
 **Strengths:** `[REPO]` `ModBuildConverter` covers validate/install/convert/merge; guide ingest + FOMOD CLI hosts close former GUI-only gaps; `install_best_effort.sh` documents a full-build-style headless path.
 
-**Gaps:** `[OPEN]` No headless API for every wizard button; widescreen and Aspyr notice flows are `[UI]` only. Download status/stop remain GUI-only.
+**Gaps:** `[OPEN]` No headless API for every wizard button; widescreen and Aspyr notice flows are `[UI]` only. Non-TTY FOMOD warn-continue / skip leave archives unconfigured until `--fomod-choices` (gate still fails closed). Download status/stop remain GUI-only.
 
 **Recommendations (Tier 1):** Keep `agent-action-parity.md` current when wizard pages change. Prefer `convert --parse-directions` and documented FOMOD flags over inventing new MCP surfaces.
 

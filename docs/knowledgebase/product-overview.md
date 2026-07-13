@@ -55,6 +55,18 @@ KOTOR modding often requires dozens of repetitive, order-sensitive steps per mod
 
 `[REPO]` `README.md` states the project is **mid large-scale rework**. Treat README usage/FAQ as helpful but possibly stale. Prefer this knowledgebase, `AGENTS.md`, and runbooks for agent routing.
 
+## Current state snapshot (2026-07-13)
+
+| Capability | State |
+|------------|--------|
+| Paste-a-guide ingestion | Shipped (GUI clipboard + CLI `--stdin`) |
+| Draft instructions from guide prose | Shipped (review-flagged drafts via `DraftInstructionService` / `--parse-directions`) |
+| Headless Avalonia GUI smoke | Shipped (`GuiSmokeHeadlessTests`) |
+| FOMOD CLI post-download configure | Shipped (TTY wizard, `--fomod-choices` / `MODSYNC_FOMOD_CHOICES`, `--fomod-skip`) |
+| FOMOD configure-before-validate/install gate | Shipped (`FomodConfigurationGate`; fail-closed on unreadable archives) |
+| `nxm://` entry point | Shipped |
+| `modsync://` / publish-share | Not shipped — see [product-vision.md](product-vision.md) |
+
 ## Related
 
 - [product-vision.md](product-vision.md) — origin, full vision, and vision-vs-current-state gaps
