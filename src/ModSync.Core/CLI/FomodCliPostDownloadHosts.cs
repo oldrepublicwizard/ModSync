@@ -21,7 +21,8 @@ namespace ModSync.Core.CLI
         {
             string message =
                 $"WARN: FOMOD installer detected in '{context.ArchiveFileName}' for mod '{context.Component.Name}'. "
-                + "Configure later via GUI or re-run with --fomod-choices.";
+                + "Download continues, but validate/install will fail until configured. "
+                + FomodConfigurationGate.RecoveryHint;
             Console.Error.WriteLine(message);
             FomodDownloadPromptState.MarkWarned(context.Component, context.ArchiveFileName);
             return Task.FromResult(FomodConfigurePromptResult.AlreadyHandled);
@@ -38,7 +39,7 @@ namespace ModSync.Core.CLI
             string message,
             CancellationToken cancellationToken = default)
         {
-            Console.Error.WriteLine(message);
+            Console.Error.WriteLine($"{message} {FomodConfigurationGate.RecoveryHint}");
             return Task.CompletedTask;
         }
 
@@ -50,8 +51,15 @@ namespace ModSync.Core.CLI
     {
         public Task<FomodConfigurePromptResult> AskConfigureAsync(
             FomodPromptContext context,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(FomodConfigurePromptResult.Dismiss);
+            CancellationToken cancellationToken = default)
+        {
+            Console.Error.WriteLine(
+                $"WARN: Skipping FOMOD configuration for '{context.ArchiveFileName}' "
+                + $"(mod '{context.Component.Name}') because --fomod-skip / skip mode is active. "
+                + "Validate/install will fail until this archive is configured. "
+                + FomodConfigurationGate.RecoveryHint);
+            return Task.FromResult(FomodConfigurePromptResult.Dismiss);
+        }
 
         public Task<ModComponent> RunWizardAsync(
             string extractedArchiveDirectory,
@@ -62,8 +70,11 @@ namespace ModSync.Core.CLI
         public Task ReportExtractFailureAsync(
             FomodPromptContext context,
             string message,
-            CancellationToken cancellationToken = default) =>
-            Task.CompletedTask;
+            CancellationToken cancellationToken = default)
+        {
+            Console.Error.WriteLine($"{message} {FomodConfigurationGate.RecoveryHint}");
+            return Task.CompletedTask;
+        }
 
         public Task ReportConfiguredAsync(FomodPromptContext context, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;

@@ -37,6 +37,15 @@
 
 ## Common flows
 
+### Guide ingest (draft instructions)
+
+```bash
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  convert -i ./mod-builds/content/k1/full.md --parse-directions -f toml -o ./tmp/draft.toml
+```
+
+See [guide-ingestion.md](../../docs/knowledgebase/guide-ingestion.md).
+
 ### Headless smoke test
 
 ```bash

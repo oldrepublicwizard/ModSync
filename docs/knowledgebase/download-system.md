@@ -60,6 +60,8 @@ Helper: **`scripts/agents/cli_validate.sh`** does not download; use **`install -
 
 **Parity gap**: CLI can download archives; it does not replicate the GUI download status panel or stop button. See [agent-action-parity.md](agent-action-parity.md).
 
+FOMOD after download is available on CLI (`install -d` / `convert -d` / `merge -d`) via TTY wizard, `--fomod-choices`, or `--fomod-skip`. Non-interactive **warn-continue** / skip print recovery hints but leave archives unconfigured — `FomodConfigurationGate` still blocks validate/install.
+
 ## FOMOD post-download (CLI + GUI)
 
 `[REPO]` After downloads complete, selected components with FOMOD archives may be configured before validation/install:

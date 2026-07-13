@@ -15,7 +15,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | 5 | `GameDirectoryPage` | Pick game dir | `-g` / `--kotorPath=` | Full |
 | 6 | `AspyrNoticePage` | Acknowledge (K2) | No CLI equivalent | UI |
 | 7 | `ModSelectionPage` | Select mods, filters | `install` without `--select` = select all; `install --select category:X` / `tier:X` | Full (install); Partial (subset only with `--select`) |
-| 8 | `DownloadsExplainPage` | Continue (downloads may run) | `install -d` or `convert -d` | Partial — see [download-system.md](download-system.md); FOMOD post-download configure is GUI-only until [Plan 123](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md) |
+| 8 | `DownloadsExplainPage` | Continue (downloads may run) | `install -d` or `convert -d` (+ FOMOD: TTY / `--fomod-choices` / `--fomod-skip`) | Partial — live download status is `[UI]`; FOMOD configure is Full via CLI (see [fomod-support.md](fomod-support.md)) |
 | 9 | `ValidatePage` | Run validation | `validate --full --dry-run --use-file-selection` (same Core `InstallationValidationPipeline` as GUI) | Full |
 | 10 | `InstallStartPage` | Confirm install | `install -y` (runs `InstallationValidationPipeline` / `WizardFull` pre-check unless `--skip-validation`) | Full |
 | 11 | `InstallingPage` | Watch progress | `install` (console progress) | Full — see [install-lifecycle.md](install-lifecycle.md) |
@@ -30,8 +30,8 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | `Step1ModDirectoryPicker` | `--modDirectory=` / `-s` | Full |
 | `Step1KotorDirectoryPicker` | `--kotorPath=` / `-g` | Full |
 | `Step2Button` (load file) | `--instructionFile=` / `-i` | Full |
-| `ImportFromClipboardButton` (paste guide / TOML) | Headless: `GuiSmokeHeadlessTests` + `ControlsHeadlessTests`; Core `FileLoadingService.ImportFromTextAsync` | Partial — button/event smoke is headless; real clipboard OS paste still `[UI]` |
-| `ScrapeDownloadsButton` | `install -d` or `convert -d` | Partial — FOMOD configure after download: GUI (PR #169); CLI planned Plan 123 |
+| `ImportFromClipboardButton` (paste guide / TOML) | Core: `convert --stdin` / `-i` + optional `--parse-directions` ([guide-ingestion.md](guide-ingestion.md)); headless button smoke: `GuiSmokeHeadlessTests` | Full (file/stdin ingest); Partial (OS clipboard paste still `[UI]`) |
+| `ScrapeDownloadsButton` | `install -d` or `convert -d` (+ FOMOD flags as needed) | Full for download+FOMOD configure; Partial for live status/stop UI |
 | `ValidateButton` | `validate --full --dry-run --use-file-selection` (via `InstallationValidationPipeline`) | Full |
 | `OpenModDirectoryButton` | `ls` / file tools on mod dir | Full |
 | Download status / stop | No first-class CLI | UI |
@@ -42,6 +42,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 |------|------------------|
 | Smoke-test repo | `./scripts/agents/run_headless_tests.sh` |
 | GUI UX smoke (paste import, wizard page order, page-0 layout, validate log splitter) | `./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~Headless\|FullyQualifiedName~GuiSmoke"` (Avalonia.Headless — **no desktop**) |
+| Ingest guide → draft TOML | `convert -i guide.md --parse-directions -f toml -o out.toml` or `convert --stdin --parse-directions` — [guide-ingestion.md](guide-ingestion.md) |
 | Validate TOML structure only | `./scripts/agents/cli_validate.sh --input path.toml` |
 | Full validation | `cli_validate.sh` with `--game-dir`, `--source-dir`, `--full` |
 | Validate only TOML-selected mods | `cli_validate.sh` … `--use-file-selection` (matches GUI Mod Selection) |
@@ -58,6 +59,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | VFS validation | `VirtualFileSystemDryRunValidationTests` | Dry-run matches VFS rules |
 | Wizard UI | `WizardFlowHeadlessTests` | Page flow without full desktop |
 | GUI UX smoke | `GuiSmokeHeadlessTests` | Paste-import button + `LoadInstructionTextAsync` markdown (no clipboard), Welcome→ValidatePage key controls, compact ScrollViewer layout, ValidatePage log splitter |
+| Guide ingest | `GuideIngestionTests` | `--stdin` / `--parse-directions` draft + sandboxed paths |
 | Wizard validation UX | `WizardValidationStagePresenter`, `ValidationPipelineDialogMapper` | Stage cards / dialog mapper parity ([PR #110](https://github.com/th3w1zard1/ModSync/pull/110)) |
 | Version alignment | `ReleaseVersionAlignmentTests` | Release metadata consistency |
 
@@ -75,6 +77,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 6. **CI test coverage** — green CI runs subsets only; local `run_headless_tests.sh` is broader. See [ci-test-matrix.md](ci-test-matrix.md).
 7. **Validation pipeline fail-fast** — `InstallationValidationPipeline` stops after environment failure (no conflict/order/archive/dry-run stages). GUI and CLI both use `ValidationPipelineResult.IsSuccess`; do not infer pass from an empty dry-run result.
 8. **Install pre-check opt-out** — `install --skip-validation` and `install_best_effort.sh` skip the wizard-equivalent pipeline; default `install` does not.
-9. **FOMOD post-download** — GUI prompts after Fetch Downloads (PR #169). CLI parity: TTY wizard, `--fomod-skip`, `--fomod-choices` / `MODSYNC_FOMOD_CHOICES` per [Plan 123](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md).
+9. **FOMOD post-download** — GUI prompts after Fetch Downloads (PR #169). CLI: TTY wizard, `--fomod-skip`, `--fomod-choices` / `MODSYNC_FOMOD_CHOICES`, or non-TTY **warn-continue** (marks `warned`; `FomodConfigurationGate` still blocks validate/install until `configured`). See [fomod-support.md](fomod-support.md).
+10. **Guide drafts** — `--parse-directions` / GUI paste drafts are review-flagged; never treat as trusted install instructions without review. See [guide-ingestion.md](guide-ingestion.md).
 
 See [agent-native-audit.md](agent-native-audit.md) for scored principles and [core-cli-reference.md](core-cli-reference.md) for flags.

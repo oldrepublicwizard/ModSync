@@ -28,7 +28,9 @@ namespace ModSync.Core.Services.Fomod
             if (archiveChoices is null)
             {
                 Console.Error.WriteLine(
-                    $"WARN: No FOMOD choices entry for archive '{context.ArchiveFileName}' in the choices file.");
+                    $"WARN: No FOMOD choices entry for archive '{context.ArchiveFileName}' in the choices file. "
+                    + "Download continues, but validate/install will fail until configured. "
+                    + FomodConfigurationGate.RecoveryHint);
                 FomodDownloadPromptState.MarkWarned(context.Component, context.ArchiveFileName);
                 return Task.FromResult(FomodConfigurePromptResult.AlreadyHandled);
             }

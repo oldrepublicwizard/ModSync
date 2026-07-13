@@ -64,6 +64,8 @@ GUI (`src/ModSync.GUI/`):
 - `FomodConfigurationGate` blocks validate and install unless every detected FOMOD archive on selected mods (plus hard dependencies) is `configured`; dismiss/skip/warned do not pass the gate. Unreadable downloaded archives fail closed. Missing mod directory fails closed.
 - `ArchiveEnumerationService` sets `FileTreeNode.IsFomodInstaller` when an archive contains FOMOD metadata.
 
+Non-TTY **warn-continue** / `--fomod-skip` print recovery hints (`FomodConfigurationGate.RecoveryHint`); they do **not** satisfy the configured-only gate.
+
 ## Verification
 
 ```bash
