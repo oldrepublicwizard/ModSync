@@ -6,16 +6,10 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel HorizontalAlignment="Center" Spacing="20">
-        <TextBlock
-            HorizontalAlignment="Center"
-            Text="✅ Widescreen Installation Complete!"
-            TextAlignment="Center" />
-        <TextBlock
-            HorizontalAlignment="Center"
-            Text="All widescreen mods have been successfully installed."
-            TextAlignment="Center" />
-    </StackPanel>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16,12" HorizontalAlignment="Center" Spacing="12">
+            <TextBlock HorizontalAlignment="Center" Text="✅ Widescreen Installation Complete!" TextAlignment="Center" TextWrapping="Wrap" />
+            <TextBlock HorizontalAlignment="Center" Text="All widescreen mods have been successfully installed." TextAlignment="Center" TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>
-
-

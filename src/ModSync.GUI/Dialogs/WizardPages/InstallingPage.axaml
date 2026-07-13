@@ -6,7 +6,8 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <ScrollViewer x:Name="PageScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <Grid Margin="16,12" RowDefinitions="Auto,*,Auto">
         <!--  Main Progress Section  -->
         <Border Grid.Row="0" Padding="24,20" CornerRadius="12" Margin="0,0,0,16">
             <StackPanel Spacing="16">
@@ -247,4 +248,5 @@
                 TextAlignment="Center" />
         </Border>
     </Grid>
+    </ScrollViewer>
 </UserControl>

@@ -133,6 +133,136 @@ namespace ModSync.Tests.HeadlessUITests
             }
         }
 
+
+        [AvaloniaFact(DisplayName = "InstallStartPage mod list scrolls without fixed MaxHeight")]
+        public async Task InstallStartPage_ModList_IsScrollableWithoutMaxHeight()
+        {
+            var page = new InstallStartPage();
+            Window window = await HostInWindowAsync(page, width: 960, height: 540);
+            try
+            {
+                await PumpEventsAsync();
+                ScrollViewer modListScroll = page.FindControl<ScrollViewer>("ModListScrollViewer");
+                Assert.NotNull(modListScroll);
+                Assert.Equal(Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, modListScroll.VerticalScrollBarVisibility);
+                Assert.True(IsUnconstrainedMaxHeight(modListScroll.MaxHeight));
+                AssertNoFixedMaxHeightAncestor(modListScroll);
+            }
+            finally
+            {
+                await CloseWindowAsync(window);
+            }
+        }
+
+        [AvaloniaFact(DisplayName = "WidescreenModSelectionPage mod list uses ScrollViewer")]
+        public async Task WidescreenModSelectionPage_ModList_IsScrollable()
+        {
+            var page = new WidescreenModSelectionPage();
+            Window window = await HostInWindowAsync(page, width: 900, height: 500);
+            try
+            {
+                await PumpEventsAsync();
+                ScrollViewer modListScroll = page.FindControl<ScrollViewer>("ModListScrollViewer");
+                Assert.NotNull(modListScroll);
+            }
+            finally
+            {
+                await CloseWindowAsync(window);
+            }
+        }
+
+        [AvaloniaFact(DisplayName = "Preamble and notice pages scroll without MaxHeight caps")]
+        public async Task PreambleAndNoticePages_ScrollWithoutMaxHeight()
+        {
+            var preamble = new PreamblePage("## Compact host preamble");
+            Window preambleWindow = await HostInWindowAsync(preamble, width: 900, height: 480);
+            try
+            {
+                await PumpEventsAsync();
+                ScrollViewer contentScroll = preamble.FindControl<ScrollViewer>("ContentScrollViewer");
+                Assert.NotNull(contentScroll);
+                AssertNoFixedMaxHeightAncestor(contentScroll);
+            }
+            finally
+            {
+                await CloseWindowAsync(preambleWindow);
+            }
+
+            foreach (Control page in new Control[] { new AspyrNoticePage("Aspyr"), new WidescreenNoticePage("WS") })
+            {
+                Window window = await HostInWindowAsync(page, width: 900, height: 480);
+                try
+                {
+                    await PumpEventsAsync();
+                    ScrollViewer scroll = page.FindControl<ScrollViewer>("ContentScrollViewer");
+                    Assert.NotNull(scroll);
+                    AssertNoFixedMaxHeightAncestor(scroll);
+                }
+                finally
+                {
+                    await CloseWindowAsync(window);
+                }
+            }
+        }
+
+        [AvaloniaFact(DisplayName = "Later wizard pages remain scrollable in compact hosts")]
+        public async Task LaterWizardPages_CompactHost_UseScrollViewer()
+        {
+            Control[] pages =
+            {
+                new FinishedPage(),
+                new InstallingPage(),
+                new BaseInstallCompletePage(),
+                new WidescreenCompletePage(),
+                new WidescreenInstallingPage(),
+                new DownloadsExplainPage(),
+            };
+
+            foreach (Control page in pages)
+            {
+                Window window = await HostInWindowAsync(page, width: 900, height: 480);
+                try
+                {
+                    await PumpEventsAsync();
+                    ScrollViewer scrollViewer = page.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
+                    Assert.True(scrollViewer != null, page.GetType().Name + " should host a ScrollViewer");
+                }
+                finally
+                {
+                    await CloseWindowAsync(window);
+                }
+            }
+
+            var modSelection = new ModSelectionPage();
+            Window modWindow = await HostInWindowAsync(modSelection, width: 900, height: 500);
+            try
+            {
+                await PumpEventsAsync();
+                Assert.NotNull(modSelection.FindControl<ScrollViewer>("ModListScrollViewer"));
+            }
+            finally
+            {
+                await CloseWindowAsync(modWindow);
+            }
+        }
+
+        private static bool IsUnconstrainedMaxHeight(double maxHeight) =>
+            double.IsNaN(maxHeight) || double.IsInfinity(maxHeight) || maxHeight <= 0 || maxHeight >= 10_000;
+
+        private static void AssertNoFixedMaxHeightAncestor(Control control)
+        {
+            Control current = control;
+            while (current != null)
+            {
+                if (!IsUnconstrainedMaxHeight(current.MaxHeight))
+                {
+                    Assert.Fail($"Found fixed MaxHeight={current.MaxHeight} on {current.GetType().Name}; use star rows instead.");
+                }
+
+                current = current.Parent as Control;
+            }
+        }
+
         private static async Task<Window> HostInWindowAsync(Control control, double width, double height)
         {
             Window window = await Dispatcher.UIThread.InvokeAsync(
