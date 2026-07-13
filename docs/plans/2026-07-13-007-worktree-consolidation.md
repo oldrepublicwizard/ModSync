@@ -55,8 +55,15 @@ Sandbox harden `47c1abeb` already in paste history; not re-applied.
 | `ModSync-modsync-protocol-wt` | `283db006` / `feat/modsync-protocol-phase1` | Now tracks master-based tip |
 | `ModSync-paste-sandbox-fix` | `47c1abeb` | Already in guide-paste history |
 | `ModSync-serialization-fix` | holds `feat/fomod-configuration-gate` | Active FOMOD tip worktree (`4bb9d2ca`) |
-| `ModSync-test-suite-triage` | `bd53b5f8` | Triage branch on older tip |
+| `ModSync-test-suite-triage` | `test/2026-07-13-suite-triage` | Triage harness fixes committed; see plan `2026-07-13-003-test-suite-triage.md` |
 | Prunable legacy (`ModSync-conflicts`, `-deployment`, `-fomod`, `-profiles`, `-updates`) | various | Marked prunable; not touched |
+
+## Verification (release-push continuation)
+
+- Guide quality tip `2dcfbb8c` and paste tip `10534571` share **identical patch-id** (`9ef1b4f9…`) — content folded; SHAs differ by rebase/stack parents.
+- Simplify `e05b0918` → `5e9b7272` (ancestor of paste); sandbox conflict kept `IsSandboxedPath` + shared NL parser reuse.
+- Protocol `b7e2d1d7` content on master-based tip `283db006`; backup tip retained locally only.
+- Branch tip inventory: `docs/plans/2026-07-13-008-release-branch-status.md`.
 
 ## Stacking notes
 
