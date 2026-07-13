@@ -1588,7 +1588,6 @@ namespace ModSync.Core.Services
                                 Files = new Dictionary<string, bool?>(StringComparer.OrdinalIgnoreCase), // Empty - files will be discovered during download
                                 HandlerMetadata = new Dictionary<string, object>(StringComparer.Ordinal),
                                 FileSize = 0,
-                                FirstSeen = DateTime.UtcNow,
                             };
 
                             registryDict[url] = meta; // Key by URL directly
@@ -1777,7 +1776,6 @@ namespace ModSync.Core.Services
                             Files = new Dictionary<string, bool?>(filenames, StringComparer.Ordinal),
                             HandlerMetadata = new Dictionary<string, object>(StringComparer.Ordinal),
                             FileSize = 0,
-                            FirstSeen = DateTime.UtcNow,
                         };
 
                         registryDict[url] = meta; // Key by URL directly
@@ -5906,6 +5904,87 @@ namespace ModSync.Core.Services
 
         #endregion
 
+
+        /// <summary>
+        /// Formats a timestamp as UTC round-trip ISO-8601 (always ends with Z).
+        /// DateTimeKind.Unspecified is treated as already-UTC (product stores UTC).
+        /// </summary>
+        internal static string FormatUtcTimestamp(DateTime value)
+        {
+            DateTime utc;
+            if (value.Kind == DateTimeKind.Utc)
+            {
+                utc = value;
+            }
+            else if (value.Kind == DateTimeKind.Local)
+            {
+                utc = value.ToUniversalTime();
+            }
+            else
+            {
+                utc = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+            }
+
+            return utc.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Parses a serialized timestamp into UTC DateTime (Kind = Utc).
+        /// Accepts ISO-8601 strings with Z/offsets, and DateTime/DateTimeOffset objects.
+        /// </summary>
+        internal static bool TryParseUtcTimestamp(object value, out DateTime utc)
+        {
+            utc = default(DateTime);
+            if (value == null)
+            {
+                return false;
+            }
+
+            if (value is DateTime)
+            {
+                DateTime dateTime = (DateTime)value;
+                if (dateTime.Kind == DateTimeKind.Utc)
+                {
+                    utc = dateTime;
+                }
+                else if (dateTime.Kind == DateTimeKind.Local)
+                {
+                    utc = dateTime.ToUniversalTime();
+                }
+                else
+                {
+                    utc = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+                }
+
+                return true;
+            }
+
+            if (value is DateTimeOffset)
+            {
+                utc = ((DateTimeOffset)value).UtcDateTime;
+                return true;
+            }
+
+            string textValue = value as string ?? value.ToString();
+            if (string.IsNullOrWhiteSpace(textValue))
+            {
+                return false;
+            }
+
+            DateTimeOffset parsed;
+            if (DateTimeOffset.TryParse(
+                    textValue,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.RoundtripKind | System.Globalization.DateTimeStyles.AssumeUniversal,
+                    out parsed))
+            {
+                utc = parsed.UtcDateTime;
+                return true;
+            }
+
+            return false;
+        }
+
         public static IReadOnlyDictionary<string, object> SerializeResourceRegistry(IReadOnlyDictionary<string, ResourceMetadata> registry)
         {
             var result = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
@@ -5939,12 +6018,12 @@ namespace ModSync.Core.Services
 
                 if (kvp.Value.FirstSeen.HasValue)
                 {
-                    metaDict["FirstSeen"] = kvp.Value.FirstSeen.Value.ToString("O");
+                    metaDict["FirstSeen"] = FormatUtcTimestamp(kvp.Value.FirstSeen.Value);
                 }
 
                 if (kvp.Value.LastVerified.HasValue)
                 {
-                    metaDict["LastVerified"] = kvp.Value.LastVerified.Value.ToString("O");
+                    metaDict["LastVerified"] = FormatUtcTimestamp(kvp.Value.LastVerified.Value);
                 }
 
                 result[kvp.Key] = metaDict;
@@ -6015,12 +6094,12 @@ namespace ModSync.Core.Services
                             ConvertToStringBoolNullableDictionary(GetValueOrDefault<object>(metaDict, "Files"));
                         meta.Files = filesDictionary ?? new Dictionary<string, bool?>(StringComparer.Ordinal);
 
-                        if (DateTime.TryParse(GetValueOrDefault<string>(metaDict, "FirstSeen"), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime firstSeen))
+                        if (TryParseUtcTimestamp(GetValueOrDefault<object>(metaDict, "FirstSeen"), out DateTime firstSeen))
                         {
                             meta.FirstSeen = firstSeen;
                         }
 
-                        if (DateTime.TryParse(GetValueOrDefault<string>(metaDict, "LastVerified"), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime lastVerified))
+                        if (TryParseUtcTimestamp(GetValueOrDefault<object>(metaDict, "LastVerified"), out DateTime lastVerified))
                         {
                             meta.LastVerified = lastVerified;
                         }
@@ -6102,12 +6181,12 @@ namespace ModSync.Core.Services
                             ConvertToStringBoolNullableDictionary(GetValueOrDefault<object>(metaDict, "Files"));
                         meta.Files = filesDictionary ?? new Dictionary<string, bool?>(StringComparer.OrdinalIgnoreCase);
 
-                        if (DateTime.TryParse(GetValueOrDefault<string>(metaDict, "FirstSeen"), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime firstSeen))
+                        if (TryParseUtcTimestamp(GetValueOrDefault<object>(metaDict, "FirstSeen"), out DateTime firstSeen))
                         {
                             meta.FirstSeen = firstSeen;
                         }
 
-                        if (DateTime.TryParse(GetValueOrDefault<string>(metaDict, "LastVerified"), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime lastVerified))
+                        if (TryParseUtcTimestamp(GetValueOrDefault<object>(metaDict, "LastVerified"), out DateTime lastVerified))
                         {
                             meta.LastVerified = lastVerified;
                         }
