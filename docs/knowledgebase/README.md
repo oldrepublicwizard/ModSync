@@ -2,6 +2,12 @@
 
 Canonical index for humans and coding agents working on this repository. Start here when routing a task or verifying how agent workflows map to product behavior.
 
+## Index currency
+
+**Last reviewed:** 2026-07-13.
+
+Reflects shipped paste/guide ingestion, Avalonia headless GUI smoke (`GuiSmokeHeadlessTests`), and the FOMOD configure-before-validate/install gate. Before publishing a GitHub Release, use [release readiness checklist](../plans/2026-07-13-005-release-readiness-checklist.md) and [manual-release.md](../manual-release.md).
+
 ## Evidence labels
 
 Use these when citing findings in plans, PRs, or audits:
@@ -26,7 +32,7 @@ Use these when citing findings in plans, PRs, or audits:
 | Headless build/test/core | `.github/copilot-instructions.md` | `core-cli-reference.md` |
 | Avalonia GUI UX smoke (no X11) | `AGENTS.md` §Headless Avalonia GUI smoke | `./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"` |
 | GUI / install wizard / full-build | `docs/local_desktop_agent_runbook.md` | `agent-action-parity.md` → [install-lifecycle.md](install-lifecycle.md) |
-| Release or versioning | `docs/manual-release.md` | `docs/solutions/manual-release-workflow.md` |
+| Release or versioning | `docs/manual-release.md` | [Release readiness checklist](../plans/2026-07-13-005-release-readiness-checklist.md) → `docs/solutions/manual-release-workflow.md` |
 | Agent capability gaps | `agent-native-audit.md` | `agent-action-parity.md` |
 | telemetry-auth sidecar | [telemetry-auth-routing.md](telemetry-auth-routing.md) → `telemetry-auth/README.md` | Do not use Avalonia runbooks |
 
@@ -36,6 +42,7 @@ Use these when citing findings in plans, PRs, or audits:
 
 - [Product overview](product-overview.md) — what ModSync is, audiences, workflows
 - [Product vision](product-vision.md) — origin, full vision, vision-vs-current-state gaps (see also root `STRATEGY.md`)
+- [Guide ingestion](guide-ingestion.md) — paste/clipboard + `convert --stdin --parse-directions` draft instructions
 - [Instruction file format](instruction-format.md) — path placeholders, action types, minimal examples
 - [Mod component model](mod-component-model.md) — component/instruction fields, selection semantics
 - [Validation pipeline](validation-pipeline.md) — five stages, fail-fast, CLI/GUI mapping
@@ -52,6 +59,7 @@ Use these when citing findings in plans, PRs, or audits:
 - [File-level conflicts](file-conflicts.md) — `FileConflictAnalyzer` dry-run VFS attribution and `ConflictsDialog` results UI
 - [FOMOD installer support](fomod-support.md) — ModuleConfig parser, Option/Choose mapping, FomodInstallerDialog GUI
 - [nxm protocol handler](nxm-protocol-handler.md) — nxm:// URL parsing, OS scheme registration, single-instance hand-off, free-user download path
+- [modsync protocol handler](modsync-protocol-handler.md) — modsync:// build deep links (parse + CLI + handoff; OS registration planned)
 
 ### Architecture and agent parity
 
@@ -73,6 +81,7 @@ Use these when citing findings in plans, PRs, or audits:
 
 - [Local desktop agent runbook](../local_desktop_agent_runbook.md) — GUI launch, wizard order, full-build flow
 - [Manual release](../manual-release.md) — when and how to publish GitHub releases
+- [Release readiness checklist](../plans/2026-07-13-005-release-readiness-checklist.md) — quadruple-check before `create_github_release=true`
 
 ### Agent scripts
 
@@ -86,7 +95,7 @@ Use these when citing findings in plans, PRs, or audits:
 
 ### Plans (implementation history)
 
-- [docs/plans/](../plans/) — dated plans with requirements and status frontmatter; active parity tracker: [vortex-mo2-feature-parity-living-plan.md](../plans/vortex-mo2-feature-parity-living-plan.md)
+- [docs/plans/](../plans/) — dated plans with requirements and status frontmatter; active parity tracker: [vortex-mo2-feature-parity-living-plan.md](../plans/vortex-mo2-feature-parity-living-plan.md); release gate: [2026-07-13-005-release-readiness-checklist.md](../plans/2026-07-13-005-release-readiness-checklist.md)
 
 #### June 2026 arcs (rebrand closure + MainWindow extraction)
 
@@ -123,7 +132,19 @@ Superseded duplicate PRs [#120](https://github.com/th3w1zard1/ModSync/pull/120)�
 
 KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-architecture-deferred.md](gui-architecture-deferred.md).
 
+#### July 2026 arcs (ingestion + FOMOD gate + release hygiene)
+
+`[REPO]` Landed on branch work toward release (see recent commits on `feat/fomod-configuration-gate` and related):
+
+| Topic | Status | Pointers |
+|-------|--------|----------|
+| Paste / guide ingestion | Shipped | [product-vision.md](product-vision.md) 1b/1c; plan [001](../plans/2026-07-13-001-feat-guide-paste-ingestion-plan.md) |
+| Headless Avalonia GUI smoke | Shipped | `GuiSmokeHeadlessTests`; `AGENTS.md` §Headless Avalonia GUI smoke |
+| FOMOD configuration gate | Shipped | [fomod-support.md](fomod-support.md) — fail-closed until configured |
+| Release readiness checklist | Active | [005](../plans/2026-07-13-005-release-readiness-checklist.md) |
+
 ### Always-on rules (do not duplicate here)
+
 
 - `.cursorrules` — path sandboxing, VFS, test naming, Avalonia gotchas
 - `AGENTS.md` — routing layer and wizard control map
@@ -137,6 +158,9 @@ KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-archite
 
 # Standard non-long-running tests
 ./scripts/agents/run_headless_tests.sh
+
+# Avalonia headless GUI UX smoke (no X11)
+./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"
 
 # Validate an instruction file (full validation needs game + mod dirs)
 ./scripts/agents/cli_validate.sh --input ./mod-builds/TOMLs/KOTOR1_Full.toml \
