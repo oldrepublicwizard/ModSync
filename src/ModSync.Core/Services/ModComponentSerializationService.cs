@@ -930,19 +930,19 @@ namespace ModSync.Core.Services
                 return null;
             }
 
-            if (ParsesWithComponents(content, DeserializeModComponentFromTomlString, "toml"))
+            (string Format, Func<string, IReadOnlyList<ModComponent>> Parse)[] cascade =
             {
-                return "toml";
-            }
+                ("toml", DeserializeModComponentFromTomlString),
+                ("markdown", DeserializeModComponentFromMarkdownString),
+                ("yaml", DeserializeModComponentFromYamlString),
+            };
 
-            if (ParsesWithComponents(content, DeserializeModComponentFromMarkdownString, "markdown"))
+            foreach ((string format, Func<string, IReadOnlyList<ModComponent>> parse) in cascade)
             {
-                return "markdown";
-            }
-
-            if (ParsesWithComponents(content, DeserializeModComponentFromYamlString, "yaml"))
-            {
-                return "yaml";
+                if (ParsesWithComponents(content, parse, format))
+                {
+                    return format;
+                }
             }
 
             if (content.TrimStart().StartsWith("<", StringComparison.Ordinal))

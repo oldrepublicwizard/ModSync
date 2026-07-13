@@ -1939,7 +1939,7 @@ componentName: null,
                     throw;
                 }
 
-                List<Parsing.DraftInstructionResult> draftResults = null;
+                IReadOnlyList<Parsing.DraftInstructionResult> draftResults = null;
                 if (opts.ParseDirections)
                 {
                     msg = "Drafting instructions from natural-language Directions prose...";
@@ -1955,7 +1955,7 @@ componentName: null,
                     draftResults = Parsing.DraftInstructionService.GenerateDraftInstructions(
                         components,
                         logInfo: message => Logger.Log(message),
-                        logVerbose: message => Logger.LogVerbose(message)).ToList();
+                        logVerbose: message => Logger.LogVerbose(message));
 
                     msg = $"Drafted instructions for {draftResults.Count} component(s) - all drafts are flagged for review";
                     if (s_progressDisplay != null)

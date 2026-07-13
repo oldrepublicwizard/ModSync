@@ -21,6 +21,8 @@ namespace ModSync.Services
 {
     public class FileLoadingService
     {
+        private const int MaxInstructionSizeBytes = 524288000;
+
         private readonly MainConfig _mainConfig;
         private readonly Window _parentWindow;
 
@@ -44,19 +46,13 @@ namespace ModSync.Services
         {
             try
             {
-
                 var fileInfo = new FileInfo(filePath);
-                const int maxInstructionSize = 524288000;
-                if (fileInfo.Length > maxInstructionSize)
-
-
+                if (fileInfo.Length > MaxInstructionSizeBytes)
                 {
 #pragma warning disable MA0004 // Use Task.
                     await Logger.LogAsync($"Invalid {fileType} selected: '{fileInfo.Name}' - file too large");
 #pragma warning restore MA0004 // Use Task.
                     return false;
-
-
                 }
 
                 // Auto-detect format (TOML/JSON/YAML/embedded-Markdown)
@@ -71,8 +67,6 @@ namespace ModSync.Services
 #pragma warning restore MA0004 // Use Task.
             }
             catch (Exception ex)
-
-
             {
 #pragma warning disable MA0004 // Use Task.
                 await Logger.LogExceptionAsync(ex);
@@ -105,8 +99,7 @@ namespace ModSync.Services
                     return false;
                 }
 
-                const int maxInstructionSize = 524288000;
-                if (content.Length > maxInstructionSize)
+                if (content.Length > MaxInstructionSizeBytes)
                 {
 #pragma warning disable MA0004 // Use Task.
                     await Logger.LogWarningAsync($"Text from {sourceDescription} is too large to import.");
@@ -167,11 +160,7 @@ namespace ModSync.Services
             if (_mainConfig.allComponents.Count == 0)
             {
                 _mainConfig.allComponents = newComponents;
-                if (loadedFileName != null)
-                {
-                    LastLoadedFileName = loadedFileName;
-                }
-
+                SetLastLoadedFileName(loadedFileName);
 
 #pragma warning disable MA0004 // Use Task.
                 await Logger.LogAsync($"Loaded {newComponents.Count} components from {fileType}.");
@@ -196,16 +185,7 @@ namespace ModSync.Services
                             "Currently Loaded Components",
                             fileType,
                             (existing, incoming) =>
-                            {
-                                if (existing.Guid == incoming.Guid)
-                                {
-                                    return true;
-                                }
-
-                                return FuzzyMatcher.FuzzyMatchComponents(existing, incoming);
-                            });
-
-
+                                existing.Guid == incoming.Guid || FuzzyMatcher.FuzzyMatchComponents(existing, incoming));
 
 #pragma warning disable MA0004 // Use Task.
                         await conflictDialog.ShowDialog(_parentWindow);
@@ -216,12 +196,7 @@ namespace ModSync.Services
                             int originalCount = _mainConfig.allComponents.Count;
                             _mainConfig.allComponents = conflictDialog.MergedComponents;
                             int newCount = _mainConfig.allComponents.Count;
-                            if (loadedFileName != null)
-                            {
-                                LastLoadedFileName = loadedFileName;
-                            }
-
-
+                            SetLastLoadedFileName(loadedFileName);
 
 #pragma warning disable MA0004 // Use Task.
                             await Logger.LogAsync($"Merged {newComponents.Count} components from {fileType} with existing {originalCount} components using hybrid matching (GUID then Name/Author). Total components now: {newCount}");
@@ -238,10 +213,7 @@ namespace ModSync.Services
                     }
                 case false:
                     _mainConfig.allComponents = newComponents;
-                    if (loadedFileName != null)
-                    {
-                        LastLoadedFileName = loadedFileName;
-                    }
+                    SetLastLoadedFileName(loadedFileName);
 #pragma warning disable MA0004 // Use Task.
                     await Logger.LogAsync($"Overwrote existing config with {newComponents.Count} components from {fileType}.");
 #pragma warning restore MA0004 // Use Task.
@@ -277,8 +249,6 @@ namespace ModSync.Services
 
                 string fileContents;
                 using (var reader = new StreamReader(filePath))
-
-
                 {
 #pragma warning disable MA0004 // Use Task.
                     fileContents = await reader.ReadToEndAsync();
@@ -290,8 +260,6 @@ namespace ModSync.Services
 #pragma warning restore MA0004 // Use Task.
             }
             catch (Exception ex)
-
-
             {
 #pragma warning disable MA0004 // Use Task.
                 await Logger.LogExceptionAsync(ex);
@@ -315,8 +283,7 @@ namespace ModSync.Services
         {
             try
             {
-                {
-                    MarkdownParserResult parseResult = null;
+                MarkdownParserResult parseResult = null;
                     MarkdownImportProfile configuredProfile;
 
                     if (editorMode)
@@ -405,12 +372,12 @@ namespace ModSync.Services
                     }
 
 
-                    if (draftInstructionsFromProse && parseResult.Components != null)
-                    {
+                if (draftInstructionsFromProse && parseResult.Components != null)
+                {
 #pragma warning disable MA0004 // Use Task.
-                        await GenerateDraftInstructionsFromProseAsync(parseResult.Components.ToList());
+                    await GenerateDraftInstructionsFromProseAsync(parseResult.Components);
 #pragma warning restore MA0004 // Use Task.
-                    }
+                }
 
                     _mainConfig.preambleContent = parseResult.PreambleContent ?? string.Empty;
                     _mainConfig.epilogueContent = parseResult.EpilogueContent ?? string.Empty;
@@ -495,14 +462,11 @@ namespace ModSync.Services
                     }
 
 #pragma warning disable MA0004 // Use Task.
-                    await onComponentsLoaded();
+                await onComponentsLoaded();
 #pragma warning restore MA0004 // Use Task.
-                    return true;
-                }
+                return true;
             }
             catch (Exception ex)
-
-
             {
 #pragma warning disable MA0004 // Use Task.
                 await Logger.LogExceptionAsync(ex);
@@ -534,8 +498,6 @@ namespace ModSync.Services
                 return true;
             }
             catch (Exception ex)
-
-
             {
 #pragma warning disable MA0004 // Use Task.
                 await Logger.LogExceptionAsync(ex);
@@ -546,7 +508,15 @@ namespace ModSync.Services
 
         #region Private Helper Methods
 
-        private static async Task GenerateDraftInstructionsFromProseAsync([NotNull][ItemNotNull] List<ModComponent> components)
+        private void SetLastLoadedFileName([CanBeNull] string loadedFileName)
+        {
+            if (loadedFileName != null)
+            {
+                LastLoadedFileName = loadedFileName;
+            }
+        }
+
+        private static async Task GenerateDraftInstructionsFromProseAsync([NotNull][ItemNotNull] IEnumerable<ModComponent> components)
         {
 #pragma warning disable MA0004 // Use Task.
             IReadOnlyList<DraftInstructionResult> draftResults = await Task.Run(() => DraftInstructionService.GenerateDraftInstructions(

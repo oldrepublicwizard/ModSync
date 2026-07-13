@@ -68,17 +68,12 @@ namespace ModSync.Core.Parsing
 
             Action<string> info = logInfo ?? (_ => { });
             Action<string> verbose = logVerbose ?? (_ => { });
-
+            var parser = new NaturalLanguageInstructionParser(info, verbose);
             var results = new List<DraftInstructionResult>();
 
             foreach (ModComponent component in components)
             {
-                if (component.Instructions.Count > 0)
-                {
-                    continue;
-                }
-
-                if (string.IsNullOrWhiteSpace(component.Directions))
+                if (component.Instructions.Count > 0 || string.IsNullOrWhiteSpace(component.Directions))
                 {
                     continue;
                 }
@@ -86,7 +81,6 @@ namespace ModSync.Core.Parsing
                 ObservableCollection<Instruction> parsed;
                 try
                 {
-                    var parser = new NaturalLanguageInstructionParser(info, verbose);
                     parsed = parser.ParseInstructions(
                         component.Directions,
                         string.IsNullOrWhiteSpace(component.DownloadInstructions) ? null : component.DownloadInstructions,
@@ -165,11 +159,7 @@ namespace ModSync.Core.Parsing
                 return false;
             }
 
-            bool destinationRequired =
-                instruction.Action == Instruction.ActionType.Move ||
-                instruction.Action == Instruction.ActionType.Copy;
-
-            if (destinationRequired && string.IsNullOrWhiteSpace(destination))
+            if (RequiresDestination(instruction.Action) && string.IsNullOrWhiteSpace(destination))
             {
                 return false;
             }
@@ -201,6 +191,12 @@ namespace ModSync.Core.Parsing
             {
                 component.InstallationWarning = ReviewFlagMessage + Environment.NewLine + component.InstallationWarning;
             }
+        }
+
+        private static bool RequiresDestination(Instruction.ActionType action)
+        {
+            return action == Instruction.ActionType.Move
+                || action == Instruction.ActionType.Copy;
         }
 
         [NotNull]
