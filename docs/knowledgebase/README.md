@@ -24,6 +24,7 @@ Use these when citing findings in plans, PRs, or audits:
 | Install wizard or real install | [install-lifecycle.md](install-lifecycle.md) | [validation-pipeline.md](validation-pipeline.md) |
 | Missing mod archives / downloads | [download-system.md](download-system.md) | [install-lifecycle.md](install-lifecycle.md) |
 | Headless build/test/core | `.github/copilot-instructions.md` | `core-cli-reference.md` |
+| Avalonia GUI UX smoke (no X11) | `AGENTS.md` §Headless Avalonia GUI smoke | `./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"` |
 | GUI / install wizard / full-build | `docs/local_desktop_agent_runbook.md` | `agent-action-parity.md` → [install-lifecycle.md](install-lifecycle.md) |
 | Release or versioning | `docs/manual-release.md` | `docs/solutions/manual-release-workflow.md` |
 | Agent capability gaps | `agent-native-audit.md` | `agent-action-parity.md` |
