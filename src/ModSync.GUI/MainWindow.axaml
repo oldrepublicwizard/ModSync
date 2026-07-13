@@ -283,6 +283,7 @@
                                 InstallRequested="GettingStartedTab_InstallRequested"
                                 JumpToCurrentStepRequested="GettingStartedTab_JumpToCurrentStepRequested"
                                 JumpToModRequested="GettingStartedTab_JumpToModRequested"
+                                ImportFromClipboardRequested="GettingStartedTab_ImportFromClipboardRequested"
                                 LoadInstructionFileRequested="GettingStartedTab_LoadInstructionFileRequested"
                                 NextErrorRequested="GettingStartedTab_NextErrorRequested"
                                 OpenModDirectoryRequested="GettingStartedTab_OpenModDirectoryRequested"

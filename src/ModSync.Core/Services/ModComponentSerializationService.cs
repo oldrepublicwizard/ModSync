@@ -909,6 +909,66 @@ namespace ModSync.Core.Services
         {
             return Task.Run(() => DeserializeModComponentFromString(content, format));
         }
+
+        /// <summary>
+        /// Detects which instruction-file format the given raw content is, using the same
+        /// content-sniffing cascade as <see cref="DeserializeModComponentFromString(string, string)"/>
+        /// (TOML → Markdown → YAML → XML/JSON). A format only counts as detected when it parses
+        /// into at least one component.
+        /// </summary>
+        /// <returns>"toml", "markdown", "yaml", "xml", or "json"; null when no format produced components.</returns>
+        [CanBeNull]
+        public static string DetectFormatFromContent([NotNull] string content)
+        {
+            if (content is null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return null;
+            }
+
+            if (ParsesWithComponents(content, DeserializeModComponentFromTomlString, "toml"))
+            {
+                return "toml";
+            }
+
+            if (ParsesWithComponents(content, DeserializeModComponentFromMarkdownString, "markdown"))
+            {
+                return "markdown";
+            }
+
+            if (ParsesWithComponents(content, DeserializeModComponentFromYamlString, "yaml"))
+            {
+                return "yaml";
+            }
+
+            if (content.TrimStart().StartsWith("<", StringComparison.Ordinal))
+            {
+                return ParsesWithComponents(content, DeserializeModComponentFromXmlString, "xml") ? "xml" : null;
+            }
+
+            return ParsesWithComponents(content, DeserializeModComponentFromJsonString, "json") ? "json" : null;
+        }
+
+        private static bool ParsesWithComponents(
+            [NotNull] string content,
+            [NotNull] Func<string, IReadOnlyList<ModComponent>> parse,
+            [NotNull] string formatName)
+        {
+            try
+            {
+                IReadOnlyList<ModComponent> parsed = parse(content);
+                return parsed != null && parsed.Count > 0;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogVerbose($"[DetectFormatFromContent] {formatName} parsing failed: {ex.Message}");
+                return false;
+            }
+        }
         #endregion
 
         #region Saving Functions
