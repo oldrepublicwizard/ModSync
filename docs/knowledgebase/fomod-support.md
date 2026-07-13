@@ -65,7 +65,12 @@ Plan: [docs/plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md](../pla
 - `FomodArchiveProbe` detects `fomod/ModuleConfig.xml` inside downloaded archives via entry listing.
 - `FomodPostDownloadPromptService` runs after GUI **Fetch Downloads** completes; optional prompt per archive.
 - `FomodDownloadPromptState` stores dismissed/configured/warned outcomes in resource handler metadata.
+  - **`configured`**: permanently skips the Fetch Downloads / CLI post-download prompt; required to pass `FomodConfigurationGate`.
+  - **`dismissed`**: does **not** pass the gate; Fetch Downloads / CLI will **re-prompt** (documented recovery path).
+  - **`warned`**: CLI warn-continue / non-TTY default; does **not** pass the gate, and **does not re-prompt** on later Fetch/CLI runs (avoids spam). Clear by configuring the archive (wizard / `--fomod-choices`) or resetting prompt metadata.
 - `FomodConfigurationGate` blocks validate and install unless every detected FOMOD archive on selected mods (plus hard dependencies) is `configured`; dismiss/skip/warned do not pass the gate. Unreadable downloaded archives fail closed. Missing mod directory fails closed.
+  - **R1 soft check:** `configured` without any archive-scoped install instructions (`<<modDirectory>>/<archive-folder>/...`) emits a **warning** (does not fail the gate). Re-run Configure FOMOD / Fetch Downloads so merger output is applied.
+  - **R3 missing archives:** registered archive paths missing on disk are **fail-closed** when the archive already has FOMOD prompt state (configured/dismissed/warned). Otherwise they emit a soft warning (generic missing downloads stay with component archive validation).
 - `ArchiveEnumerationService` sets `FileTreeNode.IsFomodInstaller` when an archive contains FOMOD metadata.
 
 ## Verification

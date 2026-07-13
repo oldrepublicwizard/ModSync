@@ -21,15 +21,25 @@ Merger prefix match was `/`-only.
 
 **Fix:** Normalize `\\`→`/` before compare.
 
-## Residual risks
-- R1 (P2): Gate trusts `configured` without proving archive-scoped instructions.
-- R2 (P2): `warned` still skips Fetch re-prompt (CLI warn-not-repeated).
-- R3 (P2): Missing on-disk archives skipped by `GetPaths` (FOMOD gate fail-open until present).
+### P2 — R1 configured without archive-scoped instructions
+Gate trusted `configured` even when merger output was never applied.
 
-## Testing gaps
-- No e2e dismiss→Fetch→configure→gate pass.
-- No headless Mod Management Configure coverage.
+**Fix:** Soft warning when status is `configured` but no `<<modDirectory>>/<archive-folder>/` instructions exist. Does not fail the gate.
+
+### P2 — R2 warned skip behavior undocumented
+**Fix:** Documented in [fomod-support.md](../knowledgebase/fomod-support.md): `warned` skips re-prompt (CLI warn-continue) but still fails the gate until configured.
+
+### P2 — R3 missing on-disk archives skipped by GetPaths
+Registered archives missing on disk were invisible to the gate (fail-open).
+
+**Fix:** Enumerate registered archive paths including missing ones. Fail-closed when prior FOMOD prompt status exists; otherwise soft-warn (generic missing downloads stay with component archive validation).
+
+## Testing gaps (addressed)
+
+- Unit: dismiss → `ShouldPrompt` true → `MarkConfigured` → gate passes (`DismissThenConfigure_RePromptsThenGatePasses`).
+- Merger nested basename prefix + backslash reconfigure covered in `FomodConfiguredComponentMergerTests`.
+- Nested registry Files key + MarkConfigured covered in gate + prompt-state tests.
 
 ```json
-{"reviewer":"adversarial","findings":[{"severity":"P0","title":"Cascade: dismiss FOMOD then documented recovery never clears gate","confidence":90,"status":"fixed"},{"severity":"P1","title":"Composition: nested Files keys make MarkConfigured silently no-op","confidence":85,"status":"fixed"},{"severity":"P1","title":"Composition: backslash FOMOD sources survive reconfigure merge","confidence":80,"status":"fixed"}],"residual_risks":["R1","R2","R3"],"testing_gaps":["dismiss-fetch-configure e2e","Mod Management UI"]}
+{"reviewer":"adversarial","findings":[{"severity":"P0","title":"Cascade: dismiss FOMOD then documented recovery never clears gate","confidence":90,"status":"fixed"},{"severity":"P1","title":"Composition: nested Files keys make MarkConfigured silently no-op","confidence":85,"status":"fixed"},{"severity":"P1","title":"Composition: backslash FOMOD sources survive reconfigure merge","confidence":80,"status":"fixed"},{"severity":"P2","title":"configured without archive-scoped instructions only soft-warns","confidence":70,"status":"fixed"},{"severity":"P2","title":"missing on-disk archives with prior FOMOD status fail closed","confidence":75,"status":"fixed"}],"residual_risks":[],"testing_gaps":["Mod Management UI headless"]}
 ```

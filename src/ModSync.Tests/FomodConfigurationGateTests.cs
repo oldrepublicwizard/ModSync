@@ -61,6 +61,7 @@ namespace ModSync.Tests
             string archiveName = "configured.zip";
             CreateZipWithFomod(Path.Combine(_modDir, archiveName));
             ModComponent component = BuildComponentWithArchive(archiveName);
+            AddArchiveScopedInstruction(component, archiveName);
             FomodDownloadPromptState.MarkConfigured(component, archiveName);
 
             FomodConfigurationGate.GateResult result = FomodConfigurationGate.Validate(
@@ -69,6 +70,112 @@ namespace ModSync.Tests
                 _modDir);
 
             Assert.That(result.Passed, Is.True);
+            Assert.That(result.Warnings, Is.Empty);
+        }
+
+        [Test]
+        public void Validate_ConfiguredWithoutArchiveScopedInstructions_WarnsButPasses()
+        {
+            string archiveName = "configured-empty.zip";
+            CreateZipWithFomod(Path.Combine(_modDir, archiveName));
+            ModComponent component = BuildComponentWithArchive(archiveName);
+            FomodDownloadPromptState.MarkConfigured(component, archiveName);
+
+            FomodConfigurationGate.GateResult result = FomodConfigurationGate.Validate(
+                new[] { component },
+                new[] { component },
+                _modDir);
+
+            Assert.That(result.Passed, Is.True, "Missing instructions are soft-warn only.");
+            Assert.That(result.Warnings, Has.Count.EqualTo(1));
+            Assert.That(result.Warnings[0].Message, Does.Contain("no matching archive-scoped instructions"));
+        }
+
+        [Test]
+        public void DismissThenConfigure_RePromptsThenGatePasses()
+        {
+            string archiveName = "dismiss-then-configure.zip";
+            CreateZipWithFomod(Path.Combine(_modDir, archiveName));
+            ModComponent component = BuildComponentWithArchive(archiveName);
+
+            FomodDownloadPromptState.MarkDismissed(component, archiveName);
+            Assert.That(
+                FomodDownloadPromptState.ShouldPrompt(component, archiveName),
+                Is.True,
+                "Dismissed must re-prompt on Fetch Downloads.");
+
+            FomodConfigurationGate.GateResult before = FomodConfigurationGate.Validate(
+                new[] { component },
+                new[] { component },
+                _modDir);
+            Assert.That(before.Passed, Is.False);
+
+            AddArchiveScopedInstruction(component, archiveName);
+            FomodDownloadPromptState.MarkConfigured(component, archiveName);
+
+            Assert.That(FomodDownloadPromptState.ShouldPrompt(component, archiveName), Is.False);
+            FomodConfigurationGate.GateResult after = FomodConfigurationGate.Validate(
+                new[] { component },
+                new[] { component },
+                _modDir);
+            Assert.That(after.Passed, Is.True);
+            Assert.That(after.Warnings, Is.Empty);
+        }
+
+        [Test]
+        public void Validate_MissingArchiveWithPriorPromptStatus_FailsClosed()
+        {
+            string archiveName = "was-prompted.zip";
+            ModComponent component = BuildComponentWithArchive(archiveName);
+            FomodDownloadPromptState.MarkDismissed(component, archiveName);
+
+            FomodConfigurationGate.GateResult result = FomodConfigurationGate.Validate(
+                new[] { component },
+                new[] { component },
+                _modDir);
+
+            Assert.That(result.Passed, Is.False);
+            Assert.That(result.Issues, Has.Count.EqualTo(1));
+            Assert.That(result.Issues[0].ArchiveMissing, Is.True);
+            Assert.That(
+                FomodConfigurationGate.FormatIssueMessage(result.Issues[0]),
+                Does.Contain("missing on disk"));
+        }
+
+        [Test]
+        public void Validate_MissingArchiveWithoutPromptStatus_WarnsButPasses()
+        {
+            string archiveName = "not-downloaded.zip";
+            ModComponent component = BuildComponentWithArchive(archiveName);
+
+            FomodConfigurationGate.GateResult result = FomodConfigurationGate.Validate(
+                new[] { component },
+                new[] { component },
+                _modDir);
+
+            Assert.That(result.Passed, Is.True);
+            Assert.That(result.Warnings, Has.Count.EqualTo(1));
+            Assert.That(result.Warnings[0].Message, Does.Contain("not on disk"));
+        }
+
+        [Test]
+        public void Validate_ConfiguredNestedRegistryKey_Passes()
+        {
+            string relative = Path.Combine("nested", "nested-configured.zip");
+            string archiveDir = Path.Combine(_modDir, "nested");
+            Directory.CreateDirectory(archiveDir);
+            CreateZipWithFomod(Path.Combine(_modDir, relative));
+            ModComponent component = BuildComponentWithArchive(relative);
+            AddArchiveScopedInstruction(component, "nested-configured.zip");
+            FomodDownloadPromptState.MarkConfigured(component, "nested-configured.zip");
+
+            FomodConfigurationGate.GateResult result = FomodConfigurationGate.Validate(
+                new[] { component },
+                new[] { component },
+                _modDir);
+
+            Assert.That(result.Passed, Is.True);
+            Assert.That(result.Warnings, Is.Empty);
         }
 
         [Test]
@@ -160,6 +267,7 @@ namespace ModSync.Tests
             string archiveName = "pipeline-configured.zip";
             CreateZipWithFomod(Path.Combine(_modDir, archiveName));
             ModComponent component = BuildComponentWithArchive(archiveName);
+            AddArchiveScopedInstruction(component, archiveName);
             FomodDownloadPromptState.MarkConfigured(component, archiveName);
 
             MainConfig.Instance = new MainConfig
@@ -309,6 +417,20 @@ namespace ModSync.Tests
                 },
             };
             return component;
+        }
+
+        private static void AddArchiveScopedInstruction(ModComponent component, string archiveFileName)
+        {
+            string folder = Path.GetFileNameWithoutExtension(Path.GetFileName(archiveFileName));
+            component.Instructions.Add(new Instruction
+            {
+                Action = Instruction.ActionType.Copy,
+                Source = new System.Collections.ObjectModel.ObservableCollection<string>
+                {
+                    $"<<modDirectory>>/{folder}/file.tga",
+                },
+                Destination = "<<kotorDirectory>>/Override",
+            });
         }
 
         private static void CreateZipWithFomod(string archivePath)
