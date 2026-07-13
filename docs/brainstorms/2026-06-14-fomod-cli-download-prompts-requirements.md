@@ -56,12 +56,13 @@ PR #169 added GUI post-download FOMOD detection and optional configuration, but 
 
 **FOMOD validation gate (configured-only)**
 
-- R16: On all validate and install entry points (GUI wizard Validate, Getting Started Validate, GUI install start, CLI `validate`, CLI `install`), scan **selected** components plus transitive **hard dependencies** for downloaded archives where `FomodArchiveProbe` detects FOMOD.
+- R16: On all validate and install entry points (GUI wizard Validate, Getting Started Validate, GUI install start, CLI `validate`, CLI `install`, single-component / widescreen install), scan **selected** components plus transitive **hard dependencies** for downloaded archives where `FomodArchiveProbe` detects FOMOD.
 - R17: If a detected FOMOD archive's `fomodPromptStatus` is not `configured`, emit a **validation error** that blocks proceed — not a log-only warning.
 - R18: `dismissed`, `warned`, and missing status all fail the gate; only `configured` passes.
 - R19: Post-download dismiss (`MarkDismissed`), warn-continue (`MarkWarned`), and `--fomod-skip` may still affect download-time prompting but **do not** clear the gate.
 - R20: Error text names the mod and archive and points users to Fetch Downloads / post-download FOMOD wizard (no in-validate configure button in this slice).
-- R21: Gate runs inside `InstallationValidationPipeline` (shared CLI/GUI) and `InstallationService.InstallAllSelectedComponentsAsync` (install safety net); wizard `InstallStartPage` blocks Next when gate fails.
+- R21: Gate runs inside `InstallationValidationPipeline` (shared CLI/GUI), `InstallationService.InstallAllSelectedComponentsAsync` and `InstallSingleComponentAsync` (install safety net); wizard `InstallStartPage` blocks Next when gate fails. Missing mod directory fails closed (does not skip the gate as success).
+- R22: If a registered downloaded archive cannot be enumerated/inspected, the gate **fails closed** (treat as blocking) rather than treating probe-miss as non-FOMOD.
 
 ## Success Criteria
 

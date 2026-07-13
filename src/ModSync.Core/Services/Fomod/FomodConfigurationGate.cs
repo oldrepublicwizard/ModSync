@@ -33,6 +33,15 @@ namespace ModSync.Core.Services.Fomod
 
             [CanBeNull]
             public string PromptStatus { get; set; }
+
+            /// <summary>
+            /// True when the archive could not be enumerated (corrupt/unreadable).
+            /// Fail-closed: blocks validate/install even though FOMOD could not be confirmed.
+            /// </summary>
+            public bool ArchiveUnreadable { get; set; }
+
+            [CanBeNull]
+            public string InspectionFailureMessage { get; set; }
         }
 
         public sealed class GateResult
@@ -71,12 +80,30 @@ namespace ModSync.Core.Services.Fomod
             {
                 foreach (string archivePath in FomodDownloadedArchivePaths.GetPaths(component, modDirectory))
                 {
-                    if (!FomodArchiveProbe.TryDetectInArchive(archivePath, out _))
+                    string archiveFileName = System.IO.Path.GetFileName(archivePath);
+                    if (!FomodArchiveProbe.TryInspectArchive(
+                            archivePath,
+                            out bool isFomod,
+                            out _,
+                            out string inspectionFailure))
+                    {
+                        // Fail closed: a registered downloaded archive that cannot be inspected
+                        // must not bypass the configured-only gate.
+                        result.Issues.Add(new GateIssue
+                        {
+                            Component = component,
+                            ArchiveFileName = archiveFileName,
+                            ArchiveUnreadable = true,
+                            InspectionFailureMessage = inspectionFailure,
+                        });
+                        continue;
+                    }
+
+                    if (!isFomod)
                     {
                         continue;
                     }
 
-                    string archiveFileName = System.IO.Path.GetFileName(archivePath);
                     string status = FomodDownloadPromptState.GetStatus(component, archiveFileName);
                     if (string.Equals(status, FomodDownloadPromptState.StatusConfigured, StringComparison.Ordinal))
                     {
@@ -162,6 +189,14 @@ namespace ModSync.Core.Services.Fomod
             if (issue is null)
             {
                 throw new ArgumentNullException(nameof(issue));
+            }
+
+            if (issue.ArchiveUnreadable)
+            {
+                string detail = string.IsNullOrEmpty(issue.InspectionFailureMessage)
+                    ? "could not be inspected"
+                    : $"could not be inspected ({issue.InspectionFailureMessage})";
+                return $"Archive '{issue.ArchiveFileName}' {detail}; treat as unconfigured FOMOD until it can be read. {RecoveryHint}";
             }
 
             string statusLabel = string.IsNullOrEmpty(issue.PromptStatus)

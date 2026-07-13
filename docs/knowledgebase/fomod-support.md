@@ -65,7 +65,7 @@ Plan: [docs/plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md](../pla
 - `FomodArchiveProbe` detects `fomod/ModuleConfig.xml` inside downloaded archives via entry listing.
 - `FomodPostDownloadPromptService` runs after GUI **Fetch Downloads** completes; optional prompt per archive.
 - `FomodDownloadPromptState` stores dismissed/configured/warned outcomes in resource handler metadata.
-- `FomodConfigurationGate` blocks validate and install unless every detected FOMOD archive on selected mods (plus hard dependencies) is `configured`; dismiss/skip/warned do not pass the gate.
+- `FomodConfigurationGate` blocks validate and install unless every detected FOMOD archive on selected mods (plus hard dependencies) is `configured`; dismiss/skip/warned do not pass the gate. Unreadable downloaded archives fail closed. Missing mod directory fails closed.
 - `ArchiveEnumerationService` sets `FileTreeNode.IsFomodInstaller` when an archive contains FOMOD metadata.
 
 ## Verification

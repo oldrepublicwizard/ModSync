@@ -196,6 +196,46 @@ namespace ModSync.Tests
             });
         }
 
+        [Test]
+        public void Validate_UnreadableDownloadedArchive_FailsClosed()
+        {
+            string archiveName = "corrupt.zip";
+            File.WriteAllText(Path.Combine(_modDir, archiveName), "not a zip archive");
+            ModComponent component = BuildComponentWithArchive(archiveName);
+
+            FomodConfigurationGate.GateResult result = FomodConfigurationGate.Validate(
+                new[] { component },
+                new[] { component },
+                _modDir);
+
+            Assert.That(result.Passed, Is.False);
+            Assert.That(result.Issues, Has.Count.EqualTo(1));
+            Assert.That(result.Issues[0].ArchiveUnreadable, Is.True);
+            Assert.That(
+                FomodConfigurationGate.FormatIssueMessage(result.Issues[0]),
+                Does.Contain("could not be inspected"));
+        }
+
+        [Test]
+        public void Validate_ReadableNonFomodArchive_Passes()
+        {
+            string archiveName = "plain.zip";
+            string staging = Path.Combine(_modDir, "plain-staging");
+            Directory.CreateDirectory(staging);
+            File.WriteAllText(Path.Combine(staging, "readme.txt"), "no fomod here");
+            ZipFile.CreateFromDirectory(staging, Path.Combine(_modDir, archiveName));
+            Directory.Delete(staging, recursive: true);
+
+            ModComponent component = BuildComponentWithArchive(archiveName);
+
+            FomodConfigurationGate.GateResult result = FomodConfigurationGate.Validate(
+                new[] { component },
+                new[] { component },
+                _modDir);
+
+            Assert.That(result.Passed, Is.True);
+        }
+
         private static ModComponent BuildComponentWithArchive(string archiveFileName)
         {
             var component = new ModComponent { Name = "Test Mod", IsSelected = true };
