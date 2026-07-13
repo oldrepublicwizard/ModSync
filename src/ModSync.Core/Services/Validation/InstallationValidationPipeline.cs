@@ -435,7 +435,11 @@ namespace ModSync.Core.Services.Validation
             string modDirectory = config?.sourcePath?.FullName;
             if (string.IsNullOrWhiteSpace(modDirectory) || !System.IO.Directory.Exists(modDirectory))
             {
-                stage.Summary = "Skipped FOMOD configuration check (mod directory not set).";
+                stage.Passed = false;
+                stage.Summary = "Cannot check FOMOD configuration: mod directory is not set or does not exist.";
+                stage.Messages.Add(
+                    "ERROR: FOMOD: Mod directory is not set or does not exist. "
+                    + FomodConfigurationGate.RecoveryHint);
                 return stage;
             }
 

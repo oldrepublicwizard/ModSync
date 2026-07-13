@@ -153,6 +153,49 @@ namespace ModSync.Tests
                 Is.True);
         }
 
+        [Test]
+        public async Task Pipeline_FomodGate_FailsClosedWhenModDirectoryMissing()
+        {
+            ModComponent component = BuildComponentWithArchive("missing-dir.zip");
+
+            MainConfig.Instance = new MainConfig
+            {
+                sourcePath = null,
+                destinationPath = new DirectoryInfo(_modDir),
+            };
+
+            var options = ValidationPipelineOptions.WizardFull;
+            options.SkipEnvironmentValidation = true;
+            options.SkipComponentArchiveValidation = true;
+            options.DryRun = false;
+
+            ValidationPipelineResult result = await InstallationValidationPipeline.RunAsync(
+                new[] { component },
+                options).ConfigureAwait(false);
+
+            Assert.That(result.IsSuccess, Is.False);
+            ValidationPipelineStageResult fomodStage = result.Stages.Find(
+                s => s.Stage == ValidationPipelineStage.FomodConfiguration);
+            Assert.That(fomodStage, Is.Not.Null);
+            Assert.That(fomodStage.Passed, Is.False);
+        }
+
+        [Test]
+        public void ExpandWithHardDependencies_DuplicateGuids_DoesNotThrow()
+        {
+            Guid shared = Guid.NewGuid();
+            var first = new ModComponent { Guid = shared, Name = "First" };
+            var duplicate = new ModComponent { Guid = shared, Name = "Duplicate" };
+
+            Assert.DoesNotThrow(() =>
+            {
+                List<ModComponent> expanded = FomodConfigurationGate.ExpandWithHardDependencies(
+                    new[] { first },
+                    new[] { first, duplicate });
+                Assert.That(expanded, Has.Count.EqualTo(1));
+            });
+        }
+
         private static ModComponent BuildComponentWithArchive(string archiveFileName)
         {
             var component = new ModComponent { Name = "Test Mod", IsSelected = true };

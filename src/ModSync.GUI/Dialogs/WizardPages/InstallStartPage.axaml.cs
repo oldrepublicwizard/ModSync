@@ -54,24 +54,28 @@ namespace ModSync.Dialogs.WizardPages
             }
 
             string modDirectory = MainConfig.Instance?.sourcePath?.FullName;
-            if (!string.IsNullOrWhiteSpace(modDirectory) && System.IO.Directory.Exists(modDirectory))
+            if (string.IsNullOrWhiteSpace(modDirectory) || !System.IO.Directory.Exists(modDirectory))
             {
-                var selected = _allComponents.Where(c => c.IsSelected && !c.WidescreenOnly).ToList();
-                FomodConfigurationGate.GateResult gateResult = FomodConfigurationGate.Validate(
-                    _allComponents,
-                    selected,
-                    modDirectory);
-                if (!gateResult.Passed)
-                {
-                    FomodConfigurationGate.GateIssue first = gateResult.Issues[0];
-                    string message = $"{first.Component.Name}: {FomodConfigurationGate.FormatIssueMessage(first)}";
-                    if (gateResult.Issues.Count > 1)
-                    {
-                        message += $" (+{gateResult.Issues.Count - 1} more unconfigured FOMOD archive(s))";
-                    }
+                return Task.FromResult((
+                    false,
+                    "Mod directory is not set or does not exist. Set the mod directory before installing."));
+            }
 
-                    return Task.FromResult((false, message));
+            var selected = _allComponents.Where(c => c.IsSelected && !c.WidescreenOnly).ToList();
+            FomodConfigurationGate.GateResult gateResult = FomodConfigurationGate.Validate(
+                _allComponents,
+                selected,
+                modDirectory);
+            if (!gateResult.Passed)
+            {
+                FomodConfigurationGate.GateIssue first = gateResult.Issues[0];
+                string message = $"{first.Component.Name}: {FomodConfigurationGate.FormatIssueMessage(first)}";
+                if (gateResult.Issues.Count > 1)
+                {
+                    message += $" (+{gateResult.Issues.Count - 1} more unconfigured FOMOD archive(s))";
                 }
+
+                return Task.FromResult((false, message));
             }
 
             return Task.FromResult((true, (string)null));

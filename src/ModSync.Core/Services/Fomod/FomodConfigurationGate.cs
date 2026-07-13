@@ -20,7 +20,8 @@ namespace ModSync.Core.Services.Fomod
 
         public const string RecoveryHint =
             "Run Fetch Downloads and complete the FOMOD installer wizard for this archive, "
-            + "or use CLI post-download configure on an interactive terminal.";
+            + "or re-run CLI download with --fomod-choices / MODSYNC_FOMOD_CHOICES "
+            + "(interactive TTY configure also works).";
 
         public sealed class GateIssue
         {
@@ -99,7 +100,21 @@ namespace ModSync.Core.Services.Fomod
             [NotNull][ItemNotNull] IEnumerable<ModComponent> seedComponents,
             [NotNull][ItemNotNull] IReadOnlyList<ModComponent> allComponents)
         {
-            var byGuid = allComponents.ToDictionary(c => c.Guid);
+            var byGuid = new Dictionary<Guid, ModComponent>();
+            foreach (ModComponent component in allComponents)
+            {
+                if (component is null)
+                {
+                    continue;
+                }
+
+                // Keep first occurrence; duplicate Guids must not crash the gate.
+                if (!byGuid.ContainsKey(component.Guid))
+                {
+                    byGuid[component.Guid] = component;
+                }
+            }
+
             var visited = new HashSet<Guid>();
             var ordered = new List<ModComponent>();
             var queue = new Queue<ModComponent>();
