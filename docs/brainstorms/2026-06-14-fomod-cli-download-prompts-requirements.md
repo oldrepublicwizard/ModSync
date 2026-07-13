@@ -1,9 +1,11 @@
 ---
 title: "CLI FOMOD post-download prompts"
-status: reviewed
+status: completed
 date: 2026-06-14
+completed: 2026-07-13
 origin: docs/brainstorms/2026-06-14-fomod-archive-discovery-requirements.md
 supersedes_deferred: CLI download/install parity from GUI FOMOD discovery slice
+plan: docs/plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md
 ---
 
 # CLI FOMOD post-download prompts
@@ -112,3 +114,21 @@ PR #169 added GUI post-download FOMOD detection and optional configuration, but 
 ## Outstanding Questions
 
 - None blocking — user confirmed synthesis call-outs (2026-06-14 session).
+
+## Implemented
+
+Shipped across Plan 123 commits plus the configured-only gate.
+
+| Area | Path |
+|------|------|
+| Orchestrator | `src/ModSync.Core/Services/Fomod/FomodPostDownloadOrchestrator.cs` |
+| Hosts / options | `FomodCliPostDownloadHosts.cs`, `FomodChoicesFileHost.cs`, `FomodPostDownloadOptionsResolver.cs` |
+| TTY wizard | `src/ModSync.Core/CLI/FomodConsoleWizard.cs` |
+| Presenter (Core) | `src/ModSync.Core/Services/Fomod/FomodInstallerPresenter.cs` |
+| CLI hooks | `ModBuildConverter` `RunFomodPostDownloadHookAsync` on `install`/`convert`/`merge` `-d` |
+| Configured-only gate | `src/ModSync.Core/Services/Fomod/FomodConfigurationGate.cs` |
+| Pipeline / install | `InstallationValidationPipeline`, `InstallationService`, `InstallStartPage` |
+| Tests | `FomodPostDownloadOrchestratorTests`, `FomodConfigurationGateTests`, `FomodCliPostDownloadIntegrationTests` |
+| KB | `docs/knowledgebase/fomod-support.md`, `download-system.md`, `core-cli-reference.md`, `agent-action-parity.md` |
+
+Plan: [docs/plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md) → **completed**.

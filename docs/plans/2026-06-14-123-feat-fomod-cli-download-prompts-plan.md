@@ -1,7 +1,8 @@
 ---
 title: "feat: CLI FOMOD post-download prompts"
-status: active
+status: completed
 date: 2026-06-14
+completed: 2026-07-13
 origin: docs/brainstorms/2026-06-14-fomod-cli-download-prompts-requirements.md
 deepened: 2026-06-14
 ---
