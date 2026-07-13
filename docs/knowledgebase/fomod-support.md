@@ -54,12 +54,12 @@ GUI (`src/ModSync.GUI/`):
 
 ## Post-download hook + CLI parity `[REPO]`
 
-Requirements (completed): [fomod-archive-discovery](../brainstorms/2026-06-14-fomod-archive-discovery-requirements.md), [fomod-cli-download-prompts](../brainstorms/2026-06-14-fomod-cli-download-prompts-requirements.md). Plan 123: [completed](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md).
+**Shipped.** Requirements (completed): [archive discovery](../brainstorms/2026-06-14-fomod-archive-discovery-requirements.md), [CLI prompts](../brainstorms/2026-06-14-fomod-cli-download-prompts-requirements.md). Plan 123: [shipped](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md).
 
 - `FomodArchiveProbe` detects `fomod/ModuleConfig.xml` inside downloaded archives via entry listing.
 - `FomodPostDownloadOrchestrator` + `IFomodPostDownloadHost` adapters unify GUI and CLI after download.
 - GUI: `FomodPostDownloadPromptService` / `FomodGuiPostDownloadHost` after **Fetch Downloads**.
-- CLI `install -d` / `convert -d` / `merge -d`: TTY wizard, warn-continue, `--fomod-skip`, `--fomod-choices` / `MODSYNC_FOMOD_CHOICES`.
+- CLI `install -d` / `convert -d` / `merge -d`: TTY wizard, warn-continue, `--fomod-skip`, `--fomod-choices` / `MODSYNC_FOMOD_CHOICES` (also `--interactive` / `--non-interactive`, env `MODSYNC_FOMOD_POST_DOWNLOAD_MODE`).
 - `FomodDownloadPromptState` stores dismissed/configured/warned outcomes in resource handler metadata.
 - `FomodConfigurationGate` blocks validate and install unless every detected FOMOD archive on selected mods (plus hard dependencies) is `configured`; dismiss/skip/warned do not pass the gate. Unreadable downloaded archives fail closed. Missing mod directory fails closed.
 - `ArchiveEnumerationService` sets `FileTreeNode.IsFomodInstaller` when an archive contains FOMOD metadata.
@@ -75,4 +75,3 @@ Plans:
 - [docs/plans/2026-06-12-115-fomod-parser-plan.md](../plans/2026-06-12-115-fomod-parser-plan.md)
 - [docs/plans/2026-06-14-121-fomod-installer-dialog-plan.md](../plans/2026-06-14-121-fomod-installer-dialog-plan.md)
 - [docs/plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md) (shipped; residual TTY polish / in-validate recovery are deferred)
-- [docs/plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md) (completed)
