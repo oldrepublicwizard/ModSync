@@ -9,6 +9,7 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 
 using ModSync.Core;
+using ModSync.Core.Services;
 using ModSync.Core.Services.Fomod;
 using ModSync.Core.Services.Validation;
 
@@ -151,6 +152,66 @@ namespace ModSync.Tests
             Assert.That(
                 result.Stages.Exists(s => s.Stage == ValidationPipelineStage.FomodConfiguration && !s.Passed),
                 Is.True);
+        }
+
+        [Test]
+        public async Task Pipeline_FomodGate_PassesWhenArchiveConfigured()
+        {
+            string archiveName = "pipeline-configured.zip";
+            CreateZipWithFomod(Path.Combine(_modDir, archiveName));
+            ModComponent component = BuildComponentWithArchive(archiveName);
+            FomodDownloadPromptState.MarkConfigured(component, archiveName);
+
+            MainConfig.Instance = new MainConfig
+            {
+                sourcePath = new DirectoryInfo(_modDir),
+                destinationPath = new DirectoryInfo(_modDir),
+            };
+
+            var options = ValidationPipelineOptions.WizardFull;
+            options.SkipEnvironmentValidation = true;
+            options.SkipComponentArchiveValidation = true;
+            options.DryRun = false;
+
+            ValidationPipelineResult result = await InstallationValidationPipeline.RunAsync(
+                new[] { component },
+                options).ConfigureAwait(false);
+
+            ValidationPipelineStageResult fomodStage = result.Stages.Find(
+                s => s.Stage == ValidationPipelineStage.FomodConfiguration);
+            Assert.That(fomodStage, Is.Not.Null);
+            Assert.That(fomodStage.Passed, Is.True);
+            Assert.That(result.IsSuccess, Is.True);
+        }
+
+        [Test]
+        public async Task InstallAllSelected_BlocksWhenArchiveUnconfigured()
+        {
+            string archiveName = "install-gate.zip";
+            CreateZipWithFomod(Path.Combine(_modDir, archiveName));
+            ModComponent component = BuildComponentWithArchive(archiveName);
+
+            MainConfig previous = MainConfig.Instance;
+            MainConfig.Instance = new MainConfig
+            {
+                sourcePath = new DirectoryInfo(_modDir),
+                destinationPath = new DirectoryInfo(_modDir),
+            };
+
+            try
+            {
+                ModComponent.InstallExitCode exitCode =
+                    await InstallationService.InstallAllSelectedComponentsAsync(
+                        new List<ModComponent> { component },
+                        progressCallback: null,
+                        System.Threading.CancellationToken.None).ConfigureAwait(false);
+
+                Assert.That(exitCode, Is.EqualTo(ModComponent.InstallExitCode.InvalidOperation));
+            }
+            finally
+            {
+                MainConfig.Instance = previous;
+            }
         }
 
         [Test]
