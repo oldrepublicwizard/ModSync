@@ -107,8 +107,14 @@ namespace ModSync.Core.Services.Fomod
 
             foreach (string source in instruction.Source)
             {
-                if (!string.IsNullOrEmpty(source)
-                    && source.StartsWith(archivePathPrefix, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(source))
+                {
+                    continue;
+                }
+
+                string normalizedSource = source.Replace('\\', '/');
+                string normalizedPrefix = archivePathPrefix.Replace('\\', '/');
+                if (normalizedSource.StartsWith(normalizedPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

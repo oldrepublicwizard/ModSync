@@ -36,7 +36,17 @@ namespace ModSync.Core.Services.Fomod
             }
 
             string status = GetStatus(component, archiveFileName);
-            return string.IsNullOrEmpty(status);
+
+            // Only "configured" permanently skips the post-download prompt.
+            // "dismissed" must re-prompt on Fetch Downloads (documented recovery path).
+            // "warned" stays quiet so CLI warn-continue does not spam every re-download.
+            if (string.Equals(status, StatusConfigured, StringComparison.Ordinal)
+                || string.Equals(status, StatusWarned, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         [CanBeNull]
@@ -53,7 +63,8 @@ namespace ModSync.Core.Services.Fomod
                 return null;
             }
 
-            return statuses.TryGetValue(NormalizeFileName(archiveFileName), out string status)
+            string statusKey = NormalizeFileName(System.IO.Path.GetFileName(archiveFileName));
+            return statuses.TryGetValue(statusKey, out string status)
                 ? status
                 : null;
         }
@@ -108,7 +119,7 @@ namespace ModSync.Core.Services.Fomod
                 statuses = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
 
-            statuses[NormalizeFileName(archiveFileName)] = status;
+            statuses[NormalizeFileName(System.IO.Path.GetFileName(archiveFileName))] = status;
             resource.HandlerMetadata[HandlerMetadataKey] = statuses;
         }
 
@@ -123,16 +134,36 @@ namespace ModSync.Core.Services.Fomod
                 return false;
             }
 
+            string needle = NormalizeFileName(System.IO.Path.GetFileName(archiveFileName));
+            if (string.IsNullOrEmpty(needle))
+            {
+                return false;
+            }
+
             foreach (ResourceMetadata candidate in component.ResourceRegistry.Values)
             {
-                if (candidate?.Files is null
-                    || !candidate.Files.ContainsKey(archiveFileName))
+                if (candidate?.Files is null)
                 {
                     continue;
                 }
 
-                resource = candidate;
-                return true;
+                foreach (string registeredName in candidate.Files.Keys)
+                {
+                    if (string.IsNullOrWhiteSpace(registeredName))
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(NormalizeFileName(registeredName), needle, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(
+                            NormalizeFileName(System.IO.Path.GetFileName(registeredName)),
+                            needle,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        resource = candidate;
+                        return true;
+                    }
+                }
             }
 
             return false;

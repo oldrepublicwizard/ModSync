@@ -18,6 +18,7 @@ using JetBrains.Annotations;
 
 using ModSync.Core;
 using ModSync.Core.Services;
+using ModSync.Core.Services.Fomod;
 
 namespace ModSync.Dialogs
 {
@@ -179,6 +180,20 @@ namespace ModSync.Dialogs
         {
             try
             {
+                List<ModComponent> selectedTargets = _originalComponents.Where(c => c.IsSelected).ToList();
+                if (selectedTargets.Count != 1)
+                {
+                    await _dialogService.ShowInformationDialog(
+                        "Select exactly one mod in the list, then choose Configure FOMOD Mod again.
+
+"
+                        + "The wizard output is merged into that mod and marked configured for validate/install.")
+                        .ConfigureAwait(true);
+                    return;
+                }
+
+                ModComponent target = selectedTargets[0];
+
                 string[] folders = await _dialogService.ShowFileDialog(
                     isFolderDialog: true,
                     windowName: "Select extracted FOMOD mod folder").ConfigureAwait(true);
@@ -187,20 +202,73 @@ namespace ModSync.Dialogs
                     return;
                 }
 
-                ModComponent configured = await FomodInstallerDialog.ShowForExtractedArchiveAsync(this, folders[0]).ConfigureAwait(true);
+                string extractedDirectory = folders[0];
+                ModComponent configured = await FomodInstallerDialog.ShowForExtractedArchiveAsync(this, extractedDirectory).ConfigureAwait(true);
                 if (configured is null)
                 {
                     return;
                 }
 
+                string archiveFolder = System.IO.Path.GetFileName(
+                    extractedDirectory.TrimEnd(
+                        System.IO.Path.DirectorySeparatorChar,
+                        System.IO.Path.AltDirectorySeparatorChar));
+                string archiveFileName = ResolveArchiveFileNameForFolder(target, archiveFolder)
+                    ?? archiveFolder + ".zip";
+
+                FomodConfiguredComponentMerger.MergeInto(target, configured, archiveFileName);
+                FomodDownloadPromptState.MarkConfigured(target, archiveFileName);
+                ModificationsApplied = true;
+
                 await _dialogService.ShowInformationDialog(
-                    $"FOMOD configuration saved for '{configured.Name}'.\n\n" +
-                    $"Selected options: {configured.Options.Count(option => option.IsSelected)}/{configured.Options.Count}").ConfigureAwait(true);
+                    $"FOMOD configuration applied to '{target.Name}' from '{archiveFileName}'.
+
+" +
+                    $"Selected options: {configured.Options.Count(option => option.IsSelected)}/{configured.Options.Count}")
+                    .ConfigureAwait(true);
             }
             catch (Exception ex)
             {
                 await Logger.LogExceptionAsync(ex, "Failed to configure FOMOD mod").ConfigureAwait(true);
             }
+        }
+
+        [CanBeNull]
+        private static string ResolveArchiveFileNameForFolder(
+            [NotNull] ModComponent target,
+            [NotNull] string archiveFolder)
+        {
+            if (target.ResourceRegistry is null || string.IsNullOrWhiteSpace(archiveFolder))
+            {
+                return null;
+            }
+
+            foreach (ResourceMetadata resource in target.ResourceRegistry.Values)
+            {
+                if (resource?.Files is null)
+                {
+                    continue;
+                }
+
+                foreach (string registeredName in resource.Files.Keys)
+                {
+                    if (string.IsNullOrWhiteSpace(registeredName))
+                    {
+                        continue;
+                    }
+
+                    string fileName = System.IO.Path.GetFileName(registeredName);
+                    if (string.Equals(
+                            System.IO.Path.GetFileNameWithoutExtension(fileName),
+                            archiveFolder,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        return fileName;
+                    }
+                }
+            }
+
+            return null;
         }
 
 
