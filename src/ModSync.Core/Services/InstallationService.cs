@@ -16,6 +16,7 @@ using ModSync.Core;
 using ModSync.Core.FileSystemUtils;
 using ModSync.Core.Installation;
 using ModSync.Core.Services.Checkpoints;
+using ModSync.Core.Services.Fomod;
 using ModSync.Core.Utility;
 
 using Python.Included;
@@ -941,6 +942,34 @@ Exception Type: {ex.GetType().FullName}";
                 return ModComponent.InstallExitCode.InvalidOperation;
             }
 
+            string modDirectory = MainConfig.Instance?.sourcePath?.FullName;
+            if (string.IsNullOrWhiteSpace(modDirectory) || !System.IO.Directory.Exists(modDirectory))
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: mod directory is not set or does not exist."
+                ).ConfigureAwait(false);
+                return ModComponent.InstallExitCode.InvalidOperation;
+            }
+
+            FomodConfigurationGate.GateResult fomodGate = FomodConfigurationGate.Validate(
+                allComponents,
+                new[] { component },
+                modDirectory);
+            if (!fomodGate.Passed)
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: one or more FOMOD archives are not configured."
+                ).ConfigureAwait(false);
+                foreach (FomodConfigurationGate.GateIssue issue in fomodGate.Issues)
+                {
+                    await Logger.LogErrorAsync(
+                        $"[{issue.Component.Name}] {FomodConfigurationGate.FormatIssueMessage(issue)}"
+                    ).ConfigureAwait(false);
+                }
+
+                return ModComponent.InstallExitCode.InvalidOperation;
+            }
+
             return await component.InstallAsync(allComponents.ToList(), cancellationToken).ConfigureAwait(false);
         }
 
@@ -953,6 +982,35 @@ Exception Type: {ex.GetType().FullName}";
             if (allComponents is null)
             {
                 throw new ArgumentNullException(nameof(allComponents));
+            }
+
+            List<ModComponent> selectedComponents = allComponents.Where(component => component.IsSelected).ToList();
+            string modDirectory = MainConfig.Instance?.sourcePath?.FullName;
+            if (string.IsNullOrWhiteSpace(modDirectory) || !System.IO.Directory.Exists(modDirectory))
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: mod directory is not set or does not exist."
+                ).ConfigureAwait(false);
+                return ModComponent.InstallExitCode.InvalidOperation;
+            }
+
+            FomodConfigurationGate.GateResult fomodGate = FomodConfigurationGate.Validate(
+                allComponents,
+                selectedComponents,
+                modDirectory);
+            if (!fomodGate.Passed)
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: one or more FOMOD archives are not configured."
+                ).ConfigureAwait(false);
+                foreach (FomodConfigurationGate.GateIssue issue in fomodGate.Issues)
+                {
+                    await Logger.LogErrorAsync(
+                        $"[{issue.Component.Name}] {FomodConfigurationGate.FormatIssueMessage(issue)}"
+                    ).ConfigureAwait(false);
+                }
+
+                return ModComponent.InstallExitCode.InvalidOperation;
             }
 
             var coordinator = new InstallCoordinator();

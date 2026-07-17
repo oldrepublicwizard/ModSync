@@ -108,7 +108,22 @@ namespace ModSync.Dialogs.WizardPages
                         }
                     });
 
-                    await InstallationService.InstallSingleComponentAsync(mod, _widescreenMods, cancellationToken);
+                    ModComponent.InstallExitCode exitCode = await InstallationService.InstallSingleComponentAsync(
+                        mod,
+                        _widescreenMods,
+                        cancellationToken);
+                    if (exitCode != ModComponent.InstallExitCode.Success)
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            if (_statusText != null)
+                            {
+                                _statusText.Text =
+                                    $"Widescreen install blocked for '{mod.Name}' ({exitCode}).";
+                            }
+                        });
+                        return;
+                    }
                 }
 
                 _installationComplete = true;

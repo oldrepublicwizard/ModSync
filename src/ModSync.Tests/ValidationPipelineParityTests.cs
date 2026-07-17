@@ -187,6 +187,7 @@ namespace ModSync.Tests
             var options = ValidationPipelineOptions.WizardFull;
             options.SkipEnvironmentValidation = true;
             options.SkipComponentArchiveValidation = true;
+            options.SkipFomodConfigurationGate = true;
             options.DryRun = false;
 
             int reportedTotal = -1;
