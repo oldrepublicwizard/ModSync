@@ -547,7 +547,20 @@ namespace ModSync.Controls
 
             UpdateValidationState(component);
 
+            UpdateManagedDeployedBadge(component);
+
             ContextMenu = mainWindow.BuildContextMenuForComponent(component);
+        }
+
+        private void UpdateManagedDeployedBadge(ModComponent component)
+        {
+            Border badge = this.FindControl<Border>("ManagedDeployedBadge");
+            if (badge is null || component is null)
+            {
+                return;
+            }
+
+            badge.IsVisible = ManagedDeploymentActions.IsComponentDeployed(component.Guid);
         }
 
         private void UpdateEditorModeVisibility(bool isEditorMode)

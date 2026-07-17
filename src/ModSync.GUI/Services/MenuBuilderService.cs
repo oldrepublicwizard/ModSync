@@ -100,6 +100,37 @@ namespace ModSync.Services
                 }),
             });
 
+            if (ManagedDeploymentActions.IsComponentDeployed(component.Guid))
+            {
+                contextMenu.Items.Add(new Separator());
+                contextMenu.Items.Add(new MenuItem
+                {
+                    Header = "Uninstall Managed Deployment",
+                    Command = ReactiveCommand.CreateFromTask(async () =>
+                    {
+                        bool? confirmed = await ConfirmationDialog.ShowConfirmationDialogAsync(
+                            _parentWindow,
+                            confirmText:
+                                $"Uninstall the managed deployment for '{component.Name}'?\n\n" +
+                                "Vanilla backups will be restored where available.",
+                            yesButtonText: "Uninstall",
+                            noButtonText: "Cancel");
+                        if (confirmed != true)
+                        {
+                            return;
+                        }
+
+                        (bool success, string message) = await ManagedDeploymentActions
+                            .UninstallComponentAsync(component.Guid)
+                            .ConfigureAwait(true);
+                        await InformationDialog.ShowInformationDialogAsync(
+                            _parentWindow,
+                            message,
+                            success ? "Uninstall complete" : "Uninstall failed");
+                    }),
+                });
+            }
+
             if (editorMode)
             {
                 AddEditorModeMenuItems(contextMenu, component, setCurrentComponent, setTab, tabControl, guiEditTab, rawEditTab, onMoveRelative, onRemoveComponent, onInstallSingle);
