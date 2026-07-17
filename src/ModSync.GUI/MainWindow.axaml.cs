@@ -29,6 +29,7 @@ using ModSync.Controls;
 using ModSync.Core;
 using ModSync.Core.FileSystemUtils;
 using ModSync.Core.Services;
+using ModSync.Core.Services.Installation;
 using ModSync.Core.Utility;
 using ModSync.Dialogs;
 using ModSync.Models;
@@ -110,6 +111,7 @@ namespace ModSync
         private readonly ComponentSelectionService _componentSelectionService;
         private readonly DownloadOrchestrationService _downloadOrchestrationService;
         private NxmHandoffService _nxmHandoffService;
+        private ModSyncHandoffService _modSyncHandoffService;
         private readonly FilterUIService _filterUiService;
         private readonly InstructionBrowsingService _instructionBrowsingService;
         private readonly InstructionGenerationService _instructionGenerationService;
@@ -375,9 +377,6 @@ namespace ModSync
                 _menuBuilderService = new MenuBuilderService(ModManagementService, this);
                 InitializeTopMenu();
                 UpdateMenuVisibility();
-                // SettingsService must exist before directory pickers are wired (ctor previously NRE'd here).
-                _settingsService = new SettingsService(MainConfigInstance, this);
-                InitializeDirectoryPickers();
                 InitializeModListBox();
                 _selectionService = new SelectionService(MainConfigInstance);
                 _fileSystemService = new FileSystemService();
@@ -390,12 +389,19 @@ namespace ModSync
                 _downloadOrchestrationService = new DownloadOrchestrationService(DownloadCacheService, MainConfigInstance, this);
                 _downloadOrchestrationService.DownloadStateChanged += OnDownloadStateChanged;
                 _nxmHandoffService = new NxmHandoffService(this, MainConfigInstance, _downloadOrchestrationService);
+                _modSyncHandoffService = new ModSyncHandoffService(
+                    this,
+                    async path => await LoadInstructionFileAsync(path, "modsync:// download"),
+                    ActivateWindowFromProtocolHandoff);
                 _filterUiService = new FilterUIService(MainConfigInstance);
 
                 InitializeDownloadAnimationTimer();
                 _instructionBrowsingService = new InstructionBrowsingService(MainConfigInstance, _dialogService);
                 _instructionGenerationService = new InstructionGenerationService(MainConfigInstance, this);
                 _validationDisplayService = new ValidationDisplayService(_validationService, () => MainConfig.AllComponents);
+                _settingsService = new SettingsService(MainConfigInstance, this);
+                // Must run after SettingsService exists (delegates picker wiring to it).
+                InitializeDirectoryPickers();
                 _stepNavigationService = new StepNavigationService(MainConfigInstance, _validationService);
 
                 _telemetryService = TelemetryService.Instance;
@@ -460,7 +466,13 @@ namespace ModSync
                         ShowWizardToggle = false;
                         AutoLoadInstructionFileAsync(CLIArguments.InstructionFile);
                     }
-                    else if (_nxmHandoffService != null)
+
+                    if (_modSyncHandoffService != null)
+                    {
+                        await _modSyncHandoffService.ProcessPendingAsync();
+                    }
+
+                    if (_nxmHandoffService != null)
                     {
                         await _nxmHandoffService.ProcessPendingAsync();
                     }
@@ -475,6 +487,8 @@ namespace ModSync
 
                     _nxmHandoffService?.Dispose();
                     _nxmHandoffService = null;
+                    _modSyncHandoffService?.Dispose();
+                    _modSyncHandoffService = null;
                 };
             }
             catch (Exception e)
@@ -487,17 +501,19 @@ namespace ModSync
 
         private void OnSingleInstanceActivationRequested(object sender, EventArgs e)
         {
-            _ = Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                if (WindowState == WindowState.Minimized)
-                {
-                    WindowState = WindowState.Normal;
-                }
+            _ = Dispatcher.UIThread.InvokeAsync(ActivateWindowFromProtocolHandoff);
+        }
 
-                Activate();
-                Topmost = true;
-                Topmost = false;
-            });
+        private void ActivateWindowFromProtocolHandoff()
+        {
+            if (WindowState == WindowState.Minimized)
+            {
+                WindowState = WindowState.Normal;
+            }
+
+            Activate();
+            Topmost = true;
+            Topmost = false;
         }
 
         private async Task InitializeTelemetryIfEnabled()
@@ -3793,6 +3809,18 @@ namespace ModSync
                     else
                     {
                         await Logger.LogAsync($"Successfully installed '{name}'");
+                        string managedSummary = ManagedInstallSummaryFormatter.FormatWizardSummary(
+                            InstallationService.LastManagedInstallResult);
+                        if (!string.IsNullOrWhiteSpace(managedSummary))
+                        {
+                            await InformationDialog.ShowInformationDialogAsync(
+                                this,
+                                $"Successfully installed '{name}'."
+                                + Environment.NewLine
+                                + Environment.NewLine
+                                + managedSummary);
+                        }
+
                         await UpdateStepProgressAsync();
                     }
                 }
@@ -6411,6 +6439,57 @@ namespace ModSync
         }
 
         [SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "<Pending>")]
+        private async void ImportFromClipboard_Click(object sender, RoutedEventArgs e)
+        {
+            _telemetryService?.RecordUiInteraction("click", "ImportFromClipboardButton");
+
+            try
+            {
+                if (Clipboard is null)
+                {
+                    throw new InvalidOperationException(nameof(Clipboard));
+                }
+
+                string clipboardText = await Clipboard.GetTextAsync();
+                if (string.IsNullOrWhiteSpace(clipboardText))
+                {
+                    await Logger.LogWarningAsync("Clipboard has no text to import.");
+                    return;
+                }
+
+                ShowLoadingOverlay("Importing from clipboard...");
+                try
+                {
+                    bool loaded = await _fileLoadingService.LoadInstructionTextAsync(
+                        clipboardText,
+                        EditorMode,
+                        () => ProcessComponentsAsync(MainConfig.AllComponents),
+                        TryAutoGenerateInstructionsForComponents,
+                        sourceDescription: "clipboard text");
+
+                    if (loaded)
+                    {
+                        await Logger.LogAsync($"Imported {MainConfig.AllComponents.Count} components from clipboard.");
+                    }
+                    else
+                    {
+                        await Logger.LogWarningAsync("Clipboard text was not recognized as an instruction file or mod-build guide; nothing was imported.");
+                    }
+                }
+                finally
+                {
+                    HideLoadingOverlay();
+                    await UpdateStepProgressAsync();
+                }
+            }
+            catch (Exception exception)
+            {
+                HideLoadingOverlay();
+                await Logger.LogExceptionAsync(exception, "[ImportFromClipboard_Click] Exception occurred");
+            }
+        }
+
+        [SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "<Pending>")]
         private async void GettingStartedValidateButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -6447,6 +6526,7 @@ namespace ModSync
         private void GettingStartedTab_InstallRequested(object sender, RoutedEventArgs e) => InstallButton_Click(sender, e);
         private void GettingStartedTab_JumpToCurrentStepRequested(object sender, RoutedEventArgs e) => JumpToCurrentStep_Click(sender, e);
         private void GettingStartedTab_JumpToModRequested(object sender, RoutedEventArgs e) => JumpToModButton_Click(sender, e);
+        private void GettingStartedTab_ImportFromClipboardRequested(object sender, RoutedEventArgs e) => ImportFromClipboard_Click(sender, e);
         private void GettingStartedTab_LoadInstructionFileRequested(object sender, RoutedEventArgs e) => Step2Button_Click(sender, e);
         private void GettingStartedTab_NextErrorRequested(object sender, RoutedEventArgs e) => NextErrorButton_Click(sender, e);
         private void GettingStartedTab_OpenModDirectoryRequested(object sender, RoutedEventArgs e) => OpenModDirectoryButton_Click(sender, e);

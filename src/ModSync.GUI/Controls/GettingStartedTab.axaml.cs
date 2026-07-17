@@ -24,6 +24,8 @@ namespace ModSync.Controls
 
         public event EventHandler<RoutedEventArgs> LoadInstructionFileRequested;
 
+        public event EventHandler<RoutedEventArgs> ImportFromClipboardRequested;
+
         public event EventHandler<RoutedEventArgs> OpenSettingsRequested;
 
         public event EventHandler<RoutedEventArgs> ScrapeDownloadsRequested;
@@ -68,6 +70,12 @@ namespace ModSync.Controls
         private void Step2Button_Click(object sender, RoutedEventArgs e)
         {
             LoadInstructionFileRequested?.Invoke(this, e);
+        }
+
+        [UsedImplicitly]
+        private void ImportFromClipboardButton_Click(object sender, RoutedEventArgs e)
+        {
+            ImportFromClipboardRequested?.Invoke(this, e);
         }
 
         [UsedImplicitly]

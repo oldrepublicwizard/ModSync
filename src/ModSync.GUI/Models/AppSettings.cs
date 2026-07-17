@@ -96,6 +96,13 @@ namespace ModSync.Models
         [CanBeNull]
         public string FomodPostDownloadMode { get; set; } = "warn-continue";
 
+        [JsonPropertyName("managedDeploymentEnabled")]
+        public bool ManagedDeploymentEnabled { get; set; }
+
+        [JsonPropertyName("activeProfileName")]
+        [CanBeNull]
+        public string ActiveProfileName { get; set; }
+
         public AppSettings()
         {
         }
@@ -141,6 +148,8 @@ namespace ModSync.Models
                 FomodPostDownloadMode = string.IsNullOrWhiteSpace(persisted.FomodPostDownloadMode)
                     ? "warn-continue"
                     : persisted.FomodPostDownloadMode,
+                ManagedDeploymentEnabled = persisted.ManagedDeploymentEnabled,
+                ActiveProfileName = persisted.ActiveProfileName,
             };
         }
 

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 using ModSync.Core.Services.FileSystem;
+using ModSync.Core.Services.Fomod;
 
 namespace ModSync.Core.Services.Validation
 {
@@ -149,6 +150,28 @@ namespace ModSync.Core.Services.Validation
                 }
             }
 
+            if (!options.SkipFomodConfigurationGate)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                step++;
+                progress?.Invoke(ValidationPipelineStage.FomodConfiguration, step, totalSteps, "Checking FOMOD configuration...");
+                ValidationPipelineStageResult fomodStage = RunFomodConfigurationStage(
+                    componentsToValidate,
+                    allComponents,
+                    options);
+                result.Stages.Add(fomodStage);
+                if (!fomodStage.Passed)
+                {
+                    result.HasCriticalErrors = true;
+                    result.ErrorCount += fomodStage.Messages.Count;
+                    result.IsSuccess = false;
+                }
+                else
+                {
+                    result.PassedCount++;
+                }
+            }
+
             bool runDryRun = options.DryRun || options.DryRunOnly;
             if (runDryRun)
             {
@@ -216,10 +239,21 @@ namespace ModSync.Core.Services.Validation
             int count = 0;
             if (options.FullValidation)
             {
-                count += 3;
+                if (!options.SkipEnvironmentValidation)
+                {
+                    count++;
+                }
+
+                // Conflicts + InstallOrder always run under FullValidation.
+                count += 2;
             }
 
-            if (!options.DryRunOnly)
+            if (!options.DryRunOnly && !options.SkipComponentArchiveValidation)
+            {
+                count++;
+            }
+
+            if (!options.SkipFomodConfigurationGate)
             {
                 count++;
             }
@@ -389,6 +423,59 @@ namespace ModSync.Core.Services.Validation
                     : "All components passed archive validation.";
 
             return (stage, errors, warnings);
+        }
+
+        [NotNull]
+        private static ValidationPipelineStageResult RunFomodConfigurationStage(
+            [NotNull][ItemNotNull] List<ModComponent> componentsToValidate,
+            [NotNull][ItemNotNull] IReadOnlyList<ModComponent> allComponents,
+            [NotNull] ValidationPipelineOptions options)
+        {
+            var stage = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.FomodConfiguration,
+                Passed = true,
+            };
+
+            MainConfig config = options.MainConfig ?? MainConfig.Instance;
+            string modDirectory = config?.sourcePath?.FullName;
+            if (string.IsNullOrWhiteSpace(modDirectory) || !System.IO.Directory.Exists(modDirectory))
+            {
+                stage.Passed = false;
+                stage.Summary = "Cannot check FOMOD configuration: mod directory is not set or does not exist.";
+                stage.Messages.Add(
+                    "ERROR: FOMOD: Mod directory is not set or does not exist. "
+                    + FomodConfigurationGate.RecoveryHint);
+                return stage;
+            }
+
+            FomodConfigurationGate.GateResult gateResult = FomodConfigurationGate.Validate(
+                allComponents,
+                componentsToValidate,
+                modDirectory);
+
+            foreach (FomodConfigurationGate.GateWarning warning in gateResult.Warnings)
+            {
+                stage.Messages.Add($"WARNING: {warning.Component.Name}: {warning.Message}");
+            }
+
+            if (gateResult.Passed)
+            {
+                stage.Summary = gateResult.Warnings.Count == 0
+                    ? "All detected FOMOD archives are configured."
+                    : $"All detected FOMOD archives are configured ({gateResult.Warnings.Count} warning(s)).";
+                return stage;
+            }
+
+            stage.Passed = false;
+            stage.Summary = $"{gateResult.Issues.Count} unconfigured FOMOD archive(s).";
+            foreach (FomodConfigurationGate.GateIssue issue in gateResult.Issues)
+            {
+                stage.Messages.Add(
+                    $"ERROR: {issue.Component.Name}: {FomodConfigurationGate.FormatIssueMessage(issue)}");
+            }
+
+            return stage;
         }
 
         [NotNull]

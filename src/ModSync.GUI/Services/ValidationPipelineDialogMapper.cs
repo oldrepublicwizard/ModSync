@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 
 using ModSync.Core.Services.FileSystem;
+using ModSync.Core.Services.Fomod;
 using ModSync.Core.Services.Validation;
 using ModSync.Dialogs;
 
@@ -238,6 +239,38 @@ namespace ModSync.Services
                                 Solution = "Review archive warnings before installing; re-download if files may be incomplete.",
                             });
                             appendLog?.Invoke($"⚠ [ArchiveValidation] {summary}");
+                        }
+
+                        break;
+                    case ValidationPipelineStage.FomodConfiguration:
+                        foreach (string message in stage.Messages)
+                        {
+                            if (TryParsePrefixedStageMessage(message, "ERROR:", out string modName, out string description, out string detail))
+                            {
+                                modIssues.Add(new Dialogs.ValidationIssue
+                                {
+                                    Icon = "✗",
+                                    ModName = modName,
+                                    IssueType = FomodConfigurationGate.IssueCategory,
+                                    Description = description,
+                                    Solution = FomodConfigurationGate.RecoveryHint,
+                                });
+                                appendLog?.Invoke($"✗ [{FomodConfigurationGate.IssueCategory}] {detail}");
+                            }
+                        }
+
+                        if (!stage.Passed && stage.Messages.Count == 0)
+                        {
+                            string summary = stage.Summary ?? "Unconfigured FOMOD archives detected";
+                            modIssues.Add(new Dialogs.ValidationIssue
+                            {
+                                Icon = "✗",
+                                ModName = "FOMOD",
+                                IssueType = FomodConfigurationGate.IssueCategory,
+                                Description = summary,
+                                Solution = FomodConfigurationGate.RecoveryHint,
+                            });
+                            appendLog?.Invoke($"✗ [{FomodConfigurationGate.IssueCategory}] {summary}");
                         }
 
                         break;

@@ -16,6 +16,10 @@ using ModSync.Core;
 using ModSync.Core.FileSystemUtils;
 using ModSync.Core.Installation;
 using ModSync.Core.Services.Checkpoints;
+using ModSync.Core.Services.Fomod;
+using ModSync.Core.Services.Installation;
+using ModSync.Core.Services.Profiles;
+using ModSync.Core.Services.Settings;
 using ModSync.Core.Utility;
 
 using Python.Included;
@@ -28,6 +32,48 @@ namespace ModSync.Core.Services
     {
         private static bool _pythonInitialized = false;
         private static readonly SemaphoreSlim _pythonSemaphore = new SemaphoreSlim(1, 1);
+
+        [CanBeNull]
+        public static ManagedInstallResult LastManagedInstallResult { get; private set; }
+
+        /// <summary>
+        /// Opt-in managed deployment session around an install action. Classic remains
+        /// default when <c>managedDeploymentEnabled</c> is false. FOMOD fail-closed
+        /// gates (when present on the install path) still run inside <paramref name="installAction"/>.
+        /// </summary>
+        private static async Task<ModComponent.InstallExitCode> RunWithManagedInstallSessionAsync(
+            [NotNull] Func<Task<ModComponent.InstallExitCode>> installAction,
+            [CanBeNull] string profileOverride = null)
+        {
+            ManagedInstallSession managedSession = null;
+            try
+            {
+                ModSyncSettings settings = ModSyncSettings.Load();
+                var profileService = new ProfileService(ModSyncSettings.GetSettingsDirectory());
+                managedSession = ManagedInstallSession.TryCreate(settings, profileService, profileOverride);
+                ManagedInstallSession.Current = managedSession;
+
+                return await installAction().ConfigureAwait(false);
+            }
+            catch (InvalidOperationException ex)
+            {
+                await Logger.LogErrorAsync(ex.Message).ConfigureAwait(false);
+                return ModComponent.InstallExitCode.InvalidOperation;
+            }
+            finally
+            {
+                if (managedSession != null)
+                {
+                    LastManagedInstallResult = managedSession.BuildResult(managedSession.ManifestsWritten);
+                }
+                else
+                {
+                    LastManagedInstallResult = null;
+                }
+
+                ManagedInstallSession.Current = null;
+            }
+        }
 
         /// <summary>
         /// Initializes the embedded Python environment if not already initialized.
@@ -934,10 +980,48 @@ Exception Type: {ex.GetType().FullName}";
                 throw new ArgumentNullException(nameof(allComponents));
             }
 
+            return await RunWithManagedInstallSessionAsync(
+                () => InstallSingleComponentCoreAsync(component, allComponents, cancellationToken),
+                profileOverride: null).ConfigureAwait(false);
+        }
+
+        private static async Task<ModComponent.InstallExitCode> InstallSingleComponentCoreAsync(
+            [NotNull] ModComponent component,
+            [NotNull][ItemNotNull] IReadOnlyList<ModComponent> allComponents,
+            CancellationToken cancellationToken)
+        {
             var validator = new ComponentValidation(component, allComponents.ToList());
             await Logger.LogVerboseAsync($" == Validating '{component.Name}' == ").ConfigureAwait(false);
             if (!validator.Run())
             {
+                return ModComponent.InstallExitCode.InvalidOperation;
+            }
+
+            string modDirectory = MainConfig.Instance?.sourcePath?.FullName;
+            if (string.IsNullOrWhiteSpace(modDirectory) || !System.IO.Directory.Exists(modDirectory))
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: mod directory is not set or does not exist."
+                ).ConfigureAwait(false);
+                return ModComponent.InstallExitCode.InvalidOperation;
+            }
+
+            FomodConfigurationGate.GateResult fomodGate = FomodConfigurationGate.Validate(
+                allComponents,
+                new[] { component },
+                modDirectory);
+            if (!fomodGate.Passed)
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: one or more FOMOD archives are not configured."
+                ).ConfigureAwait(false);
+                foreach (FomodConfigurationGate.GateIssue issue in fomodGate.Issues)
+                {
+                    await Logger.LogErrorAsync(
+                        $"[{issue.Component.Name}] {FomodConfigurationGate.FormatIssueMessage(issue)}"
+                    ).ConfigureAwait(false);
+                }
+
                 return ModComponent.InstallExitCode.InvalidOperation;
             }
 
@@ -948,11 +1032,56 @@ Exception Type: {ex.GetType().FullName}";
         public static async Task<ModComponent.InstallExitCode> InstallAllSelectedComponentsAsync(
             [NotNull][ItemNotNull] List<ModComponent> allComponents,
             [CanBeNull] Action<int, int, string> progressCallback = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            [CanBeNull] string profileOverride = null)
         {
             if (allComponents is null)
             {
                 throw new ArgumentNullException(nameof(allComponents));
+            }
+
+            return await RunWithManagedInstallSessionAsync(
+                () => InstallAllSelectedComponentsCoreAsync(allComponents, progressCallback, cancellationToken),
+                profileOverride).ConfigureAwait(false);
+        }
+
+        private static async Task<ModComponent.InstallExitCode> InstallAllSelectedComponentsCoreAsync(
+            [NotNull][ItemNotNull] List<ModComponent> allComponents,
+            [CanBeNull] Action<int, int, string> progressCallback,
+            CancellationToken cancellationToken)
+        {
+            if (allComponents is null)
+            {
+                throw new ArgumentNullException(nameof(allComponents));
+            }
+
+            List<ModComponent> selectedComponents = allComponents.Where(component => component.IsSelected).ToList();
+            string modDirectory = MainConfig.Instance?.sourcePath?.FullName;
+            if (string.IsNullOrWhiteSpace(modDirectory) || !System.IO.Directory.Exists(modDirectory))
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: mod directory is not set or does not exist."
+                ).ConfigureAwait(false);
+                return ModComponent.InstallExitCode.InvalidOperation;
+            }
+
+            FomodConfigurationGate.GateResult fomodGate = FomodConfigurationGate.Validate(
+                allComponents,
+                selectedComponents,
+                modDirectory);
+            if (!fomodGate.Passed)
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: one or more FOMOD archives are not configured."
+                ).ConfigureAwait(false);
+                foreach (FomodConfigurationGate.GateIssue issue in fomodGate.Issues)
+                {
+                    await Logger.LogErrorAsync(
+                        $"[{issue.Component.Name}] {FomodConfigurationGate.FormatIssueMessage(issue)}"
+                    ).ConfigureAwait(false);
+                }
+
+                return ModComponent.InstallExitCode.InvalidOperation;
             }
 
             var coordinator = new InstallCoordinator();
@@ -1089,14 +1218,15 @@ Exception Type: {ex.GetType().FullName}";
         public static Task<ModComponent.InstallExitCode> InstallAllSelectedComponentsAsync(
             [NotNull][ItemNotNull] IReadOnlyList<ModComponent> allComponents,
             [CanBeNull] Action<int, int, string> progressCallback = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            [CanBeNull] string profileOverride = null)
         {
             if (allComponents is null)
             {
                 throw new ArgumentNullException(nameof(allComponents));
             }
 
-            return InstallAllSelectedComponentsAsync(allComponents.ToList(), progressCallback, cancellationToken);
+            return InstallAllSelectedComponentsAsync(allComponents.ToList(), progressCallback, cancellationToken, profileOverride);
         }
 
     }

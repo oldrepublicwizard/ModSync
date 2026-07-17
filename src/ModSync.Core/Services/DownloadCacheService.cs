@@ -2799,12 +2799,12 @@ namespace ModSync.Core.Services
                                         meta.Files = metaToken["Files"].ToObject<Dictionary<string, bool?>>();
                                     }
 
-                                    if (DateTime.TryParse(metaToken["FirstSeen"]?.ToString(), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime firstSeen))
+                                    if (ModComponentSerializationService.TryParseUtcTimestamp(metaToken["FirstSeen"]?.ToString(), out DateTime firstSeen))
                                     {
                                         meta.FirstSeen = firstSeen;
                                     }
 
-                                    if (DateTime.TryParse(metaToken["LastVerified"]?.ToString(), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime lastVerified))
+                                    if (ModComponentSerializationService.TryParseUtcTimestamp(metaToken["LastVerified"]?.ToString(), out DateTime lastVerified))
                                     {
                                         meta.LastVerified = lastVerified;
                                     }

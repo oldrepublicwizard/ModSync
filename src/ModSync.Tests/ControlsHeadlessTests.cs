@@ -34,6 +34,7 @@ namespace ModSync.Tests
                 void Mark(string key) => fired[key] = fired.TryGetValue(key, out int count) ? count + 1 : 1;
 
                 tab.LoadInstructionFileRequested += (_, __) => Mark(nameof(tab.LoadInstructionFileRequested));
+                tab.ImportFromClipboardRequested += (_, __) => Mark(nameof(tab.ImportFromClipboardRequested));
                 tab.OpenSettingsRequested += (_, __) => Mark(nameof(tab.OpenSettingsRequested));
                 tab.ScrapeDownloadsRequested += (_, __) => Mark(nameof(tab.ScrapeDownloadsRequested));
                 tab.OpenModDirectoryRequested += (_, __) => Mark(nameof(tab.OpenModDirectoryRequested));
@@ -53,6 +54,7 @@ namespace ModSync.Tests
                 string[] buttonNames = new[]
                 {
                     "Step2Button",
+                    "ImportFromClipboardButton",
                     "GettingStartedSettingsButton",
                     "ScrapeDownloadsButton",
                     "OpenModDirectoryButton",

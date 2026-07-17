@@ -11,20 +11,20 @@ namespace ModSync.Tests
     public class ApplicationLaunchCoordinatorTests
     {
         [Test]
-        public void DecideSecondaryAction_WithNxmUrl_ForwardsNxm()
+        public void DecideSecondaryAction_WithProtocolUrl_ForwardsProtocol()
         {
             SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(
-                hasNxmUrl: true,
+                hasProtocolHandoffUrl: true,
                 allowMultipleInstances: false);
 
-            Assert.That(action, Is.EqualTo(SecondaryLaunchAction.ForwardNxmAndExit));
+            Assert.That(action, Is.EqualTo(SecondaryLaunchAction.ForwardProtocolUrlAndExit));
         }
 
         [Test]
-        public void DecideSecondaryAction_WithoutNxmUrl_ForwardsActivate()
+        public void DecideSecondaryAction_WithoutProtocolUrl_ForwardsActivate()
         {
             SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(
-                hasNxmUrl: false,
+                hasProtocolHandoffUrl: false,
                 allowMultipleInstances: false);
 
             Assert.That(action, Is.EqualTo(SecondaryLaunchAction.ForwardActivateAndExit));
@@ -34,7 +34,7 @@ namespace ModSync.Tests
         public void DecideSecondaryAction_AllowMultiple_StartsNewInstance()
         {
             SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(
-                hasNxmUrl: false,
+                hasProtocolHandoffUrl: false,
                 allowMultipleInstances: true);
 
             Assert.That(action, Is.EqualTo(SecondaryLaunchAction.StartNewInstance));

@@ -38,6 +38,7 @@ namespace ModSync.Dialogs.WizardPages
         private TextBlock _passedCountBadge;
         private Button _validateButton;
         private Expander _logExpander;
+        private GridSplitter _logGridSplitter;
         private ScrollViewer _logScrollViewer;
         private TextBlock _logText;
         private TextBlock _logProgressText;
@@ -141,6 +142,7 @@ namespace ModSync.Dialogs.WizardPages
             _passedCountBadge = this.FindControl<TextBlock>("PassedCountBadge");
             _validateButton = this.FindControl<Button>("ValidateButton");
             _logExpander = this.FindControl<Expander>("LogExpander");
+            _logGridSplitter = this.FindControl<GridSplitter>("LogGridSplitter");
             _logScrollViewer = this.FindControl<ScrollViewer>("LogScrollViewer");
             _logText = this.FindControl<TextBlock>("LogText");
             _logProgressText = this.FindControl<TextBlock>("LogProgressText");
@@ -315,6 +317,11 @@ namespace ModSync.Dialogs.WizardPages
             if (_logExpander != null)
             {
                 _logExpander.IsVisible = true;
+            }
+
+            if (_logGridSplitter != null)
+            {
+                _logGridSplitter.IsVisible = true;
             }
 
             _resultsPanel?.Children.Clear();

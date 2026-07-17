@@ -909,6 +909,66 @@ namespace ModSync.Core.Services
         {
             return Task.Run(() => DeserializeModComponentFromString(content, format));
         }
+
+        /// <summary>
+        /// Detects which instruction-file format the given raw content is, using the same
+        /// content-sniffing cascade as <see cref="DeserializeModComponentFromString(string, string)"/>
+        /// (TOML → Markdown → YAML → XML/JSON). A format only counts as detected when it parses
+        /// into at least one component.
+        /// </summary>
+        /// <returns>"toml", "markdown", "yaml", "xml", or "json"; null when no format produced components.</returns>
+        [CanBeNull]
+        public static string DetectFormatFromContent([NotNull] string content)
+        {
+            if (content is null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return null;
+            }
+
+            if (ParsesWithComponents(content, DeserializeModComponentFromTomlString, "toml"))
+            {
+                return "toml";
+            }
+
+            if (ParsesWithComponents(content, DeserializeModComponentFromMarkdownString, "markdown"))
+            {
+                return "markdown";
+            }
+
+            if (ParsesWithComponents(content, DeserializeModComponentFromYamlString, "yaml"))
+            {
+                return "yaml";
+            }
+
+            if (content.TrimStart().StartsWith("<", StringComparison.Ordinal))
+            {
+                return ParsesWithComponents(content, DeserializeModComponentFromXmlString, "xml") ? "xml" : null;
+            }
+
+            return ParsesWithComponents(content, DeserializeModComponentFromJsonString, "json") ? "json" : null;
+        }
+
+        private static bool ParsesWithComponents(
+            [NotNull] string content,
+            [NotNull] Func<string, IReadOnlyList<ModComponent>> parse,
+            [NotNull] string formatName)
+        {
+            try
+            {
+                IReadOnlyList<ModComponent> parsed = parse(content);
+                return parsed != null && parsed.Count > 0;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogVerbose($"[DetectFormatFromContent] {formatName} parsing failed: {ex.Message}");
+                return false;
+            }
+        }
         #endregion
 
         #region Saving Functions
@@ -1528,7 +1588,6 @@ namespace ModSync.Core.Services
                                 Files = new Dictionary<string, bool?>(StringComparer.OrdinalIgnoreCase), // Empty - files will be discovered during download
                                 HandlerMetadata = new Dictionary<string, object>(StringComparer.Ordinal),
                                 FileSize = 0,
-                                FirstSeen = DateTime.UtcNow,
                             };
 
                             registryDict[url] = meta; // Key by URL directly
@@ -1717,7 +1776,6 @@ namespace ModSync.Core.Services
                             Files = new Dictionary<string, bool?>(filenames, StringComparer.Ordinal),
                             HandlerMetadata = new Dictionary<string, object>(StringComparer.Ordinal),
                             FileSize = 0,
-                            FirstSeen = DateTime.UtcNow,
                         };
 
                         registryDict[url] = meta; // Key by URL directly
@@ -4473,9 +4531,14 @@ namespace ModSync.Core.Services
             _ = validationContext;
 
             string jsonArray = SerializeModComponentAsJsonString(components);
+            JArray componentsArray = JArray.Parse(jsonArray);
+            // URL-keyed dictionaries cannot round-trip through Newtonsoft XML element names
+            // (https: is treated as a namespace prefix). Rewrite as Url+metadata entry arrays.
+            RewriteUrlKeyedMapsForXml(componentsArray, toXmlShape: true);
+
             var wrapper = new JObject
             {
-                ["ModComponents"] = JArray.Parse(jsonArray),
+                ["ModComponents"] = componentsArray,
             };
 
             XmlDocument document = JsonConvert.DeserializeXmlNode(wrapper.ToString(Newtonsoft.Json.Formatting.None), "ModSync");
@@ -4505,6 +4568,7 @@ namespace ModSync.Core.Services
                 string jsonText = JsonConvert.SerializeXmlNode(document);
                 JObject root = JObject.Parse(jsonText);
                 JArray componentsArray = ExtractModComponentsArrayFromXmlJson(root);
+                RewriteUrlKeyedMapsForXml(componentsArray, toXmlShape: false);
 
                 var components = new List<ModComponent>();
                 foreach (JToken componentToken in componentsArray)
@@ -4967,8 +5031,8 @@ namespace ModSync.Core.Services
                 .DisableAliases()
                 .Build();
 
-            // Use unified serialization
-            Dictionary<string, object> dict = SerializeComponentToDictionary(component, validationContext: null, duplicateNameAsHeadingWhenEmpty: true);
+            // Keep Heading empty when unset — ### display already falls back to Name.
+            Dictionary<string, object> dict = SerializeComponentToDictionary(component, validationContext: null, duplicateNameAsHeadingWhenEmpty: false);
 
             // YAML-specific: Remove internal metadata and convert action to lowercase
             dict.Remove("_HasInstructions");
@@ -5604,7 +5668,6 @@ namespace ModSync.Core.Services
         {
             NormalizeArrayProperty(dict, "Instructions");
             NormalizeArrayProperty(dict, "Options");
-            NormalizeArrayProperty(dict, "ResourceRegistry");
 
             if (dict.TryGetValue("Options", out object optionsObj) && optionsObj is List<object> optionsList)
             {
@@ -5617,6 +5680,167 @@ namespace ModSync.Core.Services
                     }
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Rewrites URL-keyed maps to/from XML-safe entry arrays.
+        /// Newtonsoft's JSON↔XML path cannot use URLs as element names (colon = namespace).
+        /// </summary>
+        private static void RewriteUrlKeyedMapsForXml([NotNull] JArray componentsArray, bool toXmlShape)
+        {
+            foreach (JToken componentToken in componentsArray)
+            {
+                if (!(componentToken is JObject componentObject))
+                {
+                    continue;
+                }
+
+                RewriteUrlKeyedMapProperty(componentObject, "ResourceRegistry", toXmlShape, includeMetadataFields: true);
+                RewriteUrlKeyedMapProperty(componentObject, "ModLinkFilenames", toXmlShape, includeMetadataFields: false);
+                RewriteUrlKeyedMapProperty(componentObject, "resourceRegistry", toXmlShape, includeMetadataFields: true);
+                RewriteUrlKeyedMapProperty(componentObject, "modLinkFilenames", toXmlShape, includeMetadataFields: false);
+            }
+        }
+
+        private static void RewriteUrlKeyedMapProperty(
+            [NotNull] JObject componentObject,
+            [NotNull] string propertyName,
+            bool toXmlShape,
+            bool includeMetadataFields)
+        {
+            JToken token = componentObject[propertyName];
+            if (token is null || token.Type == JTokenType.Null)
+            {
+                return;
+            }
+
+            if (toXmlShape)
+            {
+                if (!(token is JObject mapObject))
+                {
+                    return;
+                }
+
+                var entries = new JArray();
+                foreach (JProperty entry in mapObject.Properties())
+                {
+                    var entryObject = new JObject
+                    {
+                        ["Url"] = entry.Name,
+                    };
+
+                    if (entry.Value is JObject metadataObject)
+                    {
+                        foreach (JProperty metaProp in metadataObject.Properties())
+                        {
+                            entryObject[metaProp.Name] = metaProp.Value;
+                        }
+                    }
+                    else if (entry.Value != null && entry.Value.Type != JTokenType.Null)
+                    {
+                        entryObject["Value"] = entry.Value;
+                    }
+
+                    entries.Add(entryObject);
+                }
+
+                componentObject[propertyName] = entries;
+                return;
+            }
+
+            JArray entryArray = null;
+            if (token is JArray array)
+            {
+                entryArray = array;
+            }
+            else if (token is JObject singleEntry)
+            {
+                if (singleEntry["Url"] != null || singleEntry["url"] != null
+                    || singleEntry["PrimaryUrl"] != null || singleEntry["primaryUrl"] != null)
+                {
+                    entryArray = new JArray(singleEntry);
+                }
+                else if (singleEntry.Count == 1)
+                {
+                    JProperty only = singleEntry.Properties().First();
+                    if (only.Value is JArray wrappedArray)
+                    {
+                        entryArray = wrappedArray;
+                    }
+                    else if (only.Value is JObject wrappedObject)
+                    {
+                        entryArray = new JArray(wrappedObject);
+                    }
+                }
+
+                if (entryArray is null)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                return;
+            }
+
+            var restoredMap = new JObject();
+            foreach (JToken entryToken in entryArray)
+            {
+                if (!(entryToken is JObject entryObject))
+                {
+                    continue;
+                }
+
+                string url = entryObject.Value<string>("Url")
+                    ?? entryObject.Value<string>("url")
+                    ?? entryObject.Value<string>("PrimaryUrl")
+                    ?? entryObject.Value<string>("primaryUrl");
+                if (string.IsNullOrWhiteSpace(url))
+                {
+                    continue;
+                }
+
+                if (includeMetadataFields)
+                {
+                    var metadataObject = new JObject();
+                    foreach (JProperty metaProp in entryObject.Properties())
+                    {
+                        if (metaProp.Name.Equals("Url", StringComparison.OrdinalIgnoreCase)
+                            || metaProp.Name.Equals("PrimaryUrl", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        metadataObject[metaProp.Name] = metaProp.Value;
+                    }
+
+                    restoredMap[url] = metadataObject;
+                }
+                else if (entryObject.TryGetValue("Value", out JToken valueToken)
+                    || entryObject.TryGetValue("value", out valueToken))
+                {
+                    restoredMap[url] = valueToken;
+                }
+                else
+                {
+                    var filenamesObject = new JObject();
+                    foreach (JProperty metaProp in entryObject.Properties())
+                    {
+                        if (metaProp.Name.Equals("Url", StringComparison.OrdinalIgnoreCase)
+                            || metaProp.Name.Equals("PrimaryUrl", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        filenamesObject[metaProp.Name] = metaProp.Value;
+                    }
+
+                    restoredMap[url] = filenamesObject;
+                }
+            }
+
+            componentObject[propertyName] = restoredMap;
         }
 
         private static void NormalizeArrayProperty(Dictionary<string, object> dict, string key)
@@ -5715,8 +5939,9 @@ namespace ModSync.Core.Services
                 string key = prop.Name;
                 JToken value = prop.Value;
 
-                // Convert key to PascalCase to match expected format
-                if (!string.IsNullOrEmpty(key))
+                // PascalCase property names for DeserializeComponent, but never rewrite URL map keys
+                // (ResourceRegistry / ModLinkFilenames) — that turned https:// into Https://.
+                if (!string.IsNullOrEmpty(key) && !IsUrlKeyedPropertyName(key))
                 {
                     key = char.ToUpperInvariant(key[0]) + key.Substring(1);
                 }
@@ -5768,6 +5993,23 @@ namespace ModSync.Core.Services
         }
 
         /// <summary>
+        /// True when <paramref name="key"/> is a URL used as a dictionary key (scheme://...),
+        /// which must keep its original casing across JSON/XML conversion.
+        /// </summary>
+        private static bool IsUrlKeyedPropertyName([CanBeNull] string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return false;
+            }
+
+            return NetFrameworkCompatibility.Contains(key, "://", StringComparison.Ordinal)
+                || key.StartsWith("http:", StringComparison.OrdinalIgnoreCase)
+                || key.StartsWith("https:", StringComparison.OrdinalIgnoreCase)
+                || key.StartsWith("nxm:", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Converts a dictionary to a JObject, recursively handling nested structures
         /// </summary>
         private static JObject DictionaryToJObject(Dictionary<string, object> dict)
@@ -5794,16 +6036,18 @@ namespace ModSync.Core.Services
                 }
                 else if (value is Dictionary<string, object> nestedDict)
                 {
-                    // Special handling for ModLinkFilenames - preserve original case for URL keys
-                    if (key.Equals("modLinkFilenames", StringComparison.OrdinalIgnoreCase))
+                    // Preserve original case for URL keys in ResourceRegistry / ModLinkFilenames
+                    if (key.Equals("modLinkFilenames", StringComparison.OrdinalIgnoreCase)
+                        || key.Equals("resourceRegistry", StringComparison.OrdinalIgnoreCase))
                     {
-                        var modLinkObj = new JObject();
+                        var urlKeyedObj = new JObject();
                         foreach (KeyValuePair<string, object> nestedKvp in nestedDict)
                         {
-                            // Preserve original case for URL keys in ModLinkFilenames
-                            modLinkObj[nestedKvp.Key] = JToken.FromObject(nestedKvp.Value);
+                            urlKeyedObj[nestedKvp.Key] = nestedKvp.Value is Dictionary<string, object> nestedMeta
+                                ? DictionaryToJObject(nestedMeta)
+                                : JToken.FromObject(nestedKvp.Value);
                         }
-                        jobj[key] = modLinkObj;
+                        jobj[key] = urlKeyedObj;
                     }
                     else
                     {
@@ -5846,6 +6090,87 @@ namespace ModSync.Core.Services
 
         #endregion
 
+
+        /// <summary>
+        /// Formats a timestamp as UTC round-trip ISO-8601 (always ends with Z).
+        /// DateTimeKind.Unspecified is treated as already-UTC (product stores UTC).
+        /// </summary>
+        internal static string FormatUtcTimestamp(DateTime value)
+        {
+            DateTime utc;
+            if (value.Kind == DateTimeKind.Utc)
+            {
+                utc = value;
+            }
+            else if (value.Kind == DateTimeKind.Local)
+            {
+                utc = value.ToUniversalTime();
+            }
+            else
+            {
+                utc = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+            }
+
+            return utc.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Parses a serialized timestamp into UTC DateTime (Kind = Utc).
+        /// Accepts ISO-8601 strings with Z/offsets, and DateTime/DateTimeOffset objects.
+        /// </summary>
+        internal static bool TryParseUtcTimestamp(object value, out DateTime utc)
+        {
+            utc = default(DateTime);
+            if (value == null)
+            {
+                return false;
+            }
+
+            if (value is DateTime)
+            {
+                DateTime dateTime = (DateTime)value;
+                if (dateTime.Kind == DateTimeKind.Utc)
+                {
+                    utc = dateTime;
+                }
+                else if (dateTime.Kind == DateTimeKind.Local)
+                {
+                    utc = dateTime.ToUniversalTime();
+                }
+                else
+                {
+                    utc = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+                }
+
+                return true;
+            }
+
+            if (value is DateTimeOffset)
+            {
+                utc = ((DateTimeOffset)value).UtcDateTime;
+                return true;
+            }
+
+            string textValue = value as string ?? value.ToString();
+            if (string.IsNullOrWhiteSpace(textValue))
+            {
+                return false;
+            }
+
+            DateTimeOffset parsed;
+            if (DateTimeOffset.TryParse(
+                    textValue,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.RoundtripKind | System.Globalization.DateTimeStyles.AssumeUniversal,
+                    out parsed))
+            {
+                utc = parsed.UtcDateTime;
+                return true;
+            }
+
+            return false;
+        }
+
         public static IReadOnlyDictionary<string, object> SerializeResourceRegistry(IReadOnlyDictionary<string, ResourceMetadata> registry)
         {
             var result = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
@@ -5879,12 +6204,12 @@ namespace ModSync.Core.Services
 
                 if (kvp.Value.FirstSeen.HasValue)
                 {
-                    metaDict["FirstSeen"] = kvp.Value.FirstSeen.Value.ToString("O");
+                    metaDict["FirstSeen"] = FormatUtcTimestamp(kvp.Value.FirstSeen.Value);
                 }
 
                 if (kvp.Value.LastVerified.HasValue)
                 {
-                    metaDict["LastVerified"] = kvp.Value.LastVerified.Value.ToString("O");
+                    metaDict["LastVerified"] = FormatUtcTimestamp(kvp.Value.LastVerified.Value);
                 }
 
                 result[kvp.Key] = metaDict;
@@ -5955,12 +6280,12 @@ namespace ModSync.Core.Services
                             ConvertToStringBoolNullableDictionary(GetValueOrDefault<object>(metaDict, "Files"));
                         meta.Files = filesDictionary ?? new Dictionary<string, bool?>(StringComparer.Ordinal);
 
-                        if (DateTime.TryParse(GetValueOrDefault<string>(metaDict, "FirstSeen"), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime firstSeen))
+                        if (TryParseUtcTimestamp(GetValueOrDefault<object>(metaDict, "FirstSeen"), out DateTime firstSeen))
                         {
                             meta.FirstSeen = firstSeen;
                         }
 
-                        if (DateTime.TryParse(GetValueOrDefault<string>(metaDict, "LastVerified"), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime lastVerified))
+                        if (TryParseUtcTimestamp(GetValueOrDefault<object>(metaDict, "LastVerified"), out DateTime lastVerified))
                         {
                             meta.LastVerified = lastVerified;
                         }
@@ -6042,12 +6367,12 @@ namespace ModSync.Core.Services
                             ConvertToStringBoolNullableDictionary(GetValueOrDefault<object>(metaDict, "Files"));
                         meta.Files = filesDictionary ?? new Dictionary<string, bool?>(StringComparer.OrdinalIgnoreCase);
 
-                        if (DateTime.TryParse(GetValueOrDefault<string>(metaDict, "FirstSeen"), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime firstSeen))
+                        if (TryParseUtcTimestamp(GetValueOrDefault<object>(metaDict, "FirstSeen"), out DateTime firstSeen))
                         {
                             meta.FirstSeen = firstSeen;
                         }
 
-                        if (DateTime.TryParse(GetValueOrDefault<string>(metaDict, "LastVerified"), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime lastVerified))
+                        if (TryParseUtcTimestamp(GetValueOrDefault<object>(metaDict, "LastVerified"), out DateTime lastVerified))
                         {
                             meta.LastVerified = lastVerified;
                         }

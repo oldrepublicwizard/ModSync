@@ -30,6 +30,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | `Step1ModDirectoryPicker` | `--modDirectory=` / `-s` | Full |
 | `Step1KotorDirectoryPicker` | `--kotorPath=` / `-g` | Full |
 | `Step2Button` (load file) | `--instructionFile=` / `-i` | Full |
+| `ImportFromClipboardButton` (paste guide / TOML) | Headless: `GuiSmokeHeadlessTests` + `ControlsHeadlessTests`; Core `FileLoadingService.ImportFromTextAsync` | Partial — button/event smoke is headless; real clipboard OS paste still `[UI]` |
 | `ScrapeDownloadsButton` | `install -d` or `convert -d` | Partial — FOMOD configure after download: GUI (PR #169); CLI planned Plan 123 |
 | `ValidateButton` | `validate --full --dry-run --use-file-selection` (via `InstallationValidationPipeline`) | Full |
 | `OpenModDirectoryButton` | `ls` / file tools on mod dir | Full |
@@ -40,6 +41,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | Goal | Recommended path |
 |------|------------------|
 | Smoke-test repo | `./scripts/agents/run_headless_tests.sh` |
+| GUI UX smoke (paste button, page-0 layout, validate log splitter) | `./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"` (Avalonia.Headless — **no desktop**) |
 | Validate TOML structure only | `./scripts/agents/cli_validate.sh --input path.toml` |
 | Full validation | `cli_validate.sh` with `--game-dir`, `--source-dir`, `--full` |
 | Validate only TOML-selected mods | `cli_validate.sh` … `--use-file-selection` (matches GUI Mod Selection) |
@@ -55,6 +57,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | CLI install | `CliInstallIntegrationTests`, `ValidationPipelineParityTests` | End-to-end install; install pre-check uses same pipeline as wizard |
 | VFS validation | `VirtualFileSystemDryRunValidationTests` | Dry-run matches VFS rules |
 | Wizard UI | `WizardFlowHeadlessTests` | Page flow without full desktop |
+| GUI UX smoke | `GuiSmokeHeadlessTests` | Paste-import button, Welcome/Landing scroll layout, ValidatePage log splitter |
 | Wizard validation UX | `WizardValidationStagePresenter`, `ValidationPipelineDialogMapper` | Stage cards / dialog mapper parity ([PR #110](https://github.com/th3w1zard1/ModSync/pull/110)) |
 | Version alignment | `ReleaseVersionAlignmentTests` | Release metadata consistency |
 

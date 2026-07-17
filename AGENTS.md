@@ -65,15 +65,38 @@ GitHub Releases are **manual only**. Do not expect tags or releases from merging
 
 Cloud agents run headless (no X11 desktop). The following applies:
 
-- Run automated tests (`dotnet test`) instead of GUI desktop tests.
-- Do NOT attempt to launch the Avalonia app or use `xdotool`/`xwininfo` — there is no display.
-- GUI changes must still be manually exercised. If you have made GUI changes, request a desktop session or note that GUI validation was skipped.
+- Prefer **Avalonia.Headless** GUI tests (no real display) for paste-flow / wizard UX smoke. Do **not** require a desktop session for those checks.
+- Run automated tests (`dotnet test`) instead of launching the Avalonia app with `xdotool`/`xwininfo`.
+- Full-build installs, native file pickers, and visual polish still need a desktop session when explicitly required; otherwise note that desktop validation was skipped.
 - The test project path is `src/ModSync.Tests/ModSync.Tests.csproj`.
+
+### Headless Avalonia GUI smoke (no X11)
+
+`HeadlessTestApp` (`src/ModSync.Tests/HeadlessTestApp.cs`) bootstraps `Avalonia.Headless.XUnit` with `UseHeadlessDrawing = true`. Agents should use this path for GUI surface smoke instead of a real desktop:
+
+```bash
+# Preferred wrapper
+./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"
+
+# Or direct
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj \
+  --configuration Debug \
+  --filter "FullyQualifiedName~GuiSmokeHeadlessTests"
+```
+
+Related filters that also exercise Avalonia headless (no display):
+
+- `FullyQualifiedName~WizardFlowHeadlessTests`
+- `FullyQualifiedName~ControlsHeadlessTests`
+- `FullyQualifiedName~MainWindowHeadlessTests`
 
 ### Running tests (Cloud / headless)
 
 ```bash
 # Run all non-long-running tests
+./scripts/agents/run_headless_tests.sh
+
+# Equivalent direct command
 dotnet test src/ModSync.Tests/ModSync.Tests.csproj \
   --filter "FullyQualifiedName!~LongRunning"
 ```
@@ -164,7 +187,8 @@ Typical local desktop flow:
 
 ## GUI testing rules
 
-- Anything GUI-facing must be exercised in a real desktop session, not only headless tests.
+- Prefer Avalonia headless smoke (`GuiSmokeHeadlessTests`, `WizardFlowHeadlessTests`, `ControlsHeadlessTests`) for control presence, events, and layout constraints — no desktop required.
+- Full-build installs, downloads, and visual polish still need a real desktop session when the task explicitly requires them.
 - Prefer CLI preload args over native file-picker interaction.
 - For wizard tests, use the install wizard pages instead of the legacy top-menu flow unless the task explicitly targets the legacy flow.
 - Expand validation logs and capture the exact failure text before changing code.

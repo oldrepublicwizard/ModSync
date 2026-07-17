@@ -129,6 +129,13 @@
                             Content="📄 Load Instruction File"
                             ToolTip.Tip="Load an instruction set into the application." />
                         <Button
+                            x:Name="ImportFromClipboardButton"
+                            Margin="0,0,10,0"
+                            HorizontalAlignment="Left"
+                            Click="ImportFromClipboardButton_Click"
+                            Content="📋 Import from Clipboard"
+                            ToolTip.Tip="Paste an instruction set or mod-build guide from clipboard text (TOML, Markdown, YAML, XML, or JSON). Guide prose is parsed into draft instructions that are flagged for your review." />
+                        <Button
                             x:Name="GettingStartedSettingsButton"
                             HorizontalAlignment="Left"
                             Click="OpenSettings_Click"

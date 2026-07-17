@@ -14,13 +14,16 @@ Source: `InstallationValidationPipeline.cs`, `ValidationPipelineResult.cs`, `Val
 | 2 | **Conflicts** | Dependency and restriction violations in the selected set |
 | 3 | **InstallOrder** | InstallBefore/After and ordering constraints |
 | 4 | **ComponentValidation** | Archives present, per-component archive rules |
-| 5 | **DryRun** | VFS simulation of instruction execution |
+| 5 | **FomodConfiguration** | Fail-closed gate: every detected FOMOD archive on selected mods (+ hard deps) must be `configured` (see [fomod-support.md](fomod-support.md)) |
+| 6 | **DryRun** | VFS simulation of instruction execution |
 
 ## Fail-fast behavior
 
 `[REPO]` When **FullValidation** is enabled and **Environment** fails, the pipeline **stops** — later stages do not run. Same early exit if no components are selected for validation.
 
-If **FullValidation** is off, only component archive checks (and optional dry-run flags) run — environment/conflict/order stages are skipped.
+`[REPO]` **FomodConfiguration** failures are fail-closed for success (`IsSuccess = false`) but do **not** short-circuit later stages — DryRun still runs when requested so agents see both FOMOD and instruction issues in one pass. Install paths (`InstallationService`, `InstallStartPage`) also re-check the gate and block install independently.
+
+If **FullValidation** is off, Environment/Conflicts/InstallOrder are skipped; ComponentValidation, FomodConfiguration (unless skipped), and optional DryRun still run.
 
 ## VFS in DryRun stage
 
@@ -34,8 +37,8 @@ Do not use `RealFileSystemProvider` when answering “what would install do?” 
 
 | Preset | FullValidation | DryRun | DryRunOnly | UseFileSelection | Typical caller |
 |--------|----------------|--------|------------|------------------|----------------|
-| `WizardFull` | yes | yes | no | yes | Install wizard **ValidatePage**; `install` pre-check |
-| `LegacyDryRunOnly` | no | yes | no | yes | Legacy Getting Started validate |
+| `WizardFull` | yes | yes | no | yes | Install wizard **ValidatePage**; legacy Validate; `install` pre-check |
+| `LegacyDryRunOnly` | no | yes | no | yes | Available preset; legacy Getting Started Validate currently uses `WizardFull` |
 | `CliFullWithDryRun` | yes | yes | no | yes | CLI `--full --dry-run --use-file-selection` |
 | `CliDryRunOnly` | no | no | yes | yes | CLI `--dry-run-only` |
 
@@ -45,8 +48,11 @@ Other flags:
 |--------|-----------|
 | `SkipEnvironmentValidation` | Tests, headless fixtures without HoloPatcher |
 | `SkipComponentArchiveValidation` | Graph-only tests |
+| `SkipFomodConfigurationGate` | Tests without FOMOD fixtures |
 | `ErrorsOnly` | `--errors-only` |
 | `UseFileSelection` | `--use-file-selection` (default true in options type; CLI defaults differ — see below) |
+
+`[REPO]` `CountStages` must match stages actually executed: when `SkipEnvironmentValidation`, `SkipComponentArchiveValidation`, or `SkipFomodConfigurationGate` is set, progress `totalSteps` omits those stages (avoids inflated progress denominators in tests and wizard UI).
 
 ## CLI mapping
 
@@ -74,6 +80,8 @@ Without `--full`, validate is lighter (archives + optional dry-run only). See [c
 
 `[REPO]` `install` runs `ValidationPipelineOptions.WizardFull` on **selected** components before installing unless `--skip-validation` is set. `install_best_effort.sh` always skips validation.
 
+`[REPO]` Even when validation is skipped, `InstallationService.InstallAllSelectedComponentsAsync` / `InstallSingleComponentAsync` and wizard `InstallStartPage` still run `FomodConfigurationGate` and refuse to install unconfigured/unreadable FOMOD archives.
+
 ## GUI mapping
 
 | Surface | Pipeline |
@@ -94,7 +102,8 @@ Progress UI: `ValidationProgress`, `StatusText`, `LogExpander`, badge counts on 
 1. Expand validation logs; capture exact stage and message before changing code.
 2. Environment failures → check HoloPatcher symlink ([holopatcher-resources.md](holopatcher-resources.md)) and `--kotorPath` / `--modDirectory`.
 3. ComponentValidation failures → missing archive under `<<modDirectory>>`.
-4. DryRun failures → instruction path or ordering; trace with VFS rules, not live disk.
+4. FomodConfiguration failures → complete FOMOD wizard / `--fomod-choices`, or fix unreadable archives ([fomod-support.md](fomod-support.md)).
+5. DryRun failures → instruction path or ordering; trace with VFS rules, not live disk.
 
 ## Related
 
@@ -102,3 +111,5 @@ Progress UI: `ValidationProgress`, `StatusText`, `LogExpander`, badge counts on 
 - [cli-selection-semantics.md](cli-selection-semantics.md)
 - [core-cli-reference.md](core-cli-reference.md)
 - [agent-action-parity.md](agent-action-parity.md)
+- [fomod-support.md](fomod-support.md)
+- [managed-deployment.md](managed-deployment.md)

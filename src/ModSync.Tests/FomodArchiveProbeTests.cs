@@ -79,7 +79,7 @@ namespace ModSync.Tests
     public sealed class FomodDownloadPromptStateTests
     {
         [Test]
-        public void ShouldPrompt_ReturnsFalseAfterDismissedOrConfigured()
+        public void ShouldPrompt_RePromptsDismissed_ButSkipsWarnedAndConfigured()
         {
             var component = new ModComponent
             {
@@ -99,17 +99,45 @@ namespace ModSync.Tests
             Assert.That(FomodDownloadPromptState.ShouldPrompt(component, "ExampleMod.zip"), Is.True);
 
             FomodDownloadPromptState.MarkDismissed(component, "ExampleMod.zip");
-            Assert.That(FomodDownloadPromptState.ShouldPrompt(component, "ExampleMod.zip"), Is.False);
+            Assert.That(
+                FomodDownloadPromptState.ShouldPrompt(component, "ExampleMod.zip"),
+                Is.True,
+                "Dismissed archives must re-prompt on Fetch Downloads (documented gate recovery).");
 
-            var registry = new Dictionary<string, ResourceMetadata>(component.ResourceRegistry);
-            registry["https://example.test/mod2.zip"] = new ResourceMetadata
+            FomodDownloadPromptState.MarkWarned(component, "ExampleMod.zip");
+            Assert.That(
+                FomodDownloadPromptState.ShouldPrompt(component, "ExampleMod.zip"),
+                Is.False,
+                "Warned archives must not re-spam CLI warn-continue.");
+
+            FomodDownloadPromptState.MarkConfigured(component, "ExampleMod.zip");
+            Assert.That(FomodDownloadPromptState.ShouldPrompt(component, "ExampleMod.zip"), Is.False);
+        }
+
+        [Test]
+        public void MarkConfigured_MatchesNestedRegistryFileNameByBasename()
+        {
+            var component = new ModComponent
             {
-                Files = new Dictionary<string, bool?> { ["OtherMod.zip"] = true },
-                HandlerMetadata = new Dictionary<string, object>(),
+                ResourceRegistry = new Dictionary<string, ResourceMetadata>
+                {
+                    ["https://example.test/mod.zip"] = new ResourceMetadata
+                    {
+                        Files = new Dictionary<string, bool?>
+                        {
+                            ["nested/ExampleMod.7z"] = true,
+                        },
+                        HandlerMetadata = new Dictionary<string, object>(),
+                    },
+                },
             };
-            component.ResourceRegistry = registry;
-            FomodDownloadPromptState.MarkConfigured(component, "OtherMod.zip");
-            Assert.That(FomodDownloadPromptState.ShouldPrompt(component, "OtherMod.zip"), Is.False);
+
+            FomodDownloadPromptState.MarkConfigured(component, "ExampleMod.7z");
+
+            Assert.That(
+                FomodDownloadPromptState.GetStatus(component, "ExampleMod.7z"),
+                Is.EqualTo(FomodDownloadPromptState.StatusConfigured));
+            Assert.That(FomodDownloadPromptState.ShouldPrompt(component, "ExampleMod.7z"), Is.False);
         }
 
         [Test]

@@ -334,5 +334,31 @@ namespace ModSync.Tests
             Assert.That(results[2].Title, Is.EqualTo("❌ Archive Validation"));
             Assert.That(results[2].Message, Is.EqualTo("2 component error(s)"));
         }
+
+        [Test]
+        public void ApplyStages_FomodConfigurationFailure_AddsPrefixedAndSummaryCards()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var fomod = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.FomodConfiguration,
+                Passed = false,
+                Summary = "1 unconfigured FOMOD archive(s).",
+            };
+            fomod.Messages.Add("ERROR: Mod A: FOMOD archive 'x.zip' is not configured.");
+            pipelineResult.Stages.Add(fomod);
+
+            var results = new List<(string Title, string Message)>();
+            WizardValidationStagePresenter.ApplyStages(
+                pipelineResult,
+                selectedModCount: 1,
+                _ => { },
+                (title, message) => results.Add((title, message)));
+
+            Assert.That(results, Has.Count.EqualTo(2));
+            Assert.That(results[0].Title, Is.EqualTo("❌ Mod A"));
+            Assert.That(results[1].Title, Is.EqualTo("❌ FOMOD Configuration"));
+            Assert.That(results[1].Message, Does.Contain("unconfigured FOMOD"));
+        }
     }
 }

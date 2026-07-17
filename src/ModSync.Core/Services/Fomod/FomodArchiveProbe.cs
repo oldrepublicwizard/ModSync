@@ -15,24 +15,48 @@ namespace ModSync.Core.Services.Fomod
     /// </summary>
     public static class FomodArchiveProbe
     {
-        public static bool TryDetectInArchive(
+        /// <summary>
+        /// Inspects an archive on disk. Returns <c>false</c> when the archive cannot be enumerated
+        /// (corrupt, unsupported, missing path). When <c>true</c>, <paramref name="isFomod"/> indicates
+        /// whether a ModuleConfig was found.
+        /// </summary>
+        public static bool TryInspectArchive(
             [NotNull] string archivePath,
-            out string moduleConfigEntryPath)
+            out bool isFomod,
+            out string moduleConfigEntryPath,
+            out string failureMessage)
         {
+            isFomod = false;
             moduleConfigEntryPath = null;
+            failureMessage = null;
 
             if (string.IsNullOrWhiteSpace(archivePath))
             {
+                failureMessage = "Archive path is empty";
                 return false;
             }
 
-            if (!ArchiveHelper.TryGetArchiveEntries(archivePath, out HashSet<string> entries, out _))
+            if (!ArchiveHelper.TryGetArchiveEntries(archivePath, out HashSet<string> entries, out failureMessage))
             {
+                if (string.IsNullOrEmpty(failureMessage))
+                {
+                    failureMessage = "Unable to enumerate archive entries";
+                }
+
                 return false;
             }
 
             moduleConfigEntryPath = FomodDetector.FindModuleConfigPath(entries);
-            return moduleConfigEntryPath != null;
+            isFomod = moduleConfigEntryPath != null;
+            return true;
+        }
+
+        public static bool TryDetectInArchive(
+            [NotNull] string archivePath,
+            out string moduleConfigEntryPath)
+        {
+            return TryInspectArchive(archivePath, out bool isFomod, out moduleConfigEntryPath, out _)
+                   && isFomod;
         }
     }
 }

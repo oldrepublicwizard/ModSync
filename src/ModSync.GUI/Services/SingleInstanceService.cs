@@ -14,7 +14,7 @@ namespace ModSync.Services
     /// <summary>
     /// Named-pipe single-instance coordination. The first ModSync process claims a
     /// per-user pipe name and listens for messages; later processes detect the
-    /// primary and forward their payload (typically an nxm:// URL) over the pipe
+    /// primary and forward their payload (typically an nxm:// or modsync:// URL) over the pipe
     /// instead of starting a second GUI.
     ///
     /// Uses System.IO.Pipes which works on both Windows (real named pipes) and
@@ -254,6 +254,10 @@ namespace ModSync.Services
             if (trimmed.StartsWith("nxm://", StringComparison.OrdinalIgnoreCase))
             {
                 NxmHandoffQueue.Enqueue(trimmed);
+            }
+            else if (trimmed.StartsWith("modsync://", StringComparison.OrdinalIgnoreCase))
+            {
+                ModSyncHandoffQueue.Enqueue(trimmed);
             }
             else if (string.Equals(trimmed, ApplicationLaunchCoordinator.ActivateMessage, StringComparison.Ordinal))
             {

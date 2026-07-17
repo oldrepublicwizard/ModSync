@@ -101,6 +101,29 @@ namespace ModSync.Tests
         }
 
         [Test]
+        public async Task SendToPrimaryAsync_ModSyncMessage_FlowsIntoHandoffQueue()
+        {
+            string pipeName = UniquePipeName();
+            string modSyncUrl = "modsync://install?url=https%3A%2F%2Fexample.com%2Fbuild.toml";
+            using (var received = new ManualResetEventSlim(false))
+            using (var primary = new SingleInstanceService(pipeName))
+            using (var secondary = new SingleInstanceService(pipeName))
+            {
+                _ = ModSyncHandoffQueue.DrainAll();
+                primary.MessageReceived += (sender, message) => received.Set();
+
+                Assert.That(primary.TryBecomePrimary(), Is.True);
+
+                bool sent = await secondary.SendToPrimaryAsync(modSyncUrl);
+
+                Assert.That(sent, Is.True);
+                Assert.That(received.Wait(TimeSpan.FromSeconds(10)), Is.True, "Primary did not receive the forwarded message in time");
+                Assert.That(ModSyncHandoffQueue.TryDequeue(out string queued), Is.True);
+                Assert.That(queued, Is.EqualTo(modSyncUrl));
+            }
+        }
+
+        [Test]
         public async Task SendToPrimaryAsync_NoPrimaryListening_ReturnsFalse()
         {
             using (var orphan = new SingleInstanceService(UniquePipeName()))

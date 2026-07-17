@@ -9,6 +9,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
+using JetBrains.Annotations;
+
+using ModSync.Core.Ports.Updates;
 using ModSync.Core.Services.Download;
 
 namespace ModSync.Core.Services
@@ -28,12 +31,27 @@ namespace ModSync.Core.Services
 
         private readonly NexusApiClient _apiClient;
 
-        public ModUpdateCheckService(NexusApiClient apiClient) => _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        [CanBeNull]
+        private readonly IUpdateCheckResultStore _resultStore;
+
+        public ModUpdateCheckService(NexusApiClient apiClient)
+            : this(apiClient, resultStore: null)
+        {
+        }
+
+        public ModUpdateCheckService(
+            [NotNull] NexusApiClient apiClient,
+            [CanBeNull] IUpdateCheckResultStore resultStore)
+        {
+            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+            _resultStore = resultStore;
+        }
 
         /// <summary>
         /// Checks every Nexus Mods resource in the given components for updates.
         /// Mod info is fetched once per unique (gameDomain, modId) pair across all
         /// components. Stops early when the API rate-limit budget is exhausted.
+        /// When a result store was provided, the summary is persisted after the run.
         /// </summary>
         public async Task<ModUpdateCheckResult> CheckForUpdatesAsync(
             IEnumerable<ModComponent> components,
@@ -89,6 +107,7 @@ namespace ModSync.Core.Services
                         {
                             result.RateLimitReached = true;
                             await Logger.LogWarningAsync("[ModUpdateCheck] Nexus API rate limit exhausted; stopping update check early.").ConfigureAwait(false);
+                            PersistResult(result);
                             return result;
                         }
 
@@ -120,7 +139,25 @@ namespace ModSync.Core.Services
                 }
             }
 
+            PersistResult(result);
             return result;
+        }
+
+        private void PersistResult([NotNull] ModUpdateCheckResult result)
+        {
+            if (_resultStore is null)
+            {
+                return;
+            }
+
+            try
+            {
+                _resultStore.Save(result);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"[ModUpdateCheck] Failed to persist update-check results: {ex.Message}");
+            }
         }
 
         private static void ApplyCheckResult(
@@ -130,20 +167,27 @@ namespace ModSync.Core.Services
             NexusModInfo modInfo,
             ModUpdateCheckResult result)
         {
+            string apiVersion = modInfo.Version?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(apiVersion))
+            {
+                // Indeterminate API response — preserve existing metadata and badge state.
+                return;
+            }
+
             metadata.LastUpdateCheck = DateTime.UtcNow;
-            metadata.LatestKnownVersion = modInfo.Version;
+            metadata.LatestKnownVersion = apiVersion;
             result.CheckedCount++;
 
             if (string.IsNullOrWhiteSpace(metadata.ModVersion))
             {
                 // First check: adopt the provider-reported version as the baseline.
-                metadata.ModVersion = modInfo.Version;
+                metadata.ModVersion = apiVersion;
                 metadata.UpdateAvailable = false;
                 return;
             }
 
-            bool updateAvailable = !string.IsNullOrWhiteSpace(modInfo.Version)
-                && !string.Equals(metadata.ModVersion, modInfo.Version, StringComparison.OrdinalIgnoreCase);
+            string installedVersion = metadata.ModVersion.Trim();
+            bool updateAvailable = !string.Equals(installedVersion, apiVersion, StringComparison.OrdinalIgnoreCase);
             metadata.UpdateAvailable = updateAvailable;
 
             if (updateAvailable)
@@ -152,8 +196,8 @@ namespace ModSync.Core.Services
                 {
                     ComponentName = component.Name,
                     Url = url,
-                    InstalledVersion = metadata.ModVersion,
-                    LatestVersion = modInfo.Version,
+                    InstalledVersion = installedVersion,
+                    LatestVersion = apiVersion,
                 });
             }
         }
