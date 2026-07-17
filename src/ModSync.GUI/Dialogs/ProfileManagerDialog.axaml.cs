@@ -14,6 +14,7 @@ using Avalonia.Threading;
 using JetBrains.Annotations;
 
 using ModSync.Core;
+using ModSync.Core.Ports.Profiles;
 using ModSync.Core.Services.Profiles;
 using ModSync.Services;
 
@@ -22,7 +23,7 @@ namespace ModSync.Dialogs
     public partial class ProfileManagerDialog : Window
     {
         [NotNull]
-        private readonly ProfileService _profileService;
+        private readonly IProfileStore _profileService;
 
         public ProfileManagerDialog()
         {

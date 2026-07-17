@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 using JetBrains.Annotations;
 
+using ModSync.Core.Ports.Conflicts;
 using ModSync.Core.Services.FileSystem;
 
 namespace ModSync.Core.Services.Conflicts
@@ -27,7 +28,7 @@ namespace ModSync.Core.Services.Conflicts
     /// <c>&lt;&lt;modDirectory&gt;&gt;</c>) are intermediate state, not user-facing conflicts.
     /// Path comparison is case-insensitive, matching the VFS and KOTOR's pathing expectations.
     /// </remarks>
-    public sealed class FileConflictAnalyzer
+    public sealed class FileConflictAnalyzer : IConflictAnalyzer
     {
         /// <summary>
         /// Simulates the selected components in the given install order and reports every

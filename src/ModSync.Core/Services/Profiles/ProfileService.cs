@@ -9,6 +9,8 @@ using System.Linq;
 
 using JetBrains.Annotations;
 
+using ModSync.Core.Ports.Profiles;
+
 using Newtonsoft.Json;
 
 namespace ModSync.Core.Services.Profiles
@@ -27,7 +29,7 @@ namespace ModSync.Core.Services.Profiles
     /// minimal-blast-radius by design.
     /// </para>
     /// </summary>
-    public sealed class ProfileService
+    public sealed class ProfileService : IProfileStore
     {
         private const string ProfilesSubdirectory = "profiles";
         private const string ProfileFileExtension = ".json";

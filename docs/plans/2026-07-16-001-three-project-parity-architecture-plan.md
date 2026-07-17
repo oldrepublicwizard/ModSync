@@ -316,3 +316,21 @@ After U2+: add `ManagedInstallSession` / validation parity filters per plan
   afterthought bolted onto managed deploy.
 - STRATEGY vision tracks (guide, share link, multi-author) stay compatible with
   the same ports rather than parallel stacks.
+
+## 10. Landed on `feat/three-project-parity-foundation` (2026-07-16)
+
+U1 seams + highest-ROI slices behind those ports (no classic-install behavior change):
+
+| Seam | Location | Notes |
+|------|----------|-------|
+| `IDownloadProviderRegistry` | `Ports/Download/` | Implemented by `DownloadManager`; `DownloadHandlerFactory.CreateProviderRegistry()` |
+| `IInstallBackend` + selector | `Ports/Installation/` | Classic default; managed wraps `DeploymentService` |
+| `IProtocolHandler` + registry | `Ports/Protocol/` | `NxmProtocolHandler` + `ModSyncProtocolHandler`; `ModSyncUrl` in Core |
+| `IProfileStore` | `Ports/Profiles/` | Implemented by `ProfileService`; GUI dialog typed to port |
+| `IGuideIngestService` / `IGuideEmitService` | `Ports/Guides/` | Serialization + `DraftInstructionService` |
+| `IConflictAnalyzer` | `Ports/Conflicts/` | Implemented by `FileConflictAnalyzer` |
+| `IUpdateCheckResultStore` | `Ports/Updates/` | JSON snapshot; wired from Nexus update menu action |
+
+Tests: `ParityPortsTests`, `ModSyncUrlTests`.
+
+**Still deferred (see §5):** U2–U6 (#168 managed install session), U7 (#170), U8 OS registration / MainWindow consume, endorsement UI, managed VFS dry-run, publish/share.

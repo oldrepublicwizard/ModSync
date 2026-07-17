@@ -45,9 +45,11 @@ Architecture blueprint (Vortex + MO2 + HoloPatcher, ports/adapters, U1–U10):
 
 ### Next
 
-1. Merge managed deployment install wiring (#168) when ready.
-2. Migrate `NexusModsDownloadHandler` to `NexusApiClient` when download handler branch is stable.
-3. Managed deployment P2: dry-run/VFS staging parity or document install-only validation.
+1. Use Core ports from new GUI/CLI work (`docs/plans/2026-07-16-001-three-project-parity-architecture-plan.md`).
+2. Merge managed deployment install wiring (#168) when ready — wire through `IInstallBackend` / selector.
+3. Migrate `NexusModsDownloadHandler` to `NexusApiClient` when download handler branch is stable.
+4. Managed deployment P2: dry-run/VFS staging parity or document install-only validation.
+5. `modsync://` OS registration + MainWindow consume (protocol parse port already on `feat/three-project-parity-foundation`).
 
 ## Superseded
 

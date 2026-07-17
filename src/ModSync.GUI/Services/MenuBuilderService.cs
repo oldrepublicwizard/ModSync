@@ -15,7 +15,10 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 
+using System.IO;
+
 using ModSync.Core;
+using ModSync.Core.Ports.Updates;
 using ModSync.Core.Utility;
 using ModSync.Core.Services;
 using ModSync.Core.Services.Download;
@@ -400,7 +403,11 @@ namespace ModSync.Services
             using (var httpClient = new HttpClient())
             {
                 var apiClient = new NexusApiClient(httpClient, MainConfig.NexusModsApiKey);
-                var updateService = new ModUpdateCheckService(apiClient);
+                string settingsDirectory = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "ModSync");
+                IUpdateCheckResultStore resultStore = new JsonUpdateCheckResultStore(settingsDirectory);
+                var updateService = new ModUpdateCheckService(apiClient, resultStore);
                 ModUpdateCheckResult result = await updateService.CheckForUpdatesAsync(mods).ConfigureAwait(true);
 
                 foreach (ModComponent component in mods)
