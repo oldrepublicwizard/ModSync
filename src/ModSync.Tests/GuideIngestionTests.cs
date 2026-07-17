@@ -591,30 +591,20 @@ ___
             Directory.CreateDirectory(modDir);
             File.WriteAllText(Path.Combine(modDir, "153sion.dlg"), "silent sion dlg");
 
-            GuideIngestResult ingested = GuideIngestService.Instance.IngestFromText(
-                File.ReadAllText(fixturePath),
-                formatHint: "markdown",
-                parseDirections: true);
+            string ingestedToml = Path.Combine(_testDirectory, "k2_full_ingested.toml");
+            int convertExit = ModBuildConverter.Run(new[]
+            {
+                "convert",
+                "--input", fixturePath,
+                "-f", "toml",
+                "--parse-directions",
+                "-o", ingestedToml,
+                "--plaintext",
+            });
 
-            ModComponent silentSion = ingested.Components.FirstOrDefault(c =>
-                c.Name.IndexOf("Silent Sion", StringComparison.OrdinalIgnoreCase) >= 0);
-            Assert.That(silentSion, Is.Not.Null, "Fixture should contain Silent Sion Restoration");
-            Assert.That(silentSion.Instructions, Is.Not.Empty, "Silent Sion should have drafted Move instructions");
-            Assert.That(
-                silentSion.Instructions.Any(i => i.Action == Instruction.ActionType.Move),
-                Is.True,
-                "Silent Sion draft should include a Move instruction");
+            Assert.That(convertExit, Is.EqualTo(0), "convert --parse-directions should succeed for K2 Full fixture");
 
-            // Install a single ingested component (dependency auto-select would pull the full build otherwise).
-            silentSion.IsSelected = true;
-            silentSion.Dependencies.Clear();
-
-            string ingestedToml = Path.Combine(_testDirectory, "k2_silent_sion.toml");
-            File.WriteAllText(
-                ingestedToml,
-                ModComponentSerializationService.SerializeModComponentAsString(
-                    new List<ModComponent> { silentSion },
-                    "TOML"));
+            StripDependenciesForInstallSmoke(ingestedToml, "Silent Sion Restoration");
 
             int installExit = ModBuildConverter.Run(new[]
             {
@@ -622,8 +612,9 @@ ___
                 "--input", ingestedToml,
                 "--game-dir", kotorDir,
                 "--source-dir", modDir,
-                "--use-file-selection",
+                "--select", "mod:Silent Sion Restoration",
                 "--skip-validation",
+                "--best-effort",
                 "-y",
             });
 
@@ -634,6 +625,63 @@ ___
                 Assert.That(installExit, Is.EqualTo(0), "CLI install should succeed for ingested Silent Sion draft");
                 Assert.That(File.Exists(installedDlg), Is.True, "Move draft should place 153sion.dlg in Override");
                 Assert.That(File.ReadAllText(installedDlg), Is.EqualTo("silent sion dlg"));
+            });
+        }
+
+        [Test]
+        public void K2FullGuideFixture_IngestedMultiModInstallSmoke_InstallsViaModSelect()
+        {
+            string fixturePath = Path.Combine(ResolveRepoRoot(), "src", "ModSync.Tests", "Fixtures", "k2_full_guide.md");
+            Assert.That(File.Exists(fixturePath), Is.True);
+
+            string kotorDir = Path.Combine(_testDirectory, "KOTOR");
+            string modDir = Path.Combine(_testDirectory, "Mods");
+            Directory.CreateDirectory(Path.Combine(kotorDir, "Override"));
+            File.WriteAllText(Path.Combine(kotorDir, "swkotor.exe"), "fake exe");
+            File.WriteAllText(Path.Combine(kotorDir, "dialog.tlk"), "fake dialog");
+            Directory.CreateDirectory(modDir);
+            File.WriteAllText(Path.Combine(modDir, "153sion.dlg"), "silent sion dlg");
+
+            string prestigeFolder = Path.Combine(modDir, "Jedi Master", "Sith Lord fixes");
+            Directory.CreateDirectory(prestigeFolder);
+            File.WriteAllText(Path.Combine(prestigeFolder, "prestige_fix.2da"), "2DA V2.0\n");
+
+            string ingestedToml = Path.Combine(_testDirectory, "k2_full_ingested.toml");
+            int convertExit = ModBuildConverter.Run(new[]
+            {
+                "convert",
+                "--input", fixturePath,
+                "-f", "toml",
+                "--parse-directions",
+                "-o", ingestedToml,
+                "--plaintext",
+            });
+
+            Assert.That(convertExit, Is.EqualTo(0));
+
+            StripDependenciesForInstallSmoke(
+                ingestedToml,
+                "Silent Sion Restoration",
+                "Prestige Class Saving Throw Fixes");
+
+            int installExit = ModBuildConverter.Run(new[]
+            {
+                "install",
+                "--input", ingestedToml,
+                "--game-dir", kotorDir,
+                "--source-dir", modDir,
+                "--select", "mod:Silent Sion Restoration",
+                "--select", "mod:Prestige Class Saving Throw Fixes",
+                "--skip-validation",
+                "--best-effort",
+                "-y",
+            });
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(installExit, Is.EqualTo(0));
+                Assert.That(File.Exists(Path.Combine(kotorDir, "Override", "153sion.dlg")), Is.True);
+                Assert.That(File.Exists(Path.Combine(kotorDir, "Override", "prestige_fix.2da")), Is.True);
             });
         }
 
@@ -1130,6 +1178,47 @@ Name = ""Paste Cascade Toml Mod""
             }
 
             throw new DirectoryNotFoundException("Could not locate repository root containing ModSync.sln");
+        }
+
+        /// <summary>
+        /// Install-smoke tests select individual mods via <c>mod:</c> filters; strip dependency edges
+        /// on those mods so the test exercises draft execution without staging the full build graph.
+        /// </summary>
+        private static void StripDependenciesForInstallSmoke(string tomlPath, params string[] modNameFragments)
+        {
+            if (modNameFragments is null || modNameFragments.Length == 0)
+            {
+                throw new ArgumentException("At least one mod name fragment is required.", nameof(modNameFragments));
+            }
+
+            List<ModComponent> components = FileLoadingService.LoadFromFile(tomlPath).ToList();
+            bool changed = false;
+
+            foreach (ModComponent component in components)
+            {
+                if (!modNameFragments.Any(fragment =>
+                        component.Name.IndexOf(fragment, StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    continue;
+                }
+
+                if (component.Dependencies.Count > 0)
+                {
+                    component.Dependencies.Clear();
+                    changed = true;
+                }
+
+                if (component.Restrictions.Count > 0)
+                {
+                    component.Restrictions.Clear();
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                FileLoadingService.SaveToFile(components, tomlPath);
+            }
         }
     }
 }

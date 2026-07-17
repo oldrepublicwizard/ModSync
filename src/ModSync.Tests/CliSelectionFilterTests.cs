@@ -49,6 +49,30 @@ namespace ModSync.Tests
         }
 
         [Test]
+        public void ApplySelectionFilters_TwoModNameFilters_SelectsBothComponents()
+        {
+            var components = new List<ModComponent>
+            {
+                CreateComponent("Silent Sion Restoration", "Immersion", "2 - Recommended"),
+                CreateComponent("Prestige Class Saving Throw Fixes", "Mechanics Change", "2 - Recommended"),
+                CreateComponent("K2 Community Patch", "Bugfix", "1 - Essential"),
+            };
+
+            ModBuildConverter.ApplySelectionFilters(components, new[]
+            {
+                "mod:Silent Sion Restoration",
+                "mod:Prestige Class Saving Throw Fixes",
+            });
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(components.Count(c => c.IsSelected), Is.EqualTo(2));
+                Assert.That(components.Where(c => c.IsSelected).Select(c => c.Name),
+                    Is.EquivalentTo(new[] { "Silent Sion Restoration", "Prestige Class Saving Throw Fixes" }));
+            });
+        }
+
+        [Test]
         public void ApplySelectionFilters_CategoryStillWorksAlongsideModName()
         {
             var components = new List<ModComponent>

@@ -16,7 +16,7 @@ Only components already marked `IsSelected = true` in the file are installed. Us
 
 ## `install` with `--select`
 
-Repeatable filters: `category:Name`, `tier:Name`, `mod:Name` (case-insensitive exact or substring match on component `Name`). Only matching components stay selected. Filters combine with AND semantics when multiple types are used together.
+Repeatable filters: `category:Name`, `tier:Name`, `mod:Name` (case-insensitive exact or substring match on component `Name`). Only matching components stay selected. Filters combine with AND semantics when multiple types are used together. Repeat `--select` for multiple mod names (e.g. `--select mod:A --select mod:B`).
 
 ## `validate` without `--select` (default)
 

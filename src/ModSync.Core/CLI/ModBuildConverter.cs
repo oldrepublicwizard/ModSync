@@ -698,7 +698,11 @@ namespace ModSync.Core.CLI
 
             Logger.Initialize();
 
-            var parser = new Parser(with => with.HelpWriter = Console.Out);
+            var parser = new Parser(with =>
+            {
+                with.HelpWriter = Console.Out;
+                with.AllowMultiInstance = true;
+            });
 
             return parser.ParseArguments<ConvertOptions, MergeOptions, ValidateOptions, InstallOptions, SetNexusApiKeyOptions, InstallPythonDepsOptions, HolopatcherOptions>(args)
             .MapResult(
