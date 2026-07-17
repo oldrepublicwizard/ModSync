@@ -6,6 +6,10 @@ GitHub Releases are **not** created automatically on push to `master`. Use the w
 
 Latest GitHub release: **v2.0.0a1** (pre-release). Version files in the repo should stay aligned at `2.0.0a1` until the next intentional release.
 
+## Before you publish
+
+Run the quadruple-check gate in [docs/plans/2026-07-13-005-release-readiness-checklist.md](plans/2026-07-13-005-release-readiness-checklist.md) (build, tests, headless GUI smoke, FOMOD gate, paste ingestion, CLI, docs, strategy tracks). Do not set `create_github_release=true` until that checklist is green.
+
 ## 3-step flow
 
 ### 1. Merge feature work to `master`
@@ -38,6 +42,7 @@ Review and merge that PR when the version bump is correct.
 
 - Confirm the release on GitHub: `gh release list`
 - Confirm in-app version matches manifest: `dotnet test --filter FullyQualifiedName~ReleaseVersionAlignment`
+- Re-confirm the [release readiness checklist](plans/2026-07-13-005-release-readiness-checklist.md) still passes against the tagged artifacts when practical
 
 ## What changed (why releases stopped auto-firing)
 

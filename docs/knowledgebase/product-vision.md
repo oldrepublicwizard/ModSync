@@ -30,7 +30,7 @@ Row numbers map each capability from [The full vision](#the-full-vision) above; 
 | 1a. Guide import (markdown → components) | **Shipped.** `MarkdownParser` parses Deadly Stream-style guides into components, prose preserved in `Directions`; verified round-trippable | `[REPO]` `src/ModSync.Core/Parsing/MarkdownParser.cs`, `DocumentationRoundTripTests` |
 | 1b. Paste-a-guide ingestion | **Shipped.** Getting Started **Import from Clipboard** + `FileLoadingService.ImportFromTextAsync`; CLI `convert --stdin` | `[REPO]` [guide-ingestion.md](guide-ingestion.md), `GuideIngestionTests`, `GuiSmokeHeadlessTests` |
 | 1c. Prose → executable instructions | **Shipped.** `DraftInstructionService` wires `NaturalLanguageInstructionParser`; drafts review-flagged, never auto-trusted | `[REPO]` `DraftInstructionService.cs`, `convert --parse-directions`, [guide-ingestion.md](guide-ingestion.md) |
-| 2. "Install with ModSync" entry points | **Partial.** `nxm://` shipped; `modsync://` Phase 1 (parse + CLI + handoff queue) shipped; OS registration + MainWindow consume open | `[REPO]` [modsync-protocol-handler.md](modsync-protocol-handler.md); [brainstorm](../brainstorms/2026-07-13-modsync-protocol-requirements.md) |
+| 2. "Install with ModSync" entry points | **Partial.** `nxm://` shipped; `modsync://` Phase 1 (parse + CLI + handoff) shipped; OS registration + MainWindow consume in flight on PR #176 | `[REPO]` [modsync-protocol-handler.md](modsync-protocol-handler.md); [brainstorm](../brainstorms/2026-07-13-modsync-protocol-requirements.md) |
 | 3. Guide emission (components → guide) | **Shipped.** `GenerateModDocumentation` in `ModComponentSerializationService` | `[REPO]` `src/ModSync.Core/Services/ModComponentSerializationService.cs` |
 | 4. Multi-author builds | **Partial.** Merge tooling (`merge` CLI) and install profiles exist; publish/share flows do not | `[REPO]` merge/profiles; [plan stub](../plans/2026-07-13-003-feat-multi-author-publish-share-plan.md) |
 
@@ -40,7 +40,7 @@ Row numbers map each capability from [The full vision](#the-full-vision) above; 
 
 - Strategy and tracks: [`STRATEGY.md`](../../STRATEGY.md) (repo root)
 - Guide paste (done): [docs/brainstorms/2026-07-13-guide-paste-ingestion-requirements.md](../brainstorms/2026-07-13-guide-paste-ingestion-requirements.md), [plan 001](../plans/2026-07-13-001-feat-guide-paste-ingestion-plan.md)
-- `modsync://` Phase 2 (open): [brainstorm](../brainstorms/2026-07-13-modsync-protocol-requirements.md), [plan 002](../plans/2026-07-13-002-feat-modsync-protocol-os-registration-plan.md)
+- `modsync://` Phase 2 (open): [brainstorm](../brainstorms/2026-07-13-modsync-protocol-requirements.md), [plan 006](../plans/2026-07-13-006-feat-modsync-protocol-os-registration-plan.md)
 - Multi-author publish/share (open): [plan stub 003](../plans/2026-07-13-003-feat-multi-author-publish-share-plan.md)
 - Release readiness quadruple-check: [plan 005](../plans/2026-07-13-005-release-readiness-checklist.md)
 

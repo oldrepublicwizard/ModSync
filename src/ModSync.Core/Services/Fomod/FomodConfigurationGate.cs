@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using JetBrains.Annotations;
 
@@ -23,6 +22,13 @@ namespace ModSync.Core.Services.Fomod
             + "or re-run CLI download with --fomod-choices / MODSYNC_FOMOD_CHOICES "
             + "(interactive TTY configure also works).";
 
+        public const string MissingInstructionsHint =
+            "Status is configured but no archive-scoped install instructions were found. "
+            + "Re-run Configure FOMOD (or Fetch Downloads) so wizard output is merged into the mod.";
+
+        public const string MissingArchiveHint =
+            "Re-download the archive (Fetch Downloads), then configure the FOMOD installer before validate/install.";
+
         public sealed class GateIssue
         {
             [NotNull]
@@ -40,8 +46,26 @@ namespace ModSync.Core.Services.Fomod
             /// </summary>
             public bool ArchiveUnreadable { get; set; }
 
+            /// <summary>
+            /// True when a registered archive with prior FOMOD prompt state is missing on disk.
+            /// Fail-closed: avoids skipping the gate via GetPaths existence filter.
+            /// </summary>
+            public bool ArchiveMissing { get; set; }
+
             [CanBeNull]
             public string InspectionFailureMessage { get; set; }
+        }
+
+        public sealed class GateWarning
+        {
+            [NotNull]
+            public ModComponent Component { get; set; }
+
+            [NotNull]
+            public string ArchiveFileName { get; set; }
+
+            [NotNull]
+            public string Message { get; set; }
         }
 
         public sealed class GateResult
@@ -50,6 +74,12 @@ namespace ModSync.Core.Services.Fomod
 
             [NotNull]
             public List<GateIssue> Issues { get; } = new List<GateIssue>();
+
+            /// <summary>
+            /// Soft findings that do not fail the gate (e.g. configured without archive-scoped instructions).
+            /// </summary>
+            [NotNull]
+            public List<GateWarning> Warnings { get; } = new List<GateWarning>();
         }
 
         [NotNull]
@@ -78,11 +108,43 @@ namespace ModSync.Core.Services.Fomod
 
             foreach (ModComponent component in scope)
             {
-                foreach (string archivePath in FomodDownloadedArchivePaths.GetPaths(component, modDirectory))
+                foreach (FomodDownloadedArchivePaths.RegisteredArchive entry in
+                         FomodDownloadedArchivePaths.EnumerateRegisteredArchives(component, modDirectory))
                 {
-                    string archiveFileName = System.IO.Path.GetFileName(archivePath);
+                    string archiveFileName = System.IO.Path.GetFileName(entry.RegisteredName);
+                    string status = FomodDownloadPromptState.GetStatus(component, archiveFileName);
+
+                    if (!entry.ExistsOnDisk)
+                    {
+                        // R3: prior FOMOD prompt state proves this archive mattered — fail closed when missing.
+                        // Without prompt state we only soft-warn (component archive validation covers generic misses).
+                        if (!string.IsNullOrEmpty(status))
+                        {
+                            result.Issues.Add(new GateIssue
+                            {
+                                Component = component,
+                                ArchiveFileName = archiveFileName,
+                                PromptStatus = status,
+                                ArchiveMissing = true,
+                            });
+                        }
+                        else
+                        {
+                            result.Warnings.Add(new GateWarning
+                            {
+                                Component = component,
+                                ArchiveFileName = archiveFileName,
+                                Message =
+                                    $"Registered archive '{archiveFileName}' is not on disk under the mod directory. "
+                                    + MissingArchiveHint,
+                            });
+                        }
+
+                        continue;
+                    }
+
                     if (!FomodArchiveProbe.TryInspectArchive(
-                            archivePath,
+                            entry.FullPath,
                             out bool isFomod,
                             out _,
                             out string inspectionFailure))
@@ -104,9 +166,22 @@ namespace ModSync.Core.Services.Fomod
                         continue;
                     }
 
-                    string status = FomodDownloadPromptState.GetStatus(component, archiveFileName);
                     if (string.Equals(status, FomodDownloadPromptState.StatusConfigured, StringComparison.Ordinal))
                     {
+                        // R1: soft check — configured status without archive-scoped instructions.
+                        if (!FomodConfiguredComponentMerger.HasArchiveScopedInstructions(component, archiveFileName))
+                        {
+                            result.Warnings.Add(new GateWarning
+                            {
+                                Component = component,
+                                ArchiveFileName = archiveFileName,
+                                Message =
+                                    $"FOMOD archive '{archiveFileName}' is marked configured but has no "
+                                    + "matching archive-scoped instructions. "
+                                    + MissingInstructionsHint,
+                            });
+                        }
+
                         continue;
                     }
 
@@ -191,6 +266,14 @@ namespace ModSync.Core.Services.Fomod
                 throw new ArgumentNullException(nameof(issue));
             }
 
+            if (issue.ArchiveMissing)
+            {
+                string statusLabel = string.IsNullOrEmpty(issue.PromptStatus)
+                    ? "known FOMOD archive"
+                    : $"FOMOD archive (status '{issue.PromptStatus}')";
+                return $"Registered {statusLabel} '{issue.ArchiveFileName}' is missing on disk. {MissingArchiveHint}";
+            }
+
             if (issue.ArchiveUnreadable)
             {
                 string detail = string.IsNullOrEmpty(issue.InspectionFailureMessage)
@@ -199,11 +282,11 @@ namespace ModSync.Core.Services.Fomod
                 return $"Archive '{issue.ArchiveFileName}' {detail}; treat as unconfigured FOMOD until it can be read. {RecoveryHint}";
             }
 
-            string statusLabel = string.IsNullOrEmpty(issue.PromptStatus)
+            string statusText = string.IsNullOrEmpty(issue.PromptStatus)
                 ? "not configured"
                 : $"status '{issue.PromptStatus}'";
 
-            return $"FOMOD archive '{issue.ArchiveFileName}' is {statusLabel}. {RecoveryHint}";
+            return $"FOMOD archive '{issue.ArchiveFileName}' is {statusText}. {RecoveryHint}";
         }
     }
 }

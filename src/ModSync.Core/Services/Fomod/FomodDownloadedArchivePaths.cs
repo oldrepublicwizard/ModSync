@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 using JetBrains.Annotations;
 
@@ -15,11 +14,57 @@ namespace ModSync.Core.Services.Fomod
 {
     public static class FomodDownloadedArchivePaths
     {
+        /// <summary>
+        /// Registered archive entry under a component's resource registry.
+        /// </summary>
+        public sealed class RegisteredArchive
+        {
+            /// <summary>Relative registry key (may include nested folders).</summary>
+            [NotNull]
+            public string RegisteredName { get; set; }
+
+            /// <summary>Absolute path under the mod directory.</summary>
+            [NotNull]
+            public string FullPath { get; set; }
+
+            public bool ExistsOnDisk { get; set; }
+        }
+
+        /// <summary>
+        /// Yields on-disk archive paths only (existing files). Used by post-download prompting.
+        /// </summary>
         [ItemNotNull]
         public static IEnumerable<string> GetPaths(
             [NotNull] ModComponent component,
             [NotNull] string modDirectory)
         {
+            foreach (RegisteredArchive entry in EnumerateRegisteredArchives(component, modDirectory))
+            {
+                if (entry.ExistsOnDisk)
+                {
+                    yield return entry.FullPath;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Enumerates every registered archive-like file for a component, including missing on-disk paths.
+        /// </summary>
+        [ItemNotNull]
+        public static IEnumerable<RegisteredArchive> EnumerateRegisteredArchives(
+            [NotNull] ModComponent component,
+            [NotNull] string modDirectory)
+        {
+            if (component is null)
+            {
+                throw new ArgumentNullException(nameof(component));
+            }
+
+            if (string.IsNullOrWhiteSpace(modDirectory))
+            {
+                throw new ArgumentException("Mod directory is required.", nameof(modDirectory));
+            }
+
             if (component.ResourceRegistry is null || component.ResourceRegistry.Count == 0)
             {
                 yield break;
@@ -40,13 +85,18 @@ namespace ModSync.Core.Services.Fomod
                         continue;
                     }
 
-                    string filePath = Path.Combine(modDirectory, fileName);
-                    if (!File.Exists(filePath) || !ArchiveHelper.IsArchive(filePath))
+                    if (!ArchiveHelper.IsArchive(fileName))
                     {
                         continue;
                     }
 
-                    yield return filePath;
+                    string filePath = Path.Combine(modDirectory, fileName);
+                    yield return new RegisteredArchive
+                    {
+                        RegisteredName = fileName,
+                        FullPath = filePath,
+                        ExistsOnDisk = File.Exists(filePath),
+                    };
                 }
             }
         }

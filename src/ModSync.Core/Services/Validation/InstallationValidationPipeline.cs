@@ -454,9 +454,16 @@ namespace ModSync.Core.Services.Validation
                 componentsToValidate,
                 modDirectory);
 
+            foreach (FomodConfigurationGate.GateWarning warning in gateResult.Warnings)
+            {
+                stage.Messages.Add($"WARNING: {warning.Component.Name}: {warning.Message}");
+            }
+
             if (gateResult.Passed)
             {
-                stage.Summary = "All detected FOMOD archives are configured.";
+                stage.Summary = gateResult.Warnings.Count == 0
+                    ? "All detected FOMOD archives are configured."
+                    : $"All detected FOMOD archives are configured ({gateResult.Warnings.Count} warning(s)).";
                 return stage;
             }
 

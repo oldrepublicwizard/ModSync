@@ -11,32 +11,23 @@ namespace ModSync.Tests
     public class ApplicationLaunchCoordinatorTests
     {
         [Test]
-        public void DecideSecondaryAction_WithNxmUrl_ForwardsNxm()
+        public void DecideSecondaryAction_WithProtocolUrl_ForwardsProtocolUrl()
         {
-            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(
-                hasNxmUrl: true,
-                allowMultipleInstances: false);
-
-            Assert.That(action, Is.EqualTo(SecondaryLaunchAction.ForwardNxmAndExit));
+            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(true, false);
+            Assert.That(action, Is.EqualTo(SecondaryLaunchAction.ForwardProtocolUrlAndExit));
         }
 
         [Test]
-        public void DecideSecondaryAction_WithoutNxmUrl_ForwardsActivate()
+        public void DecideSecondaryAction_WithoutProtocolUrl_ForwardsActivate()
         {
-            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(
-                hasNxmUrl: false,
-                allowMultipleInstances: false);
-
+            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(false, false);
             Assert.That(action, Is.EqualTo(SecondaryLaunchAction.ForwardActivateAndExit));
         }
 
         [Test]
         public void DecideSecondaryAction_AllowMultiple_StartsNewInstance()
         {
-            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(
-                hasNxmUrl: false,
-                allowMultipleInstances: true);
-
+            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(false, true);
             Assert.That(action, Is.EqualTo(SecondaryLaunchAction.StartNewInstance));
         }
     }

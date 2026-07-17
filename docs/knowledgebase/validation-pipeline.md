@@ -52,6 +52,8 @@ Other flags:
 | `ErrorsOnly` | `--errors-only` |
 | `UseFileSelection` | `--use-file-selection` (default true in options type; CLI defaults differ — see below) |
 
+`[REPO]` `CountStages` must match stages actually executed: when `SkipEnvironmentValidation`, `SkipComponentArchiveValidation`, or `SkipFomodConfigurationGate` is set, progress `totalSteps` omits those stages (avoids inflated progress denominators in tests and wizard UI).
+
 ## CLI mapping
 
 Wizard-equivalent validate:

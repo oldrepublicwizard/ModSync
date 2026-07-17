@@ -99,8 +99,6 @@
                             <TextBlock
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                FontSize="10"
-                                FontWeight="Medium"
                                 Text="Update"
                                 TextTrimming="CharacterEllipsis" />
                         </Border>

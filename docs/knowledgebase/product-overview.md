@@ -26,6 +26,8 @@ KOTOR modding often requires dozens of repetitive, order-sensitive steps per mod
 |----------|-------------|------------|
 | **Install wizard** | Load instruction file → select mods → download → validate → install | Desktop GUI + preload args; see [install-lifecycle.md](install-lifecycle.md) and [local desktop runbook](../local_desktop_agent_runbook.md) |
 | **Legacy Getting Started** | Top-level tab: set directories, fetch downloads, validate | Same desktop session; parallel to wizard |
+| **Paste / guide import** | Paste clipboard TOML/Markdown/YAML/XML/JSON; draft instructions from guide prose | GUI `ImportFromClipboardButton`; CLI `convert --stdin` / `--parse-directions`; see [product-vision.md](product-vision.md) |
+| **Headless GUI smoke** | Avalonia.Headless UX smoke (paste button, page-0 layout, validate log splitter) — no X11 | `./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"` |
 | **Headless validate** | Run unified validation pipeline on a TOML | `scripts/agents/cli_validate.sh` → Core `validate` |
 | **Headless install** | Install selected (or all) components | Core `install`; see [cli-selection-semantics.md](cli-selection-semantics.md) |
 | **Full-build testing** | `KOTOR1_Full.toml` / `KOTOR2_Full.toml` from `./mod-builds` | GUI full-build flow or `install_best_effort.sh` (long-running) |
@@ -70,6 +72,7 @@ KOTOR modding often requires dozens of repetitive, order-sensitive steps per mod
 ## Related
 
 - [product-vision.md](product-vision.md) — origin, full vision, and vision-vs-current-state gaps
+- [Release readiness checklist](../plans/2026-07-13-005-release-readiness-checklist.md) — quadruple-check before publish
 - [instruction-format.md](instruction-format.md) — authoring instruction files
 - [mod-component-model.md](mod-component-model.md) — component fields and selection
 - [validation-pipeline.md](validation-pipeline.md) — validate before install

@@ -61,7 +61,12 @@ GUI (`src/ModSync.GUI/`):
 - GUI: `FomodPostDownloadPromptService` / `FomodGuiPostDownloadHost` after **Fetch Downloads**.
 - CLI `install -d` / `convert -d` / `merge -d`: TTY wizard, warn-continue, `--fomod-skip`, `--fomod-choices` / `MODSYNC_FOMOD_CHOICES` (also `--interactive` / `--non-interactive`, env `MODSYNC_FOMOD_POST_DOWNLOAD_MODE`).
 - `FomodDownloadPromptState` stores dismissed/configured/warned outcomes in resource handler metadata.
+  - **`configured`**: permanently skips the Fetch Downloads / CLI post-download prompt; required to pass `FomodConfigurationGate`.
+  - **`dismissed`**: does **not** pass the gate; Fetch Downloads / CLI will **re-prompt** (documented recovery path).
+  - **`warned`**: CLI warn-continue / non-TTY default; does **not** pass the gate, and **does not re-prompt** on later Fetch/CLI runs (avoids spam). Clear by configuring the archive (wizard / `--fomod-choices`) or resetting prompt metadata.
 - `FomodConfigurationGate` blocks validate and install unless every detected FOMOD archive on selected mods (plus hard dependencies) is `configured`; dismiss/skip/warned do not pass the gate. Unreadable downloaded archives fail closed. Missing mod directory fails closed.
+  - **R1 soft check:** `configured` without any archive-scoped install instructions (`<<modDirectory>>/<archive-folder>/...`) emits a **warning** (does not fail the gate). Re-run Configure FOMOD / Fetch Downloads so merger output is applied.
+  - **R3 missing archives:** registered archive paths missing on disk are **fail-closed** when the archive already has FOMOD prompt state (configured/dismissed/warned). Otherwise they emit a soft warning (generic missing downloads stay with component archive validation).
 - `ArchiveEnumerationService` sets `FileTreeNode.IsFomodInstaller` when an archive contains FOMOD metadata.
 
 Non-TTY **warn-continue** / `--fomod-skip` print recovery hints (`FomodConfigurationGate.RecoveryHint`); they do **not** satisfy the configured-only gate.
