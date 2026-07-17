@@ -11,6 +11,9 @@ origin: Vortex/MO2 feature-parity roadmap (phases 1–7)
 Single authoritative tracker for parity work. Individual slice plans under
 `docs/plans/` remain the implementation record; this file holds status and next steps only.
 
+Architecture blueprint (Vortex + MO2 + HoloPatcher, ports/adapters, U1–U10):
+[2026-07-16-001-three-project-parity-architecture-plan.md](2026-07-16-001-three-project-parity-architecture-plan.md).
+
 ## Phase status
 
 | Phase | Area | Status |
@@ -20,7 +23,7 @@ Single authoritative tracker for parity work. Individual slice plans under
 | 3 | Profiles | Merged (#157) |
 | 4 | Managed deployment | **Merged** (#158 core); install wiring deferred |
 | 5 | File conflicts | Core #160 + GUI #165 merged |
-| 6 | FOMOD | Parser + installer dialog merged (#166); GUI + CLI post-download in PR #169 |
+| 6 | FOMOD | Parser + installer dialog merged (#166); GUI + CLI post-download **merged** (#169); fail-closed gate in #170 |
 | 7 | (roadmap tail) | Per slice plans |
 
 ## Delta update (2026-06-14)
@@ -36,7 +39,7 @@ Single authoritative tracker for parity work. Individual slice plans under
 ### Partial
 
 - Deployment: `DeploymentService` not wired into install execution; no GUI toggle (see PR #168).
-- FOMOD post-download: GUI dialog + CLI orchestrator (`--fomod-choices`, settings `fomodPostDownloadMode`) in PR #169.
+- FOMOD post-download: GUI dialog + CLI orchestrator (`--fomod-choices`, settings `fomodPostDownloadMode`) **merged** (#169); validate/install gate still open (#170).
 - Update checking: no endorsement UI; check results not persisted via `DownloadCacheService`.
 - Desktop validation skipped for FOMOD prompts and update badges (headless agent).
 
