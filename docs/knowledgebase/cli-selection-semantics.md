@@ -18,6 +18,16 @@ Only components already marked `IsSelected = true` in the file are installed. Us
 
 Repeatable filters: `category:Name`, `tier:Name`, `mod:Name` (case-insensitive exact or substring match on component `Name`). Only matching components stay selected. Filters combine with AND semantics when multiple types are used together. Repeat `--select` for multiple mod names (e.g. `--select mod:A --select mod:B`).
 
+## `install` with `--download`
+
+`[REPO]` On `install`, `--select` (or `--use-file-selection` / TOML `IsSelected`) is applied **before** downloads. Only components with `IsSelected == true` are fetched when `--download` is set. Use this for single-mod network smoke instead of `convert --download`, which downloads all URL-bearing components before selection filters run.
+
+Example (merged neocities K2 + golden TOML):
+
+```bash
+./scripts/agents/k2_ingested_merge_download_smoke.sh --download-mod "Silent Sion Restoration"
+```
+
 ## `validate` without `--select` (default)
 
 Validates **all loaded components**. TOML `IsSelected` is **not** used unless `--use-file-selection` or `--select` is provided.
