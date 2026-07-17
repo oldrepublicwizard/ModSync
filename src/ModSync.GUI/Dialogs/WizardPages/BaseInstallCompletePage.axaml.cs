@@ -12,6 +12,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using JetBrains.Annotations;
 using ModSync.Core;
+using ModSync.Services;
 
 namespace ModSync.Dialogs.WizardPages
 {
@@ -49,7 +50,11 @@ namespace ModSync.Dialogs.WizardPages
         public override bool CanNavigateBack => false;
         public override bool CanCancel => false;
 
-        public override Task OnNavigatedToAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public override Task OnNavigatedToAsync(CancellationToken cancellationToken)
+        {
+            ManagedDeploymentUiHelper.TryApplySummary(this.FindControl<TextBlock>("ManagedDeploymentSummaryText"));
+            return Task.CompletedTask;
+        }
         public override Task OnNavigatingFromAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
         public override Task<(bool isValid, string errorMessage)> ValidateAsync(CancellationToken cancellationToken)

@@ -37,6 +37,13 @@ namespace ModSync.Core.Ports.Profiles
 
         bool DeleteProfile([NotNull] string profileName);
 
+        /// <summary>
+        /// Root directory for managed-deployment artifacts (staging / manifests)
+        /// for the named profile.
+        /// </summary>
+        [NotNull]
+        string GetProfileArtifactDirectory([NotNull] string profileName);
+
         [NotNull]
         Services.Profiles.Profile CaptureFromCurrentState(
             [NotNull] string profileName,

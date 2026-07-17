@@ -255,6 +255,10 @@ namespace ModSync.Services
             {
                 NxmHandoffQueue.Enqueue(trimmed);
             }
+            else if (trimmed.StartsWith("modsync://", StringComparison.OrdinalIgnoreCase))
+            {
+                ModSyncHandoffQueue.Enqueue(trimmed);
+            }
             else if (string.Equals(trimmed, ApplicationLaunchCoordinator.ActivateMessage, StringComparison.Ordinal))
             {
                 ActivationRequested?.Invoke(this, EventArgs.Empty);

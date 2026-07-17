@@ -29,6 +29,7 @@ using ModSync.Controls;
 using ModSync.Core;
 using ModSync.Core.FileSystemUtils;
 using ModSync.Core.Services;
+using ModSync.Core.Services.Installation;
 using ModSync.Core.Utility;
 using ModSync.Dialogs;
 using ModSync.Models;
@@ -110,6 +111,7 @@ namespace ModSync
         private readonly ComponentSelectionService _componentSelectionService;
         private readonly DownloadOrchestrationService _downloadOrchestrationService;
         private NxmHandoffService _nxmHandoffService;
+        private ModSyncHandoffService _modSyncHandoffService;
         private readonly FilterUIService _filterUiService;
         private readonly InstructionBrowsingService _instructionBrowsingService;
         private readonly InstructionGenerationService _instructionGenerationService;
@@ -388,6 +390,10 @@ namespace ModSync
                 _downloadOrchestrationService = new DownloadOrchestrationService(DownloadCacheService, MainConfigInstance, this);
                 _downloadOrchestrationService.DownloadStateChanged += OnDownloadStateChanged;
                 _nxmHandoffService = new NxmHandoffService(this, MainConfigInstance, _downloadOrchestrationService);
+                _modSyncHandoffService = new ModSyncHandoffService(
+                    this,
+                    async path => await LoadInstructionFileAsync(path, "modsync:// download"),
+                    ActivateWindowFromProtocolHandoff);
                 _filterUiService = new FilterUIService(MainConfigInstance);
 
                 InitializeDownloadAnimationTimer();
@@ -459,7 +465,13 @@ namespace ModSync
                         ShowWizardToggle = false;
                         AutoLoadInstructionFileAsync(CLIArguments.InstructionFile);
                     }
-                    else if (_nxmHandoffService != null)
+
+                    if (_modSyncHandoffService != null)
+                    {
+                        await _modSyncHandoffService.ProcessPendingAsync();
+                    }
+
+                    if (_nxmHandoffService != null)
                     {
                         await _nxmHandoffService.ProcessPendingAsync();
                     }
@@ -474,6 +486,8 @@ namespace ModSync
 
                     _nxmHandoffService?.Dispose();
                     _nxmHandoffService = null;
+                    _modSyncHandoffService?.Dispose();
+                    _modSyncHandoffService = null;
                 };
             }
             catch (Exception e)
@@ -486,17 +500,19 @@ namespace ModSync
 
         private void OnSingleInstanceActivationRequested(object sender, EventArgs e)
         {
-            _ = Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                if (WindowState == WindowState.Minimized)
-                {
-                    WindowState = WindowState.Normal;
-                }
+            _ = Dispatcher.UIThread.InvokeAsync(ActivateWindowFromProtocolHandoff);
+        }
 
-                Activate();
-                Topmost = true;
-                Topmost = false;
-            });
+        private void ActivateWindowFromProtocolHandoff()
+        {
+            if (WindowState == WindowState.Minimized)
+            {
+                WindowState = WindowState.Normal;
+            }
+
+            Activate();
+            Topmost = true;
+            Topmost = false;
         }
 
         private async Task InitializeTelemetryIfEnabled()
@@ -3792,6 +3808,18 @@ namespace ModSync
                     else
                     {
                         await Logger.LogAsync($"Successfully installed '{name}'");
+                        string managedSummary = ManagedInstallSummaryFormatter.FormatWizardSummary(
+                            InstallationService.LastManagedInstallResult);
+                        if (!string.IsNullOrWhiteSpace(managedSummary))
+                        {
+                            await InformationDialog.ShowInformationDialogAsync(
+                                this,
+                                $"Successfully installed '{name}'."
+                                + Environment.NewLine
+                                + Environment.NewLine
+                                + managedSummary);
+                        }
+
                         await UpdateStepProgressAsync();
                     }
                 }

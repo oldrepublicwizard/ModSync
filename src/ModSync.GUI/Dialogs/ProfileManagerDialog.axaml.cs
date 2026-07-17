@@ -16,6 +16,7 @@ using JetBrains.Annotations;
 using ModSync.Core;
 using ModSync.Core.Ports.Profiles;
 using ModSync.Core.Services.Profiles;
+using ModSync.Models;
 using ModSync.Services;
 
 namespace ModSync.Dialogs
@@ -122,6 +123,11 @@ namespace ModSync.Dialogs
             try
             {
                 _profileService.ApplyProfile(profile, MainConfig.AllComponents);
+
+                AppSettings settings = SettingsManager.LoadSettings();
+                settings.ActiveProfileName = profile.Name;
+                SettingsManager.SaveSettings(settings);
+
                 RefreshProfiles();
                 SetStatus($"Activated profile '{profile.Name}'. Directories and mod selections were applied.");
             }

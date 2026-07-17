@@ -319,18 +319,46 @@ After U2+: add `ManagedInstallSession` / validation parity filters per plan
 
 ## 10. Landed on `feat/three-project-parity-foundation` (2026-07-16)
 
-U1 seams + highest-ROI slices behind those ports (no classic-install behavior change):
+### U1 seams + highest-ROI slices behind those ports (no classic-install behavior change)
 
 | Seam | Location | Notes |
 |------|----------|-------|
 | `IDownloadProviderRegistry` | `Ports/Download/` | Implemented by `DownloadManager`; `DownloadHandlerFactory.CreateProviderRegistry()` |
 | `IInstallBackend` + selector | `Ports/Installation/` | Classic default; managed wraps `DeploymentService` |
 | `IProtocolHandler` + registry | `Ports/Protocol/` | `NxmProtocolHandler` + `ModSyncProtocolHandler`; `ModSyncUrl` in Core |
-| `IProfileStore` | `Ports/Profiles/` | Implemented by `ProfileService`; GUI dialog typed to port |
+| `IProfileStore` | `Ports/Profiles/` | Implemented by `ProfileService`; GUI dialog typed to port; artifact dir helper |
 | `IGuideIngestService` / `IGuideEmitService` | `Ports/Guides/` | Serialization + `DraftInstructionService` |
 | `IConflictAnalyzer` | `Ports/Conflicts/` | Implemented by `FileConflictAnalyzer` |
 | `IUpdateCheckResultStore` | `Ports/Updates/` | JSON snapshot; wired from Nexus update menu action |
 
 Tests: `ParityPortsTests`, `ModSyncUrlTests`.
 
-**Still deferred (see §5):** U2–U6 (#168 managed install session), U7 (#170), U8 OS registration / MainWindow consume, endorsement UI, managed VFS dry-run, publish/share.
+### U2 managed install wiring (shipped on this branch)
+
+| Piece | Location | Notes |
+|-------|----------|-------|
+| Settings flag | `ModSyncSettings` / `AppSettings.managedDeploymentEnabled` | Classic default (`false`) |
+| Active profile | `activeProfileName` via Profile Manager Activate | Required when managed on (fail closed) |
+| Session | `ManagedInstallSession` | Staging redirect + deploy via `IInstallBackend` selector |
+| Install path | `InstallationService` (+ wizard / single-mod) | `RunWithManagedInstallSessionAsync`; classic unchanged when flag off |
+| Settings UI | Deployment checkbox | Disabled without active profile |
+| Finish messaging | Wizard complete pages + single-mod dialog | R7 patcher warning summary |
+
+Tests: `ManagedInstallSessionTests`, `ModSyncSettingsTests`, `DeploymentService` filters.
+
+**FOMOD gate:** Install cores leave a clear insertion point for #170 fail-closed
+`FomodConfigurationGate` inside `Install*CoreAsync` (same path for classic + managed).
+Gate itself remains **U7 / #170** until that PR lands — do not bypass it when merging.
+
+### Still deferred
+
+| Unit | Status |
+|------|--------|
+| U3 CLI `--profile` + shared session polish | Deferred |
+| U4 Managed VFS / validation parity | Deferred |
+| U5 Uninstall / purge GUI | Deferred |
+| U6 Patcher provenance (ImmutableCheckpoint) | Deferred |
+| U7 FOMOD gate (#170) + living-plan sync | Deferred (open PR) |
+| U8 `modsync://` Phase 2 OS consume | Deferred |
+| U9 Guide ports fully on master | Deferred |
+| U10 Expansion polish | Deferred |

@@ -23,9 +23,16 @@ non-destructive deployment engine in `src/ModSync.Core/Services/Deployment/`:
 `manifestRoot`); the `<<modDirectory>>`/`<<kotorDirectory>>` placeholder rules apply
 to TOML instruction definitions only, not to internal services.
 
-`[OPEN]` Not yet wired into instruction execution: staging redirect during install,
-patcher provenance capture (ImmutableCheckpoint), the `AppSettings` classic-vs-managed
-toggle, and GUI surfaces are later Phase 4 slices.
+`[REPO]` Install wiring (Phase 4 slice 2 / architecture U2): opt-in
+`managedDeploymentEnabled` + active profile stages Extract/Move/Copy/Rename under
+the profile artifact tree, then deploys via `IInstallBackend` /
+`InstallBackendSelector` → `ManagedDeploymentInstallBackend` → `DeploymentService`.
+Classic remains default when the toggle is off. Session entry:
+`ManagedInstallSession` + `InstallationService.RunWithManagedInstallSessionAsync`
+(wizard + single-mod). Settings UI: Deployment checkbox (requires active profile).
 
-Tests: `src/ModSync.Tests/DeploymentServiceTests.cs`
-(`dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~DeploymentService"`).
+`[OPEN]` Still deferred: patcher provenance (ImmutableCheckpoint), uninstall/purge
+GUI, managed dry-run/VFS validation parity, CLI `--profile` polish (U3).
+
+Tests: `DeploymentServiceTests`, `ManagedInstallSessionTests`, `ModSyncSettingsTests`,
+`ParityPortsTests` (backend selector).
