@@ -489,6 +489,15 @@ namespace ModSync.Core.Parsing
             ["file_types"] = new Regex(@"(?<types>(?:\.[\w]+(?:\s+&\s+|,\s*|\s+and\s+))+\.[\w]+)", RegexOptions.IgnoreCase),
         };
 
+        // Prose pronouns and generic words that must never become mod paths.
+        private static readonly HashSet<string> s_invalidSourceTokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "them", "they", "it", "this", "that", "these", "those",
+            "files", "file", "contents", "content", "everything", "all",
+            "mod", "the", "two", "both", "each", "any", "some", "copies", "copy",
+            "override", "folder", "directory", "archives", "archive", "installer",
+        };
+
         // Destination normalization mappings
         private static readonly Dictionary<string, string> s_destinationMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -983,6 +992,14 @@ namespace ModSync.Core.Parsing
                 {
                     return false;
                 }
+
+                foreach (string source in instruction.Source)
+                {
+                    if (!IsValidSandboxedSourcePath(source))
+                    {
+                        return false;
+                    }
+                }
             }
 
             // Destination-required actions
@@ -1082,7 +1099,7 @@ namespace ModSync.Core.Parsing
             if (!string.IsNullOrWhiteSpace(sourceText))
             {
                 string cleaned = sourceText.Trim('"', '\'', ' ', ',', ';');
-                if (cleaned.Length > 0)
+                if (cleaned.Length > 0 && IsValidSourceToken(cleaned))
                 {
                     // Check if it looks like a file (has extension)
                     if (Path.HasExtension(cleaned))
@@ -1107,6 +1124,79 @@ namespace ModSync.Core.Parsing
             }
 
             return sources;
+        }
+
+        /// <summary>
+        /// Rejects pronouns and other non-path tokens guides use in prose ("rename them to …").
+        /// </summary>
+        private static bool IsValidSourceToken([NotNull] string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return false;
+            }
+
+            string cleaned = token.Trim('"', '\'', ' ', ',', ';', '.');
+            if (cleaned.Length == 0 || s_invalidSourceTokens.Contains(cleaned))
+            {
+                return false;
+            }
+
+            if (Path.HasExtension(cleaned) || cleaned.Contains("*") || cleaned.Contains("?"))
+            {
+                return true;
+            }
+
+            // Allow folder-like tokens (e.g. Straight Fixes, Override) but not bare lowercase prose.
+            return cleaned.Any(c => c == '_' || c == '-' || char.IsUpper(c));
+        }
+
+        /// <summary>
+        /// Validates each sandboxed source path, including the relative segment after the placeholder.
+        /// </summary>
+        private static bool IsValidSandboxedSourcePath([NotNull] string sourcePath)
+        {
+            if (string.IsNullOrWhiteSpace(sourcePath))
+            {
+                return false;
+            }
+
+            const string modPrefix = "<<modDirectory>>";
+            if (!sourcePath.StartsWith(modPrefix, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            string remainder = sourcePath.Length > modPrefix.Length
+                ? sourcePath.Substring(modPrefix.Length).TrimStart('\\', '/')
+                : string.Empty;
+
+            if (string.IsNullOrEmpty(remainder) || remainder == "*")
+            {
+                return true;
+            }
+
+            foreach (string segment in remainder.Split('\\', '/'))
+            {
+                if (string.IsNullOrEmpty(segment) || segment == "*")
+                {
+                    continue;
+                }
+
+                string baseSegment = segment;
+                int wildcardIndex = baseSegment.IndexOf('*');
+                if (wildcardIndex >= 0)
+                {
+                    baseSegment = baseSegment.Substring(0, wildcardIndex);
+                }
+
+                if (!string.IsNullOrEmpty(baseSegment) && !IsValidSourceToken(baseSegment))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>

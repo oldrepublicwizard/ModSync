@@ -519,6 +519,65 @@ ___
         }
 
         [Test]
+        public void DraftInstructions_RenameThemProse_DoesNotUsePronounAsSource()
+        {
+            const string prose =
+                "Take the two copied files and rename them to PLC_CompPnl_b, retaining their original file extensions. "
+                + "When the files are moved to the override, you should be moving four files: PLC_CompPnl.tga, PLC_CompPnl.txi, PLC_CompPnl_b.tga, and PLC_CompPnl_b.txi";
+
+            ModComponent component = CreateComponent(prose);
+            component.InstallationMethod = "Loose-File Mod";
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i =>
+                i.Source.Any(s => s.IndexOf("\\them", StringComparison.OrdinalIgnoreCase) >= 0)), Is.False,
+                "Pronoun 'them' must never become a mod source path");
+            Assert.That(component.Instructions.Any(i => i.Action == Instruction.ActionType.Move), Is.True);
+        }
+
+        [Test]
+        public void K2FullGuideFixture_ValidateDryRunOnly_ExitsZero()
+        {
+            string fixturePath = Path.Combine(ResolveRepoRoot(), "src", "ModSync.Tests", "Fixtures", "k2_full_guide.md");
+            Assert.That(File.Exists(fixturePath), Is.True);
+
+            string kotorDir = Path.Combine(_testDirectory, "KOTOR");
+            string modDir = Path.Combine(_testDirectory, "Mods");
+            Directory.CreateDirectory(Path.Combine(kotorDir, "Override"));
+            File.WriteAllText(Path.Combine(kotorDir, "swkotor.exe"), "fake exe");
+            File.WriteAllText(Path.Combine(kotorDir, "dialog.tlk"), "fake dialog");
+            Directory.CreateDirectory(modDir);
+
+            string ingestedToml = Path.Combine(_testDirectory, "k2_full_ingested.toml");
+            int convertExit = ModBuildConverter.Run(new[]
+            {
+                "convert",
+                "--input", fixturePath,
+                "-f", "toml",
+                "--parse-directions",
+                "-o", ingestedToml,
+                "--plaintext",
+            });
+
+            Assert.That(convertExit, Is.EqualTo(0), "convert --parse-directions should succeed for K2 Full fixture");
+
+            int validateExit = ModBuildConverter.Run(new[]
+            {
+                "validate",
+                "--input", ingestedToml,
+                "--game-dir", kotorDir,
+                "--source-dir", modDir,
+                "--dry-run-only",
+                "--errors-only",
+            });
+
+            Assert.That(validateExit, Is.EqualTo(0), "validate --dry-run-only should pass on template dirs for ingested K2 Full TOML");
+            Assert.That(File.ReadAllText(ingestedToml), Does.Contain("thisMod"));
+        }
+
+        [Test]
         public void DraftInstructions_EmptyDirections_ProducesNoDrafts()
         {
             ModComponent component = CreateComponent(string.Empty);
