@@ -357,7 +357,7 @@ Gate itself remains **U7 / #170** until that PR lands — do not bypass it when 
 | U3 CLI `--profile` + shared session polish | In PR (CLI `--managed`/`--no-managed`/`--profile`) |
 | U4 Managed VFS / validation parity | Done (decision B — document classic DryRun caveat; option A deferred) |
 | U5 Uninstall / purge GUI | Done ([#179](https://github.com/oldrepublicwizard/ModSync/pull/179)) |
-| U6 Patcher provenance (ImmutableCheckpoint) | Deferred |
+| U6 Patcher provenance (ImmutableCheckpoint) | In PR (live game-file hash diff → manifest; CAS restore for in-place overwrites deferred) |
 | U7 FOMOD gate (#170) + living-plan sync | Deferred (open PR) |
 | U8 `modsync://` Phase 2 OS consume | Deferred |
 | U9 Guide ports fully on master | Deferred |

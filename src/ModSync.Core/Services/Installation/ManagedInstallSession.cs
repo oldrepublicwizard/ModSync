@@ -42,6 +42,12 @@ namespace ModSync.Core.Services.Installation
         [NotNull]
         private readonly HashSet<string> _patcherComponentNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        [NotNull]
+        private readonly HashSet<Guid> _patcherComponentGuids = new HashSet<Guid>();
+
+        [NotNull]
+        private readonly HashSet<Guid> _patcherProvenanceRecordedGuids = new HashSet<Guid>();
+
         public ManagedInstallSession(
             [NotNull] string profileName,
             [NotNull] IInstallBackend installBackend,
@@ -184,6 +190,107 @@ namespace ModSync.Core.Services.Installation
             }
         }
 
+        public void RecordPatcherComponent(Guid componentGuid, [CanBeNull] string componentName)
+        {
+            _ = _patcherComponentGuids.Add(componentGuid);
+            RecordPatcherComponent(componentName ?? string.Empty);
+        }
+
+        public bool ComponentUsedPatcher(Guid componentGuid) => _patcherComponentGuids.Contains(componentGuid);
+
+        /// <summary>
+        /// Snapshot of game-directory file hashes before a component's instructions run
+        /// (used to detect HoloPatcher live writes).
+        /// </summary>
+        [ItemNotNull]
+        public Task<Dictionary<string, string>> CaptureGameFileHashIndexAsync(
+            CancellationToken cancellationToken = default)
+        {
+            if (!(_installBackend is ManagedDeploymentInstallBackend managed))
+            {
+                return Task.FromResult(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+            }
+
+            return managed.DeploymentService.CaptureGameFileHashIndexAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// After staged deploy, records patcher-touched game files into the component
+        /// manifest when this component ran a Patcher instruction.
+        /// </summary>
+        [ItemNotNull]
+        public async Task RecordPatcherProvenanceAsync(
+            [NotNull] ModComponent component,
+            [CanBeNull] IReadOnlyDictionary<string, string> preInstallFileIndex,
+            CancellationToken cancellationToken = default)
+        {
+            if (component is null)
+            {
+                throw new ArgumentNullException(nameof(component));
+            }
+
+            if (!ComponentUsedPatcher(component.Guid))
+            {
+                return;
+            }
+
+            if (!(_installBackend is ManagedDeploymentInstallBackend managedBackend))
+            {
+                return;
+            }
+
+            if (preInstallFileIndex is null)
+            {
+                await Logger.LogWarningAsync(
+                    $"[ManagedInstall] Patcher ran for '{component.Name}' but no pre-install file index was captured; " +
+                    "skipping live provenance recording.").ConfigureAwait(false);
+                return;
+            }
+
+            bool hadManifestBefore = managedBackend.DeploymentService.TryGetManifest(component.Guid, out _);
+
+            List<string> changed = await managedBackend.DeploymentService
+                .DiffGameFileHashIndexAsync(preInstallFileIndex, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Exclude paths already covered by staged deploy for this component.
+            if (managedBackend.DeploymentService.TryGetManifest(component.Guid, out DeploymentManifest existing)
+                && existing?.Entries != null)
+            {
+                var already = new HashSet<string>(
+                    existing.Entries
+                        .Where(e => !string.IsNullOrWhiteSpace(e.RelativePath))
+                        .Select(e => e.RelativePath),
+                    StringComparer.OrdinalIgnoreCase);
+                changed = changed.Where(p => !already.Contains(p)).ToList();
+            }
+
+            if (changed.Count == 0)
+            {
+                await Logger.LogAsync(
+                    $"[ManagedInstall] Patcher ran for '{component.Name}' but no new/changed game files were detected for provenance."
+                ).ConfigureAwait(false);
+                return;
+            }
+
+            DeploymentManifest manifest = await managedBackend.DeploymentService
+                .RecordLiveGameFilesAsync(component.Guid, component.Name, changed, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (manifest != null && manifest.Entries.Count > 0)
+            {
+                _ = _patcherProvenanceRecordedGuids.Add(component.Guid);
+                if (!hadManifestBefore)
+                {
+                    ManifestsWritten++;
+                }
+
+                await Logger.LogAsync(
+                    $"[ManagedInstall] Recorded patcher provenance for '{component.Name}': {changed.Count} file(s)."
+                ).ConfigureAwait(false);
+            }
+        }
+
         public void ApplyStagingRedirect([NotNull] Instruction instruction, Guid componentGuid)
         {
             if (instruction is null)
@@ -193,7 +300,7 @@ namespace ModSync.Core.Services.Installation
 
             if (instruction.Action == Instruction.ActionType.Patcher)
             {
-                RecordPatcherComponent(instruction.GetParentComponent()?.Name ?? string.Empty);
+                RecordPatcherComponent(componentGuid, instruction.GetParentComponent()?.Name);
                 return;
             }
 
@@ -345,7 +452,17 @@ namespace ModSync.Core.Services.Installation
         {
             foreach (string name in _patcherComponentNames.OrderBy(n => n, StringComparer.OrdinalIgnoreCase))
             {
+                // Still warn only when we never recorded live provenance for that name's guid(s).
                 result.PatcherComponentNames.Add(name);
+            }
+
+            result.PatcherProvenanceRecorded = _patcherProvenanceRecordedGuids.Count > 0;
+            // Drop names for guids that were successfully recorded — match by scanning components is hard;
+            // instead clear the warning list when every patcher guid was recorded.
+            if (_patcherComponentGuids.Count > 0
+                && _patcherComponentGuids.All(g => _patcherProvenanceRecordedGuids.Contains(g)))
+            {
+                result.PatcherComponentNames.Clear();
             }
         }
 
