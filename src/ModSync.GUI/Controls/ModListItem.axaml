@@ -43,7 +43,7 @@
                 <!--  Main mod info (always visible)  -->
                 <Grid x:Name="MainModInfo" Grid.Row="0" RowDefinitions="Auto,Auto">
                     <!--  Row 0: main info across 6 columns  -->
-                    <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto">
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto,Auto">
 
                         <!--  Checkbox  -->
                         <CheckBox
@@ -103,10 +103,28 @@
                                 TextTrimming="CharacterEllipsis" />
                         </Border>
 
+                        <!--  Managed deployment badge  -->
+                        <Border
+                            x:Name="ManagedDeployedBadge"
+                            Grid.Column="4"
+                            Margin="4,0,4,0"
+                            Padding="6,2"
+                            VerticalAlignment="Top"
+                            Classes="mod-list-item-badge"
+                            CornerRadius="6"
+                            IsVisible="False"
+                            ToolTip.Tip="This mod has a managed deployment manifest for the active profile">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Text="Deployed"
+                                TextTrimming="CharacterEllipsis" />
+                        </Border>
+
                         <!--  Validation Status Icon  -->
                         <TextBlock
                             x:Name="ValidationIcon"
-                            Grid.Column="4"
+                            Grid.Column="5"
                             Margin="4,0,8,0"
                             VerticalAlignment="Top"
                             FontSize="14"
@@ -115,7 +133,7 @@
                         <!--  Drag Handle (Editor Mode Only)  -->
                         <TextBlock
                             x:Name="DragHandle"
-                            Grid.Column="5"
+                            Grid.Column="6"
                             VerticalAlignment="Center"
                             Classes="mod-list-item-drag-handle"
                             Cursor="Hand"
@@ -128,7 +146,7 @@
                         <!--  Download Button  -->
                         <Button
                             x:Name="DownloadButton"
-                            Grid.Column="6"
+                            Grid.Column="7"
                             Width="24"
                             Height="24"
                             Margin="4,0,0,0"

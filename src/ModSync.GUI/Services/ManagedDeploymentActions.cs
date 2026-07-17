@@ -113,6 +113,25 @@ namespace ModSync.Services
             }
         }
 
+        /// <summary>
+        /// Returns whether a deployment manifest exists for <paramref name="componentGuid"/>
+        /// under the current managed profile (false in classic mode or on resolve errors).
+        /// </summary>
+        public static bool IsComponentDeployed(Guid componentGuid)
+        {
+            if (!TryResolveBackend(out IInstallBackend backend, out _, out _))
+            {
+                return false;
+            }
+
+            if (backend is ManagedDeploymentInstallBackend managed)
+            {
+                return managed.DeploymentService.TryGetManifest(componentGuid, out _);
+            }
+
+            return false;
+        }
+
         private static bool TryResolveBackend(
             out IInstallBackend backend,
             out string error,
