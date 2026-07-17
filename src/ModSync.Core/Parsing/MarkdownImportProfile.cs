@@ -574,12 +574,29 @@ namespace ModSync.Core.Parsing
 
         public static MarkdownImportProfile CreateDefault()
         {
+            // Shared boundary: next bold **Field:**, plain Field:, horizontal rule, or markdown heading.
+            // Bold alternatives are listed first so **Name:** wins when both styles appear.
+            const string fieldBoundary =
+                @"(?:\*\*[^*\r\n]{1,100}:\*\*|(?:Name|Author|Description|Masters|Category\s*&\s*Tier|Non-English Functionality|Installation Method|Installation Instructions|Install Instructions|Download Instructions|Usage Warning|Screenshots|Known Bugs|Installation Warning|Compatibility Warning|Steam Notes)\s*:|#{2,3}\s|_{3,}|-{3,})";
 
-            const string defaultRawPattern = @"(?ms)^###\s*(?<heading>.+?)\s*\r?\n(?:[\s\S]*?\*\*Name:\*\*\s*(?:\[(?<name>(?<name_link>[^\]]+))\]\([^)]+\)|(?<name_plain>.*?))(?=\r?\n\s*\*\*[^:\n]{1,100}:\*\*|\r?\n\s*(?:-{3,}|_{3,})|\Z))?(?:[\s\S]*?\*\*Author:\*\*\s*(?<author>.*?)(?=\r?\n\s*\*\*[^:\n]{1,100}:\*\*|\r?\n\s*(?:-{3,}|_{3,})|\Z))?(?:[\s\S]*?\*\*Description:\*\*\s*(?<description>.*?)(?=\r?\n\s*\*\*[^:\n]{1,100}:\*\*|\r?\n\s*(?:-{3,}|_{3,})|\Z))?(?:[\s\S]*?\*\*Masters:\*\*\s*(?<masters>.*?)(?=\r?\n\s*\*\*[^:\n]{1,100}:\*\*|\r?\n\s*(?:-{3,}|_{3,})|\Z))?(?:[\s\S]*?\*\*Category\s*&\s*Tier:\*\*\s*(?<category_tier>.*?)(?=\r?\n\s*\*\*[^:\n]{1,100}:\*\*|\r?\n\s*(?:-{3,}|_{3,})|\Z))?(?:[\s\S]*?\*\*Non-English Functionality:\*\*\s*(?<non_english>.*?)(?=\r?\n\s*\*\*[^:\n]{1,100}:\*\*|\r?\n\s*(?:-{3,}|_{3,})|\Z))?(?:[\s\S]*?\*\*Installation Method:\*\*\s*(?<installation_method>.*?)(?=\r?\n\s*\*\*[^:\n]{1,100}:\*\*|\r?\n\s*(?:-{3,}|_{3,})|\Z))?(?:[\s\S]*?(?::::note\s*\r?\n\s*Installation Instructions\s*\r?\n:\s*(?<installation_instructions>(?:(?!\r?\n\s*:::).)*?)\r?\n\s*:::|\*\*Installation Instructions:\*\*\s*(?<installation_instructions>.*?)(?=\r?\n\s*\*\*[^:\n]{1,100}:\*\*|\r?\n\s*(?:-{3,}|_{3,})|\Z)))?[\s\S]*?(?=\r?\n\s*(?:-{3,}|_{3,})|\Z)";
+            const string defaultRawPattern =
+                @"(?ms)^###\s*(?<heading>.+?)\s*\r?\n" +
+                @"(?:[\s\S]*?(?:\*\*Name:\*\*|Name:)\s*(?:\[(?<name>(?<name_link>[^\]]+))\]\([^)]+\)|(?<name_plain>.*?))(?=\r?\n\s*" + fieldBoundary + @"|\Z))?" +
+                @"(?:[\s\S]*?(?:\*\*Author:\*\*|Author:)\s*(?<author>.*?)(?=\r?\n\s*" + fieldBoundary + @"|\Z))?" +
+                @"(?:[\s\S]*?(?:\*\*Description:\*\*|Description:)\s*(?<description>.*?)(?=\r?\n\s*" + fieldBoundary + @"|\Z))?" +
+                @"(?:[\s\S]*?(?:\*\*Masters:\*\*|Masters:)\s*(?<masters>.*?)(?=\r?\n\s*" + fieldBoundary + @"|\Z))?" +
+                @"(?:[\s\S]*?(?:\*\*Category\s*&\s*Tier:\*\*|Category\s*&\s*Tier:)\s*(?<category_tier>.*?)(?=\r?\n\s*" + fieldBoundary + @"|\Z))?" +
+                @"(?:[\s\S]*?(?:\*\*Non-English Functionality:\*\*|Non-English Functionality:)\s*(?<non_english>.*?)(?=\r?\n\s*" + fieldBoundary + @"|\Z))?" +
+                @"(?:[\s\S]*?(?:\*\*Installation Method:\*\*|Installation Method:)\s*(?<installation_method>.*?)(?=\r?\n\s*" + fieldBoundary + @"|\Z))?" +
+                @"(?:[\s\S]*?(?::::note\s*\r?\n\s*Installation Instructions\s*\r?\n:\s*(?<installation_instructions>(?:(?!\r?\n\s*:::).)*?)\r?\n\s*:::|(?:\*\*(?:Install(?:ation)?|Installation) Instructions:\*\*|(?:Install(?:ation)?|Installation) Instructions:?)\s*(?<installation_instructions>.*?)(?=\r?\n\s*" + fieldBoundary + @"|\Z)))?" +
+                @"[\s\S]*?(?=\r?\n\s*(?:-{3,}|_{3,})|\Z)";
 
-            const string defaultOuterPattern = @"(?m)^###\s*.+?$[\s\S]*?(?=^___\s*$|^##\s|\Z)";
+            // Also stop at the next ### so site-scraped guides without ___ separators still split per mod.
+            const string defaultOuterPattern = @"(?m)^###\s*.+?$[\s\S]*?(?=^###\s|^___\s*$|^##\s|\Z)";
 
             const string defaultInstructionsBlockPattern = @"<!--<<ModSync>>\s*(?<instructions>[\s\S]*?)-->";
+
+            const string multilineFieldBody = @"(?:(?!\r?\n\s*" + fieldBoundary + @").)*";
 
             return new MarkdownImportProfile
             {
@@ -589,22 +606,27 @@ namespace ModSync.Core.Parsing
                 RawRegexPattern = defaultRawPattern,
                 RawRegexOptions = RegexOptions.Multiline | RegexOptions.Singleline,
                 HeadingPattern = @"^###\s+(?<heading>.+?)(?:\s*\[.*?\])?\s*$",
-                NamePattern = @"\*\*Name:\*\*\s*(?:\[(?<name>(?<name_link>[^\]]+))\]\([^)]+\)|(?<name_plain>[^\r\n]+))[^\r\n]*",
-                AuthorPattern = @"\*\*Author:\*\*\s*(?<author>[^\r\n]+)",
-                DescriptionPattern = @"\*\*Description:\*\*\s*(?<description>(?:(?!\r?\n\s*(?:\*\*\w+[^:]*:\*\*|_{3,}|-{3,}|##)).)*)",
+                NamePattern = @"(?:\*\*Name:\*\*|Name:)\s*(?:\[(?<name>(?<name_link>[^\]]+))\]\([^)]+\)|(?<name_plain>[^\r\n]+))[^\r\n]*",
+                AuthorPattern = @"(?:\*\*Author:\*\*|Author:)\s*(?<author>[^\r\n]+)",
+                DescriptionPattern = @"(?:\*\*Description:\*\*|Description:)\s*(?<description>" + multilineFieldBody + @")",
                 ModLinkPattern = @"\[(?<label>[^]]+)\]\((?<link>[^)]+)\)",
-                CategoryTierPattern = @"\*\*Category\s*&\s*Tier:\*\*\s*(?<category>[^/\r\n]+)/\s*(?<tier>[^\r\n]+)",
-                InstallationMethodPattern = @"\*\*Installation Method:\*\*\s*(?<method>[^\r\n]+)",
-                DownloadInstructionsPattern = @"\*\*Download Instructions:\*\*\s*(?<download>(?:(?!\r?\n\s*(?:\*\*\w+[^:]*:\*\*|_{3,}|-{3,}|##)).)*)",
-                InstallationInstructionsPattern = @"(?::::note\s*\r?\n\s*Installation Instructions\s*\r?\n:\s*(?<directions>(?:(?!\r?\n\s*:::).)*?)\r?\n\s*:::|(?:\*\*(?:Install(?:ation)?|Installation) Instructions:\*\*\s*(?<directions>(?:(?!\r?\n\s*(?:\*\*\w+[^:]*:\*\*|_{3,}|-{3,}|##)).)*)))",
-                UsageWarningPattern = @"\*\*Usage Warning:\*\*\s*(?<warning>(?:(?!\r?\n\s*(?:\*\*\w+[^:]*:\*\*|_{3,}|-{3,}|##)).)*)",
-                ScreenshotsPattern = @"\*\*Screenshots:\*\*\s*(?<screenshots>(?:(?!\r?\n\s*(?:\*\*\w+[^:]*:\*\*|_{3,}|-{3,}|##)).)*)",
-                KnownBugsPattern = @"(?::::warning\s*\r?\n\s*Known Bugs\s*\r?\n:\s*(?<bugs>(?:(?!\r?\n\s*:::).)*?)\r?\n\s*:::|\*\*Known Bugs:\*\*\s*(?<bugs>(?:(?!\r?\n\s*(?:\*\*\w+[^:]*:\*\*|_{3,}|-{3,}|##)).)*))",
-                InstallationWarningPattern = @"\*\*Installation Warning:\*\*\s*(?<installwarning>(?:(?!\r?\n\s*(?:\*\*\w+[^:]*:\*\*|_{3,}|-{3,}|##)).)*)",
-                CompatibilityWarningPattern = @"\*\*Compatibility Warning:\*\*\s*(?<compatwarning>(?:(?!\r?\n\s*(?:\*\*\w+[^:]*:\*\*|_{3,}|-{3,}|##)).)*)",
-                SteamNotesPattern = @"\*\*Steam Notes:\*\*\s*(?<steamnotes>(?:(?!\r?\n\s*(?:\*\*\w+[^:]*:\*\*|_{3,}|-{3,}|##)).)*)",
-                NonEnglishPattern = @"\*\*Non-English Functionality:\*\*\s*(?<value>[^\r\n]+)",
-                DependenciesPattern = @"\*\*Masters:\*\*\s*(?<masters>[^\r\n]+)",
+                CategoryTierPattern = @"(?:\*\*Category\s*&\s*Tier:\*\*|Category\s*&\s*Tier:)\s*(?<category>[^/\r\n]+)/\s*(?<tier>[^\r\n]+)",
+                InstallationMethodPattern = @"(?:\*\*Installation Method:\*\*|Installation Method:)\s*(?<method>[^\r\n]+)",
+                DownloadInstructionsPattern = @"(?:\*\*Download Instructions:\*\*|Download Instructions:?)\s*(?<download>" + multilineFieldBody + @")",
+                InstallationInstructionsPattern =
+                    @"(?::::note\s*\r?\n\s*Installation Instructions\s*\r?\n:\s*(?<directions>(?:(?!\r?\n\s*:::).)*?)\r?\n\s*:::" +
+                    @"|(?:\*\*(?:Install(?:ation)?|Installation) Instructions:\*\*\s*(?<directions>" + multilineFieldBody + @"))" +
+                    @"|(?m)^(?:Install(?:ation)?|Installation) Instructions:?\s*(?:\r?\n)+(?<directions>" + multilineFieldBody + @"))",
+                UsageWarningPattern = @"(?:\*\*Usage Warning:\*\*|Usage Warning:?)\s*(?<warning>" + multilineFieldBody + @")",
+                ScreenshotsPattern = @"(?:\*\*Screenshots:\*\*|Screenshots:?)\s*(?<screenshots>" + multilineFieldBody + @")",
+                KnownBugsPattern =
+                    @"(?::::warning\s*\r?\n\s*Known Bugs\s*\r?\n:\s*(?<bugs>(?:(?!\r?\n\s*:::).)*?)\r?\n\s*:::" +
+                    @"|(?:\*\*Known Bugs:\*\*|Known Bugs:?)\s*(?<bugs>" + multilineFieldBody + @"))",
+                InstallationWarningPattern = @"(?:\*\*Installation Warning:\*\*|Installation Warning:?)\s*(?<installwarning>" + multilineFieldBody + @")",
+                CompatibilityWarningPattern = @"(?:\*\*Compatibility Warning:\*\*|Compatibility Warning:?)\s*(?<compatwarning>" + multilineFieldBody + @")",
+                SteamNotesPattern = @"(?:\*\*Steam Notes:\*\*|Steam Notes:?)\s*(?<steamnotes>" + multilineFieldBody + @")",
+                NonEnglishPattern = @"(?:\*\*Non-English Functionality:\*\*|Non-English Functionality:)\s*(?<value>[^\r\n]+)",
+                DependenciesPattern = @"(?:\*\*Masters:\*\*|Masters:)\s*(?<masters>[^\r\n]+)",
                 DependenciesSeparatorPattern = @"[,;+&]",
                 RestrictionsPattern = string.Empty,
                 OptionPattern = string.Empty,
