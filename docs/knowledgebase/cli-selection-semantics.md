@@ -28,6 +28,14 @@ Example (merged neocities K2 + golden TOML):
 ./scripts/agents/k2_ingested_merge_download_smoke.sh --download-mod "Silent Sion Restoration"
 ```
 
+Full round-trip (golden URLs + ingested NLP → download → extract → Override install; network + `mod-builds`):
+
+```bash
+./scripts/agents/k2_merged_roundtrip_download_install_smoke.sh
+```
+
+Wraps `K2FullGuideFixture_RoundTripSilentSion_DownloadAndInstalls_LongRunning`. NLP Move drafts for single loose files include nested `<<modDirectory>>/*…/filename` sources so post-extract paths resolve.
+
 ## `validate` without `--select` (default)
 
 Validates **all loaded components**. TOML `IsSelected` is **not** used unless `--use-file-selection` or `--select` is provided.
