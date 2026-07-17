@@ -578,6 +578,66 @@ ___
         }
 
         [Test]
+        public void K2FullGuideFixture_IngestedSilentSion_InstallsViaCli()
+        {
+            string fixturePath = Path.Combine(ResolveRepoRoot(), "src", "ModSync.Tests", "Fixtures", "k2_full_guide.md");
+            Assert.That(File.Exists(fixturePath), Is.True);
+
+            string kotorDir = Path.Combine(_testDirectory, "KOTOR");
+            string modDir = Path.Combine(_testDirectory, "Mods");
+            Directory.CreateDirectory(Path.Combine(kotorDir, "Override"));
+            File.WriteAllText(Path.Combine(kotorDir, "swkotor.exe"), "fake exe");
+            File.WriteAllText(Path.Combine(kotorDir, "dialog.tlk"), "fake dialog");
+            Directory.CreateDirectory(modDir);
+            File.WriteAllText(Path.Combine(modDir, "153sion.dlg"), "silent sion dlg");
+
+            GuideIngestResult ingested = GuideIngestService.Instance.IngestFromText(
+                File.ReadAllText(fixturePath),
+                formatHint: "markdown",
+                parseDirections: true);
+
+            ModComponent silentSion = ingested.Components.FirstOrDefault(c =>
+                c.Name.IndexOf("Silent Sion", StringComparison.OrdinalIgnoreCase) >= 0);
+            Assert.That(silentSion, Is.Not.Null, "Fixture should contain Silent Sion Restoration");
+            Assert.That(silentSion.Instructions, Is.Not.Empty, "Silent Sion should have drafted Move instructions");
+            Assert.That(
+                silentSion.Instructions.Any(i => i.Action == Instruction.ActionType.Move),
+                Is.True,
+                "Silent Sion draft should include a Move instruction");
+
+            // Install a single ingested component (dependency auto-select would pull the full build otherwise).
+            silentSion.IsSelected = true;
+            silentSion.Dependencies.Clear();
+
+            string ingestedToml = Path.Combine(_testDirectory, "k2_silent_sion.toml");
+            File.WriteAllText(
+                ingestedToml,
+                ModComponentSerializationService.SerializeModComponentAsString(
+                    new List<ModComponent> { silentSion },
+                    "TOML"));
+
+            int installExit = ModBuildConverter.Run(new[]
+            {
+                "install",
+                "--input", ingestedToml,
+                "--game-dir", kotorDir,
+                "--source-dir", modDir,
+                "--use-file-selection",
+                "--skip-validation",
+                "-y",
+            });
+
+            string installedDlg = Path.Combine(kotorDir, "Override", "153sion.dlg");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(installExit, Is.EqualTo(0), "CLI install should succeed for ingested Silent Sion draft");
+                Assert.That(File.Exists(installedDlg), Is.True, "Move draft should place 153sion.dlg in Override");
+                Assert.That(File.ReadAllText(installedDlg), Is.EqualTo("silent sion dlg"));
+            });
+        }
+
+        [Test]
         public void DraftInstructions_EmptyDirections_ProducesNoDrafts()
         {
             ModComponent component = CreateComponent(string.Empty);
