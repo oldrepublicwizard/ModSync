@@ -5943,7 +5943,7 @@ namespace ModSync.Core.Services
                 return false;
             }
 
-            return key.Contains("://", StringComparison.Ordinal)
+            return NetFrameworkCompatibility.Contains(key, "://", StringComparison.Ordinal)
                 || key.StartsWith("http:", StringComparison.OrdinalIgnoreCase)
                 || key.StartsWith("https:", StringComparison.OrdinalIgnoreCase)
                 || key.StartsWith("nxm:", StringComparison.OrdinalIgnoreCase);
