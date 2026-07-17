@@ -67,7 +67,7 @@ KOTOR modding often requires dozens of repetitive, order-sensitive steps per mod
 | FOMOD CLI post-download configure | Shipped (TTY wizard, `--fomod-choices` / `MODSYNC_FOMOD_CHOICES`, `--fomod-skip`) |
 | FOMOD configure-before-validate/install gate | Shipped (`FomodConfigurationGate`; fail-closed on unreadable archives) |
 | `nxm://` entry point | Shipped |
-| `modsync://` Phase 1 (parse/CLI/handoff) | Shipped — OS registration + GUI consume still open; see [product-vision.md](product-vision.md) |
+| `modsync://` (parse/CLI/handoff/consume + OS registration) | Shipped — Settings checkbox deferred; see [modsync-protocol-handler.md](modsync-protocol-handler.md) |
 
 ## Related
 

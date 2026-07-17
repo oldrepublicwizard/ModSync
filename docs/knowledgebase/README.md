@@ -59,7 +59,7 @@ Use these when citing findings in plans, PRs, or audits:
 - [File-level conflicts](file-conflicts.md) — `FileConflictAnalyzer` dry-run VFS attribution and `ConflictsDialog` results UI
 - [FOMOD installer support](fomod-support.md) — ModuleConfig parser, GUI/CLI post-download configure, `--fomod-choices`, configured-only gate
 - [nxm protocol handler](nxm-protocol-handler.md) — nxm:// URL parsing, OS scheme registration, single-instance hand-off, free-user download path
-- [modsync protocol handler](modsync-protocol-handler.md) — modsync:// build deep links (parse + CLI + handoff; OS registration planned)
+- [modsync protocol handler](modsync-protocol-handler.md) — modsync:// build deep links (parse + CLI + handoff + consume; OS registration shipped, Settings toggle deferred)
 
 ### Architecture and agent parity
 
@@ -142,7 +142,7 @@ KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-archite
 | Headless Avalonia GUI smoke | Shipped | `GuiSmokeHeadlessTests`; `AGENTS.md` §Headless Avalonia GUI smoke |
 | FOMOD discovery + CLI prompts + gate | Shipped | [fomod-support.md](fomod-support.md); fail-closed until configured; Plan [123](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md) |
 | `modsync://` Phase 1 (parse/CLI/handoff) | Shipped | [modsync-protocol-handler.md](modsync-protocol-handler.md) |
-| `modsync://` Phase 2 (OS reg + consume) | Open / in flight | [brainstorm](../brainstorms/2026-07-13-modsync-protocol-requirements.md); [plan 006](../plans/2026-07-13-006-feat-modsync-protocol-os-registration-plan.md); PR #176 |
+| `modsync://` Phase 2 (OS reg + consume) | Shipped (Settings toggle deferred) | [modsync-protocol-handler.md](modsync-protocol-handler.md); #176 |
 | Multi-author publish/share | Open | [plan stub 003](../plans/2026-07-13-003-feat-multi-author-publish-share-plan.md) |
 | Release readiness checklist | Active | [005](../plans/2026-07-13-005-release-readiness-checklist.md) |
 
