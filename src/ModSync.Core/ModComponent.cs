@@ -836,6 +836,15 @@ namespace ModSync.Core
 
             try
             {
+                ManagedInstallSession managedSession = ManagedInstallSession.Current;
+                IReadOnlyDictionary<string, string> preInstallIndex = null;
+                if (managedSession != null)
+                {
+                    preInstallIndex = await managedSession
+                        .CaptureGameFileHashIndexAsync(cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
                 var realFileSystem = new Services.FileSystem.RealFileSystemProvider();
                 InstallExitCode exitCode = await ExecuteInstructionsAsync(
                     Instructions,
@@ -855,10 +864,15 @@ namespace ModSync.Core
 
                 if (exitCode == InstallExitCode.Success)
                 {
-                    ManagedInstallSession managedSession = ManagedInstallSession.Current;
                     if (managedSession != null)
                     {
                         exitCode = await managedSession.DeployComponentAsync(this, cancellationToken).ConfigureAwait(false);
+                        if (exitCode == InstallExitCode.Success)
+                        {
+                            await managedSession
+                                .RecordPatcherProvenanceAsync(this, preInstallIndex, cancellationToken)
+                                .ConfigureAwait(false);
+                        }
                     }
                 }
 

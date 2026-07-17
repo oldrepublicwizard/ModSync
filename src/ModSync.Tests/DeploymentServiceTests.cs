@@ -3,6 +3,7 @@
 // See LICENSE.txt file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -326,6 +327,48 @@ namespace ModSync.Tests
             Assert.That(uninstalled, Is.True);
             Assert.That(File.Exists(outsideFile), Is.True, "Path-traversal target must not be deleted");
             Assert.That(File.Exists(GamePath("Override/safe.txt")), Is.False);
+        }
+
+        [Test]
+        public async Task RecordLiveGameFiles_ThenUninstall_RemovesPatcherWrittenFile()
+        {
+            Guid guid = Guid.NewGuid();
+            Dictionary<string, string> before = await _service.CaptureGameFileHashIndexAsync();
+
+            Directory.CreateDirectory(Path.Combine(_gameDirectory, "Override"));
+            File.WriteAllText(GamePath("Override/patcher_out.mdl"), "holopatcher bytes");
+
+            List<string> changed = await _service.DiffGameFileHashIndexAsync(before);
+            Assert.That(changed, Does.Contain("Override/patcher_out.mdl"));
+
+            DeploymentManifest manifest = await _service.RecordLiveGameFilesAsync(
+                guid,
+                "Patcher Mod",
+                changed);
+
+            Assert.That(manifest.Entries.Any(e => e.RelativePath == "Override/patcher_out.mdl"), Is.True);
+            Assert.That(File.Exists(GamePath("Override/patcher_out.mdl")), Is.True);
+
+            bool uninstalled = await _service.UninstallComponentAsync(guid);
+            Assert.That(uninstalled, Is.True);
+            Assert.That(File.Exists(GamePath("Override/patcher_out.mdl")), Is.False);
+        }
+
+        [Test]
+        public async Task RecordLiveGameFiles_MergesWithExistingStagedManifest()
+        {
+            Guid guid = Guid.NewGuid();
+            string staged = CreateStagedFile("comp", "Override/staged.txt", "staged");
+            await _service.DeployComponentAsync(guid, "Hybrid", staged);
+
+            File.WriteAllText(GamePath("Override/live.txt"), "live patcher");
+            DeploymentManifest merged = await _service.RecordLiveGameFilesAsync(
+                guid,
+                "Hybrid",
+                new[] { "Override/live.txt" });
+
+            Assert.That(merged.Entries.Select(e => e.RelativePath), Does.Contain("Override/staged.txt"));
+            Assert.That(merged.Entries.Select(e => e.RelativePath), Does.Contain("Override/live.txt"));
         }
     }
 }

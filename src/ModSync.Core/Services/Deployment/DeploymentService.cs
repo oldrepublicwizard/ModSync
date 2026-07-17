@@ -182,6 +182,153 @@ namespace ModSync.Core.Services.Deployment
         }
 
         /// <summary>
+        /// Records files that already exist in the game directory (e.g. HoloPatcher
+        /// outputs) into the component's deployment manifest so managed uninstall
+        /// can remove them. Merges with any existing staged-deploy manifest.
+        /// Does not restore pre-patcher bytes for in-place overwrites in this slice —
+        /// uninstall deletes matching hashes only.
+        /// </summary>
+        [ItemNotNull]
+        public async Task<DeploymentManifest> RecordLiveGameFilesAsync(
+            Guid componentGuid,
+            [CanBeNull] string componentName,
+            [NotNull] IEnumerable<string> relativePaths,
+            CancellationToken cancellationToken = default)
+        {
+            if (relativePaths is null)
+            {
+                throw new ArgumentNullException(nameof(relativePaths));
+            }
+
+            DeploymentManifest manifest;
+            if (TryGetManifest(componentGuid, out DeploymentManifest existing) && existing != null)
+            {
+                manifest = existing;
+                if (!string.IsNullOrWhiteSpace(componentName))
+                {
+                    manifest.ComponentName = componentName;
+                }
+
+                manifest.DeployedUtc = DateTime.UtcNow;
+            }
+            else
+            {
+                manifest = new DeploymentManifest
+                {
+                    ComponentGuid = componentGuid,
+                    ComponentName = componentName,
+                    DeployedUtc = DateTime.UtcNow,
+                };
+            }
+
+            var existingPaths = new HashSet<string>(
+                manifest.Entries
+                    .Where(e => !string.IsNullOrWhiteSpace(e.RelativePath))
+                    .Select(e => e.RelativePath),
+                StringComparer.OrdinalIgnoreCase);
+
+            int recorded = 0;
+            foreach (string rawRelative in relativePaths.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                string relativePath = NormalizeRelativePath(rawRelative ?? string.Empty);
+                if (string.IsNullOrWhiteSpace(relativePath) || existingPaths.Contains(relativePath))
+                {
+                    continue;
+                }
+
+                if (!TryResolveConfinedGamePath(relativePath, out string gamePath) || !File.Exists(gamePath))
+                {
+                    continue;
+                }
+
+                var entry = new DeploymentManifestEntry
+                {
+                    RelativePath = relativePath,
+                    SourceHash = await ComputeFileHashAsync(gamePath, cancellationToken).ConfigureAwait(false),
+                    Size = new FileInfo(gamePath).Length,
+                    DeploymentMethod = DeploymentMethod.Copy,
+                    OverwroteExisting = false,
+                };
+
+                manifest.Entries.Add(entry);
+                _ = existingPaths.Add(relativePath);
+                recorded++;
+            }
+
+            if (recorded > 0 || !TryGetManifest(componentGuid, out _))
+            {
+                await SaveManifestAtomicAsync(manifest, cancellationToken).ConfigureAwait(false);
+            }
+
+            await Logger.LogAsync(
+                $"[Deployment] Recorded {recorded} live game file(s) for component '{componentName}' ({componentGuid}) " +
+                $"(patcher/provenance; manifest now has {manifest.Entries.Count} entries).").ConfigureAwait(false);
+
+            return manifest;
+        }
+
+        /// <summary>
+        /// Builds a relative-path → SHA-256 index of files under the game directory
+        /// for patcher provenance diffs. Skips empty trees.
+        /// </summary>
+        [NotNull]
+        public async Task<Dictionary<string, string>> CaptureGameFileHashIndexAsync(
+            CancellationToken cancellationToken = default)
+        {
+            var index = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (!Directory.Exists(_gameDirectory))
+            {
+                return index;
+            }
+
+            foreach (string fullPath in Directory.EnumerateFiles(_gameDirectory, "*", SearchOption.AllDirectories))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                string relative = NormalizeRelativePath(
+                    NetFrameworkCompatibility.GetRelativePath(_gameDirectory, fullPath));
+                if (string.IsNullOrWhiteSpace(relative))
+                {
+                    continue;
+                }
+
+                index[relative] = await ComputeFileHashAsync(fullPath, cancellationToken).ConfigureAwait(false);
+            }
+
+            return index;
+        }
+
+        /// <summary>
+        /// Returns relative paths that were added or whose content hash changed versus
+        /// <paramref name="beforeIndex"/>.
+        /// </summary>
+        [NotNull]
+        [ItemNotNull]
+        public async Task<List<string>> DiffGameFileHashIndexAsync(
+            [NotNull] IReadOnlyDictionary<string, string> beforeIndex,
+            CancellationToken cancellationToken = default)
+        {
+            if (beforeIndex is null)
+            {
+                throw new ArgumentNullException(nameof(beforeIndex));
+            }
+
+            Dictionary<string, string> after = await CaptureGameFileHashIndexAsync(cancellationToken).ConfigureAwait(false);
+            var changed = new List<string>();
+            foreach (KeyValuePair<string, string> kvp in after)
+            {
+                if (!beforeIndex.TryGetValue(kvp.Key, out string beforeHash)
+                    || !string.Equals(beforeHash, kvp.Value, StringComparison.OrdinalIgnoreCase))
+                {
+                    changed.Add(kvp.Key);
+                }
+            }
+
+            return changed;
+        }
+
+        /// <summary>
         /// Removes exactly the files listed in the component's manifest. Files whose
         /// current content hash no longer matches the manifest hash (modified by the
         /// user or another mod) are skipped with a warning. Displaced backups are

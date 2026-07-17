@@ -24,12 +24,16 @@ namespace ModSync.Core.Services.Installation
             builder.AppendLine("Managed deployment recorded manifests for file-operation mods installed in this session.");
             builder.AppendLine($"Profile: {result.ActiveProfileName}");
             builder.AppendLine($"Manifests written: {result.ManifestsWritten}");
-            builder.AppendLine("Manifests are not yet actionable for uninstall in this release.");
+
+            if (result.PatcherProvenanceRecorded)
+            {
+                builder.AppendLine("Patcher outputs were recorded into deployment manifests for uninstall.");
+            }
 
             if (result.HasPatcherComponents)
             {
                 builder.AppendLine();
-                builder.AppendLine("Warning: Patcher-modified files are not tracked for managed uninstall:");
+                builder.AppendLine("Warning: Some patcher-touched mods have no recorded live file provenance:");
                 foreach (string name in result.PatcherComponentNames)
                 {
                     builder.AppendLine($"• {name}");

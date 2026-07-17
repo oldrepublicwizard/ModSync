@@ -41,6 +41,13 @@ Tools menu **Managed Deployment Status** and **Purge Managed Deployments**; mod-
 **Deployed** badge; context menu **Uninstall Managed Deployment** when a manifest
 exists. Purge/uninstall are blocked while `ManagedInstallSession.Current` is set.
 
+`[REPO]` Patcher provenance (parity U6): when a managed component runs a Patcher
+instruction, ModSync snapshots game-dir file hashes before install, diffs after
+staged deploy, and merges added/changed paths into the component manifest via
+`DeploymentService.RecordLiveGameFilesAsync` so uninstall can delete those files.
+In-place overwrite **restore** of pre-patcher bytes (full ImmutableCheckpoint CAS)
+is still deferred.
+
 ## Validation vs managed installs (parity U4 decision B)
 
 `[REPO]` **Decision (2026-07-17):** keep classic VFS DryRun as-is; do **not** redirect
@@ -59,8 +66,9 @@ DryRun through managed staging in this release. When `managedDeploymentEnabled` 
 Full managed DryRun/VFS staging parity remains an optional future unit (plan option
 A). See [validation-pipeline.md](validation-pipeline.md#managed-deployment-caveat).
 
-`[OPEN]` Still deferred: patcher provenance (ImmutableCheckpoint), optional managed
-VFS DryRun redirect (U4 option A). Follow-up plan:
+`[OPEN]` Still deferred: full ImmutableCheckpoint CAS restore for in-place patcher
+overwrites (U6 records live added/changed paths for uninstall-delete; pre-image
+restore via CAS remains optional). Follow-up plan:
 [docs/plans/2026-07-13-004-managed-deployment-validation-plan.md](../plans/2026-07-13-004-managed-deployment-validation-plan.md).
 
 Tests: `DeploymentServiceTests`, `ManagedInstallSessionTests`, `ModSyncSettingsTests`,

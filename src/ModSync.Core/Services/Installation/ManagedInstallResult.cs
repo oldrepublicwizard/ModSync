@@ -24,5 +24,10 @@ namespace ModSync.Core.Services.Installation
         public string ActiveProfileName { get; set; }
 
         public bool HasPatcherComponents => PatcherComponentNames.Count > 0;
+
+        /// <summary>
+        /// True when at least one patcher's live game-dir writes were merged into a deployment manifest.
+        /// </summary>
+        public bool PatcherProvenanceRecorded { get; set; }
     }
 }
