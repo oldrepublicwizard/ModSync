@@ -355,8 +355,8 @@ Gate itself remains **U7 / #170** until that PR lands — do not bypass it when 
 | Unit | Status |
 |------|--------|
 | U3 CLI `--profile` + shared session polish | In PR (CLI `--managed`/`--no-managed`/`--profile`) |
-| U4 Managed VFS / validation parity | Deferred |
-| U5 Uninstall / purge GUI | In PR (context uninstall + Deployed badge; purge menu already shipped) |
+| U4 Managed VFS / validation parity | Done (decision B — document classic DryRun caveat; option A deferred) |
+| U5 Uninstall / purge GUI | Done ([#179](https://github.com/oldrepublicwizard/ModSync/pull/179)) |
 | U6 Patcher provenance (ImmutableCheckpoint) | Deferred |
 | U7 FOMOD gate (#170) + living-plan sync | Deferred (open PR) |
 | U8 `modsync://` Phase 2 OS consume | Deferred |

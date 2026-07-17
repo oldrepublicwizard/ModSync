@@ -31,6 +31,18 @@ If **FullValidation** is off, Environment/Conflicts/InstallOrder are skipped; Co
 
 Do not use `RealFileSystemProvider` when answering “what would install do?” — use validation with `--dry-run`.
 
+### Managed deployment caveat
+
+`[REPO]` **Parity U4 decision B (2026-07-17):** DryRun models **classic** destination paths under `<<kotorDirectory>>`. It does **not** simulate profile staging roots or hardlink deploy used when managed deployment is enabled.
+
+When validating a managed install setup:
+
+1. Still run the normal pipeline (Environment → … → DryRun) — catches missing archives, FOMOD gate failures, instruction path errors against the game tree.
+2. Do **not** treat a green DryRun as proof that managed staging/deploy will match byte-for-byte; confirm after install via Managed Deployment Status / Deployed badges / manifests.
+3. Optional future work (decision A): redirect DryRun destinations under managed staging — not shipped.
+
+Details: [managed-deployment.md](managed-deployment.md#validation-vs-managed-installs-parity-u4-decision-b).
+
 ## Options presets
 
 `ValidationPipelineOptions` maps to CLI and wizard behavior:
