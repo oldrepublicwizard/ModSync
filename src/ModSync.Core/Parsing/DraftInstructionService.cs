@@ -73,38 +73,57 @@ namespace ModSync.Core.Parsing
 
             foreach (ModComponent component in components)
             {
-                if (component.Instructions.Count > 0 || string.IsNullOrWhiteSpace(component.Directions))
+                if (component.Instructions.Count > 0)
                 {
-                    continue;
-                }
-
-                ObservableCollection<Instruction> parsed;
-                try
-                {
-                    parsed = parser.ParseInstructions(
-                        component.Directions,
-                        string.IsNullOrWhiteSpace(component.DownloadInstructions) ? null : component.DownloadInstructions,
-                        component);
-                }
-                catch (Exception ex)
-                {
-                    // Graceful degradation: unparseable prose keeps today's behavior (no instructions drafted).
-                    verbose($"[DraftInstructions] Failed to parse prose for '{component.Name}': {ex.Message}");
                     continue;
                 }
 
                 int added = 0;
-                foreach (Instruction instruction in parsed)
+
+                if (!string.IsNullOrWhiteSpace(component.Directions))
                 {
-                    if (!TrySanitizeInstruction(instruction))
+                    ObservableCollection<Instruction> parsed;
+                    try
                     {
-                        verbose($"[DraftInstructions] Dropped non-sandboxed draft ({instruction.Action}) for '{component.Name}'");
-                        continue;
+                        parsed = parser.ParseInstructions(
+                            component.Directions,
+                            string.IsNullOrWhiteSpace(component.DownloadInstructions) ? null : component.DownloadInstructions,
+                            component);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Graceful degradation: unparseable prose may still get an InstallationMethod fallback.
+                        verbose($"[DraftInstructions] Failed to parse prose for '{component.Name}': {ex.Message}");
+                        parsed = new ObservableCollection<Instruction>();
                     }
 
-                    instruction.SetParentComponent(component);
-                    component.Instructions.Add(instruction);
-                    added++;
+                    foreach (Instruction instruction in parsed)
+                    {
+                        if (!TrySanitizeInstruction(instruction))
+                        {
+                            verbose($"[DraftInstructions] Dropped non-sandboxed draft ({instruction.Action}) for '{component.Name}'");
+                            continue;
+                        }
+
+                        instruction.SetParentComponent(component);
+                        component.Instructions.Add(instruction);
+                        added++;
+                    }
+                }
+
+                // K2 Full and similar guides often describe TSLPatcher/HoloPatcher installs via
+                // Installation Method alone, or preference prose ("recommend the X option") that yields
+                // no regex hits. Still draft a sandboxed Patcher (or loose-file Move) for review.
+                if (added == 0)
+                {
+                    Instruction fallback = TryCreateMethodFallbackInstruction(component);
+                    if (fallback != null && TrySanitizeInstruction(fallback))
+                    {
+                        fallback.SetParentComponent(component);
+                        component.Instructions.Add(fallback);
+                        added++;
+                        verbose($"[DraftInstructions] Applied InstallationMethod fallback ({fallback.Action}) for '{component.Name}'");
+                    }
                 }
 
                 if (added > 0)
@@ -116,6 +135,76 @@ namespace ModSync.Core.Parsing
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// When prose does not parse into instructions, invent a minimal sandboxed draft from
+        /// <see cref="ModComponent.InstallationMethod"/> and/or patcher keywords in Directions.
+        /// </summary>
+        [CanBeNull]
+        private static Instruction TryCreateMethodFallbackInstruction([NotNull] ModComponent component)
+        {
+            string method = component.InstallationMethod ?? string.Empty;
+            string directions = component.Directions ?? string.Empty;
+            string combined = method + " " + directions;
+
+            if (LooksLikePatcherInstall(combined))
+            {
+                return new Instruction
+                {
+                    Action = Instruction.ActionType.Patcher,
+                    Source = new List<string> { ModDirectoryPlaceholder },
+                    Destination = KotorDirectoryPlaceholder,
+                    Overwrite = true,
+                };
+            }
+
+            if (LooksLikeLooseFileInstall(method)
+                && !LooksLikePatcherInstall(directions)
+                && method.IndexOf("executable", StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                string destination = directions.IndexOf("movies", StringComparison.OrdinalIgnoreCase) >= 0
+                    ? KotorDirectoryPlaceholder + @"\Movies"
+                    : KotorDirectoryPlaceholder + @"\Override";
+
+                return new Instruction
+                {
+                    Action = Instruction.ActionType.Move,
+                    Source = new List<string> { ModDirectoryPlaceholder + @"\*" },
+                    Destination = destination,
+                    Overwrite = directions.IndexOf("do not overwrite", StringComparison.OrdinalIgnoreCase) < 0
+                        && directions.IndexOf("don't overwrite", StringComparison.OrdinalIgnoreCase) < 0,
+                };
+            }
+
+            if (method.IndexOf("executable", StringComparison.OrdinalIgnoreCase) >= 0
+                || directions.IndexOf("executable", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return new Instruction
+                {
+                    Action = Instruction.ActionType.Execute,
+                    Source = new List<string> { ModDirectoryPlaceholder + @"\*" },
+                    Destination = string.Empty,
+                    Overwrite = true,
+                };
+            }
+
+            return null;
+        }
+
+        private static bool LooksLikePatcherInstall([NotNull] string text)
+        {
+            string lower = text.ToLowerInvariant();
+            return lower.IndexOf("tslpatcher", StringComparison.Ordinal) >= 0
+                || lower.IndexOf("holopatcher", StringComparison.Ordinal) >= 0
+                || lower.IndexOf("multi-run", StringComparison.Ordinal) >= 0;
+        }
+
+        private static bool LooksLikeLooseFileInstall([NotNull] string text)
+        {
+            string lower = text.ToLowerInvariant();
+            return lower.IndexOf("loose-file", StringComparison.Ordinal) >= 0
+                || lower.IndexOf("loose file", StringComparison.Ordinal) >= 0;
         }
 
         /// <summary>

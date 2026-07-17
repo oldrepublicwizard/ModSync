@@ -48,6 +48,31 @@ namespace ModSync.Tests
         private const string MoveExceptProse =
             "The file has the wrong readme; move all the files in the Creatures folder, except for the readme and Gizka.jpg (any .jpg/.png files are always previews and can be deleted), to the override.";
 
+        // K2 Full / neocities phrases that previously yielded 0 drafts.
+        private const string K2OverrideFolderProse =
+            "Install the files within the Override folder.";
+
+        private const string K2IncludedOverrideProse =
+            "Install the files from the included Override directory only.";
+
+        private const string K2HoloPatcherSelectProse =
+            "Run the HoloPatcher executable. Select the default install, not M4-78.";
+
+        private const string K2InstallQuotedOptionProse =
+            "If you would like to have Visas's class as Sith Assassin, install the \"Standard + Sith Assassin Visas\" option. Otherwise, simply install \"Standard.\"";
+
+        private const string K2MoviesFolderProse =
+            "Bear in mind that the files from this mod go in your movies folder, not override.";
+
+        private const string K2TpcVariantMoveProse =
+            "Download the .tpc variant of the mod. For this mod only, do not overwrite if prompted!";
+
+        private const string K2GoIntoFolderMoveProse =
+            "Ignore the \"Player Bodies\" folder. Go into the NPC Replacement folder and move all the loose files to the override directory. Ignore the optional folder.";
+
+        private const string K2CommunityPatchFoldersProse =
+            "If you are using the K2 Community Patch, install the contents of every folder but Straight Fixes (that was already in the K2CP).";
+
         private const string MarkdownGuide = @"### Guide Ingestion Test Mod
 
 **Name:** [Guide Ingestion Test Mod](https://example.com/guide-ingestion-test-mod.zip)
@@ -235,6 +260,165 @@ ___
         }
 
         [Test]
+        public void DraftInstructions_K2OverrideFolderProse_ProducesSandboxedMove()
+        {
+            ModComponent component = CreateComponent(K2OverrideFolderProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i =>
+                i.Action == Instruction.ActionType.Move
+                && i.Source.Any(s => s.IndexOf("Override", StringComparison.OrdinalIgnoreCase) >= 0)
+                && i.Destination.IndexOf("Override", StringComparison.OrdinalIgnoreCase) >= 0), Is.True);
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_K2IncludedOverrideProse_ProducesSandboxedMove()
+        {
+            ModComponent component = CreateComponent(K2IncludedOverrideProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i => i.Action == Instruction.ActionType.Move), Is.True);
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_K2HoloPatcherSelectProse_ProducesSandboxedPatcher()
+        {
+            ModComponent component = CreateComponent(K2HoloPatcherSelectProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i =>
+                i.Action == Instruction.ActionType.Patcher
+                && i.Source.Count > 0
+                && i.Source[0].StartsWith(ModDirectoryPlaceholder, StringComparison.Ordinal)), Is.True);
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_K2InstallQuotedOptionProse_ProducesSandboxedPatcher()
+        {
+            ModComponent component = CreateComponent(K2InstallQuotedOptionProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i => i.Action == Instruction.ActionType.Patcher), Is.True);
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_K2MoviesFolderProse_ProducesMoviesDestination()
+        {
+            ModComponent component = CreateComponent(K2MoviesFolderProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i =>
+                i.Action == Instruction.ActionType.Move
+                && i.Destination.IndexOf("Movies", StringComparison.OrdinalIgnoreCase) >= 0), Is.True);
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_K2TpcVariantMoveProse_ProducesSandboxedMoveWithoutOverwrite()
+        {
+            ModComponent component = CreateComponent(K2TpcVariantMoveProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i =>
+                i.Action == Instruction.ActionType.Move
+                && i.Overwrite == false), Is.True);
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_K2GoIntoFolderMoveProse_ProducesSandboxedMove()
+        {
+            ModComponent component = CreateComponent(K2GoIntoFolderMoveProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i =>
+                i.Action == Instruction.ActionType.Move
+                && i.Source.Any(s => s.IndexOf("NPC Replacement", StringComparison.OrdinalIgnoreCase) >= 0)), Is.True);
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_K2CommunityPatchFoldersProse_ProducesSandboxedMove()
+        {
+            ModComponent component = CreateComponent(K2CommunityPatchFoldersProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i => i.Action == Instruction.ActionType.Move), Is.True);
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_PatcherInstallationMethodFallback_WhenPreferenceOnlyProse()
+        {
+            var component = new ModComponent
+            {
+                Name = "Preference-Only Patcher Mod",
+                Guid = Guid.NewGuid(),
+                InstallationMethod = "HoloPatcher Mod",
+                Directions = "Recommend Drew's fix, as it preserves more of the original dialogue.",
+            };
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions[0].Action, Is.EqualTo(Instruction.ActionType.Patcher));
+            AssertInstructionIsSandboxed(component.Instructions[0]);
+        }
+
+        [Test]
         public void DraftInstructions_ComponentWithExistingInstructions_IsNeverTouched()
         {
             ModComponent component = CreateComponent(MoveFoldersProse);
@@ -264,6 +448,74 @@ ___
                 Assert.That(results, Is.Empty, "Unparseable prose should degrade to today's behavior");
                 Assert.That(component.Instructions, Is.Empty);
             });
+        }
+
+        [Test]
+        public void DraftInstructions_EmptyDirectionsLooseFileMod_UsesInstallationMethodFallback()
+        {
+            ModComponent component = CreateComponent(string.Empty);
+            component.InstallationMethod = "Loose-File Mod";
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions[0].Action, Is.EqualTo(Instruction.ActionType.Move));
+            AssertInstructionIsSandboxed(component.Instructions[0]);
+        }
+
+        [Test]
+        public void DraftInstructions_EmptyDirectionsTslpatcherMod_UsesPatcherFallback()
+        {
+            ModComponent component = CreateComponent(string.Empty);
+            component.InstallationMethod = "TSLPatcher Mod";
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions[0].Action, Is.EqualTo(Instruction.ActionType.Patcher));
+            AssertInstructionIsSandboxed(component.Instructions[0]);
+        }
+
+        [Test]
+        public void DraftInstructions_RecommendationOnlyLooseFileProse_UsesLooseFileFallback()
+        {
+            ModComponent component = CreateComponent(
+                "Recommend the version without overlays, but it's personal preference.");
+            component.InstallationMethod = "Loose-File Mod";
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions[0].Action, Is.EqualTo(Instruction.ActionType.Move));
+            AssertInstructionIsSandboxed(component.Instructions[0]);
+        }
+
+        [Test]
+        public void DraftInstructions_K2SiteProsePatterns_DraftSandboxedInstructions()
+        {
+            var cases = new (string Prose, Instruction.ActionType Expected)[]
+            {
+                ("Install the files within the Override folder.", Instruction.ActionType.Move),
+                ("Download the .tpc variant of the mod. For this mod only, do not overwrite if prompted!", Instruction.ActionType.Move),
+                ("Run the HoloPatcher executable. Select the default install, not M4-78.", Instruction.ActionType.Patcher),
+                ("If you would like to have Visas's class as Sith Assassin, install the \"Standard + Sith Assassin Visas\" option. Otherwise, simply install \"Standard.\"", Instruction.ActionType.Patcher),
+            };
+
+            foreach ((string prose, Instruction.ActionType expected) in cases)
+            {
+                ModComponent component = CreateComponent(prose);
+                component.InstallationMethod = expected == Instruction.ActionType.Patcher ? "HoloPatcher Mod" : "Loose-File Mod";
+
+                IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+                Assert.That(results, Has.Count.EqualTo(1), $"Expected draft for prose: {prose}");
+                Assert.That(component.Instructions.Any(i => i.Action == expected), Is.True, $"Expected {expected} for: {prose}");
+                foreach (Instruction instruction in component.Instructions)
+                {
+                    AssertInstructionIsSandboxed(instruction);
+                }
+            }
         }
 
         [Test]
@@ -548,7 +800,8 @@ Name = ""Paste Cascade Toml Mod""
             GuideIngestResult ingested = GuideIngestService.Instance.IngestFromText(markdown, formatHint: "markdown", parseDirections: true);
 
             Assert.That(ingested.Components.Count, Is.GreaterThanOrEqualTo(100));
-            Assert.That(ingested.DraftResults, Is.Not.Empty, "NLP should draft instructions for at least one K2 Full component");
+            Assert.That(ingested.DraftResults.Count, Is.GreaterThanOrEqualTo(130),
+                "K2 Full fixture should draft instructions for the majority of real mod entries");
 
             foreach (DraftInstructionResult draft in ingested.DraftResults)
             {
