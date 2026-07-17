@@ -1021,9 +1021,22 @@ namespace ModSync.Core.CLI
             await FomodPostDownloadOrchestrator.ProcessAsync(components, modDirectory, host).ConfigureAwait(false);
         }
 
-        private static async Task<DownloadCacheService> DownloadAllModFilesAsync(List<ModComponent> components, string destinationDirectory, bool verbose, bool sequential = true, CancellationToken cancellationToken = default)
+        private static async Task<DownloadCacheService> DownloadAllModFilesAsync(
+            List<ModComponent> components,
+            string destinationDirectory,
+            bool verbose,
+            bool sequential = true,
+            CancellationToken cancellationToken = default,
+            bool downloadSelectedOnly = false)
         {
-            int componentCount = components.Count(c => c.ResourceRegistry != null && c.ResourceRegistry.Count > 0);
+            IEnumerable<ModComponent> candidates = components.Where(c => c.ResourceRegistry != null && c.ResourceRegistry.Count > 0);
+            if (downloadSelectedOnly)
+            {
+                candidates = candidates.Where(c => c.IsSelected);
+            }
+
+            var componentsToProcess = candidates.ToList();
+            int componentCount = componentsToProcess.Count;
             if (componentCount == 0)
             {
                 if (s_progressDisplay != null)
@@ -1145,9 +1158,6 @@ namespace ModSync.Core.CLI
 
             try
             {
-                var componentsToProcess = components.Where(c => c.ResourceRegistry != null && c.ResourceRegistry.Count > 0).ToList();
-
-
                 await Logger.LogVerboseAsync($"[Download] Processing {componentsToProcess.Count} components with concurrency limit of 10").ConfigureAwait(false);
 
                 using (var semaphore = new SemaphoreSlim(10))
@@ -3228,7 +3238,8 @@ componentName: null,
                             sourceDir,
                             opts.Verbose,
                             sequential: !opts.Concurrent,
-                            downloadCts.Token).ConfigureAwait(false);
+                            downloadCts.Token,
+                            downloadSelectedOnly: true).ConfigureAwait(false);
                     }
 
                     LogAllErrors(s_globalDownloadCache, forceConsoleOutput: true);
