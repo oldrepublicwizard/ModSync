@@ -10,6 +10,7 @@ using System.Linq;
 using ModSync.Core;
 using ModSync.Core.CLI;
 using ModSync.Core.Parsing;
+using ModSync.Core.Ports.Guides;
 using ModSync.Core.Services;
 
 using NUnit.Framework;
@@ -506,6 +507,92 @@ Name = ""Paste Cascade Toml Mod""
                     AssertInstructionIsSandboxed(instruction);
                 }
             }
+        }
+
+        #endregion
+
+        #region K2 Full site fixture (neocities plain-field markdown)
+
+        [Test]
+        public void K2FullGuideFixture_PlainFieldMarkdown_ParsesManyComponents()
+        {
+            string fixturePath = Path.Combine(ResolveRepoRoot(), "src", "ModSync.Tests", "Fixtures", "k2_full_guide.md");
+            Assert.That(File.Exists(fixturePath), Is.True, $"Expected fixture at {fixturePath}");
+
+            string markdown = File.ReadAllText(fixturePath);
+            IReadOnlyList<ModComponent> components = ModComponentSerializationService.DeserializeModComponentFromString(markdown, "markdown");
+
+            // Fixture has ~124 plain "Name:" lines and ~169 ### headings; Mod List sections must not collapse to 1.
+            Assert.That(components.Count, Is.GreaterThanOrEqualTo(100),
+                $"Expected >=100 components from site-scraped K2 Full guide, got {components.Count}");
+
+            Assert.That(components.Any(c => c.Name.IndexOf("Silent Sion", StringComparison.OrdinalIgnoreCase) >= 0), Is.True);
+            Assert.That(components.Any(c =>
+                !string.IsNullOrWhiteSpace(c.Directions)
+                && c.Directions.IndexOf("153sion.dlg", StringComparison.OrdinalIgnoreCase) >= 0), Is.True,
+                "Plain 'Installation Instructions' blocks should populate Directions");
+
+            ModComponent withAuthor = components.FirstOrDefault(c =>
+                !string.IsNullOrWhiteSpace(c.Author)
+                && c.Name.IndexOf("TSLRCM", StringComparison.OrdinalIgnoreCase) >= 0);
+            Assert.That(withAuthor, Is.Not.Null, "Plain Author: fields should populate Author");
+        }
+
+        [Test]
+        public void K2FullGuideFixture_ParseDirections_DraftsSandboxedInstructions()
+        {
+            string fixturePath = Path.Combine(ResolveRepoRoot(), "src", "ModSync.Tests", "Fixtures", "k2_full_guide.md");
+            Assert.That(File.Exists(fixturePath), Is.True);
+
+            string markdown = File.ReadAllText(fixturePath);
+            GuideIngestResult ingested = GuideIngestService.Instance.IngestFromText(markdown, formatHint: "markdown", parseDirections: true);
+
+            Assert.That(ingested.Components.Count, Is.GreaterThanOrEqualTo(100));
+            Assert.That(ingested.DraftResults, Is.Not.Empty, "NLP should draft instructions for at least one K2 Full component");
+
+            foreach (DraftInstructionResult draft in ingested.DraftResults)
+            {
+                Assert.That(draft.Component.InstallationWarning, Does.Contain(DraftInstructionService.ReviewFlagMessage));
+                foreach (Instruction instruction in draft.Component.Instructions)
+                {
+                    AssertInstructionIsSandboxed(instruction);
+                }
+            }
+
+            Assert.That(
+                ingested.DraftResults.Any(d => d.Component.Instructions.Any(i =>
+                    i.Action == Instruction.ActionType.Move
+                    || i.Action == Instruction.ActionType.Delete
+                    || i.Action == Instruction.ActionType.Extract
+                    || i.Action == Instruction.ActionType.Patcher)),
+                Is.True,
+                "Expected Move/Delete/Extract/Patcher drafts from K2 Full installation prose");
+        }
+
+        [Test]
+        public void ModBuildsK2Full_BoldFieldMarkdown_StillParsesHighComponentCount()
+        {
+            string repoRoot = ResolveRepoRoot();
+            string markdownPath = Path.Combine(repoRoot, "mod-builds", "content", "k2", "full.md");
+            if (!File.Exists(markdownPath))
+            {
+                // Sibling checkout used by local agents when worktree lacks mod-builds submodule content.
+                string sibling = Path.GetFullPath(Path.Combine(repoRoot, "..", "ModSync", "mod-builds", "content", "k2", "full.md"));
+                if (File.Exists(sibling))
+                {
+                    markdownPath = sibling;
+                }
+                else
+                {
+                    Assert.Ignore($"mod-builds K2 full.md not found at {markdownPath}");
+                }
+            }
+
+            IReadOnlyList<ModComponent> components =
+                ModComponentSerializationService.DeserializeModComponentFromString(File.ReadAllText(markdownPath), "markdown");
+
+            Assert.That(components.Count, Is.GreaterThanOrEqualTo(100),
+                $"Bold **Name:** path must keep working for mod-builds K2 full (got {components.Count})");
         }
 
         #endregion

@@ -381,7 +381,10 @@ namespace ModSync.Core.Parsing
                 if (nameFieldMatch.Success)
                 {
 
-                    component.NameFieldContent = nameFieldMatch.Value.Replace("**Name:**", "").Trim();
+                    // Strip bold or plain Name: label from captured field text.
+                    component.NameFieldContent = Regex
+                        .Replace(nameFieldMatch.Value, @"^\s*(?:\*\*Name:\*\*|Name:)\s*", string.Empty, RegexOptions.None, TimeSpan.FromSeconds(1))
+                        .Trim();
                     _logVerbose($"  Captured full Name field content: '{component.NameFieldContent.Substring(0, Math.Min(100, component.NameFieldContent.Length))}...'");
                 }
             }
