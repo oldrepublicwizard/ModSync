@@ -15,6 +15,13 @@
             HorizontalAlignment="Center"
             Text="All widescreen mods have been successfully installed."
             TextAlignment="Center" />
+        <TextBlock
+            x:Name="ManagedDeploymentSummaryText"
+            HorizontalAlignment="Center"
+            IsVisible="False"
+            MaxWidth="600"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
     </StackPanel>
 </UserControl>
 

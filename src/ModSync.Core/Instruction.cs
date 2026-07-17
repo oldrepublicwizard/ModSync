@@ -427,6 +427,45 @@ namespace ModSync.Core
             }
             RealDestinationPath = thisDestination;
         }
+
+        internal bool TryGetResolvedDestinationFullName([CanBeNull] out string fullName)
+        {
+            fullName = RealDestinationPath?.FullName;
+            return !string.IsNullOrWhiteSpace(fullName);
+        }
+
+        /// <summary>
+        /// Returns resolved source full paths when <see cref="SetRealPaths"/> has already run.
+        /// </summary>
+        internal bool TryGetResolvedSourcePaths([CanBeNull] out IReadOnlyList<string> paths)
+        {
+            paths = RealSourcePaths;
+            return RealSourcePaths != null && RealSourcePaths.Count > 0;
+        }
+
+        internal void RedirectResolvedDestination([NotNull] string newFullPath)
+        {
+            if (string.IsNullOrWhiteSpace(newFullPath))
+            {
+                throw new ArgumentException("Destination path cannot be null or whitespace.", nameof(newFullPath));
+            }
+
+            RealDestinationPath = new DirectoryInfo(Path.GetFullPath(newFullPath));
+        }
+
+        /// <summary>
+        /// Replaces already-resolved source file paths after <see cref="SetRealPaths"/>.
+        /// Used by managed install so later Move/Copy/Rename steps follow files into the staging tree.
+        /// </summary>
+        internal void RedirectResolvedSources([NotNull][ItemNotNull] IReadOnlyList<string> newFullPaths)
+        {
+            if (newFullPaths is null)
+            {
+                throw new ArgumentNullException(nameof(newFullPaths));
+            }
+
+            RealSourcePaths = new List<string>(newFullPaths);
+        }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "<Pending>")]
         public async Task<ActionExitCode> ExtractFileAsync(
             DirectoryInfo argDestinationPath = null,

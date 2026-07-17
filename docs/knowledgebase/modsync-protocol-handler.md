@@ -1,8 +1,16 @@
 # modsync:// protocol handler
 
-`[REPO]` How an "Install with ModSync" deep link reaches the app: URL parsing, CLI launch args, and single-instance hand-off. OS scheme registration is planned but not shipped in this slice.
+`[REPO]` How an "Install with ModSync" deep link reaches the app: URL parsing, CLI
+launch args, single-instance hand-off, fetch/consume, and OS scheme registration.
 
-Sources: `src/ModSync.Core/Services/Protocol/ModSyncUrl.cs`, `src/ModSync.GUI/CLIArguments.cs`, `src/ModSync.GUI/Program.cs`, `src/ModSync.GUI/Services/SingleInstanceService.cs`, `src/ModSync.GUI/Services/ModSyncHandoffQueue.cs`, `src/ModSync.GUI/Services/ApplicationLaunchCoordinator.cs`. Follow-up: `docs/plans/2026-07-13-006-feat-modsync-protocol-os-registration-plan.md`. Related: [nxm-protocol-handler.md](nxm-protocol-handler.md).
+Sources: `src/ModSync.Core/Services/Protocol/ModSyncUrl.cs`,
+`ModSyncInstructionFetcher.cs`, `src/ModSync.Core/Ports/Protocol/`,
+`src/ModSync.GUI/Services/ModSyncHandoffQueue.cs`,
+`ModSyncHandoffService.cs`, `ModSyncProtocolRegistrationService.cs`,
+`CLIArguments.ModSyncProtocolUrl`, `Program.cs`, `SingleInstanceService`,
+`ApplicationLaunchCoordinator`. Related: [nxm-protocol-handler.md](nxm-protocol-handler.md).
+OS registration follow-up notes:
+`docs/plans/2026-07-13-006-feat-modsync-protocol-os-registration-plan.md`.
 
 ## URL model
 
@@ -15,21 +23,20 @@ Sources: `src/ModSync.Core/Services/Protocol/ModSyncUrl.cs`, `src/ModSync.GUI/CL
 | Game host + action path | `modsync://kotor/install?url=https%3A%2F%2F...` |
 | Action host + game path | `modsync://install/kotor2?url=https%3A%2F%2F...` |
 
-Rules: scheme `modsync://`; action `install` or `open`; optional game `kotor`/`kotor2`; instruction must be absolute http(s). Local `file://` and bare paths are rejected.
+Rules: scheme `modsync://`; action `install` or `open`; optional game `kotor`/`kotor2`;
+instruction must be absolute http(s). Local `file://` and bare paths are rejected.
 
-## Pipeline (shipped)
+## Status
 
-| Stage | Component | Behavior |
-|-------|-----------|----------|
-| Parse | `ModSyncUrl` | `IsModSyncUrl` / `TryParse` |
-| Launch | `CLIArguments` | `--modsync=<url>` or bare `modsync://...` → `ModSyncProtocolUrl` |
-| Single instance | `SingleInstanceService` + `ApplicationLaunchCoordinator` | `ForwardProtocolUrlAndExit` for nxm/modsync |
-| Buffering | `ModSyncHandoffQueue` | Queue + `UrlEnqueued` until MainWindow consumes (deferred) |
+| Layer | Location | Notes |
+|-------|----------|-------|
+| Parse | `ModSyncUrl` / `ModSyncProtocolHandler` | http(s) instruction URL only |
+| CLI / queue | `--modsync=` or bare `modsync://` → `ModSyncHandoffQueue` | Single-instance forward |
+| Consume | `ModSyncHandoffService` | Fetch → temp file → `FileLoadingService` → activate |
+| OS registration | `ModSyncProtocolRegistrationService` | Win/Linux/macOS builders + Register; Settings checkbox deferred |
 
-## Not shipped yet
+Accepted forms: `modsync://install?url=…`, `modsync://open?instruction=…&game=kotor`,
+`modsync://kotor/install?url=…`.
 
-OS registration, Settings toggle, MainWindow drain/fetch/load — see follow-up plan.
-
-## Tests
-
-`ModSyncUrlTests`, `CLIArgumentsModSyncTests`, `ApplicationLaunchCoordinatorTests`, `SingleInstanceServiceTests` (modsync pipe path).
+Tests: `ModSyncUrlTests`, `CLIArgumentsModSyncTests`, `ModSyncProtocolConsumeTests`,
+`ApplicationLaunchCoordinatorTests`, `SingleInstanceServiceTests` (modsync pipe handoff).

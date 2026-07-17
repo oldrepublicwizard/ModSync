@@ -17,6 +17,14 @@
             Text="All mods have been successfully installed."
             TextAlignment="Center" />
 
+        <TextBlock
+            x:Name="ManagedDeploymentSummaryText"
+            HorizontalAlignment="Center"
+            IsVisible="False"
+            MaxWidth="600"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+
         <Border CornerRadius="8" MaxWidth="600" Padding="24">
             <StackPanel Spacing="12">
                 <TextBlock

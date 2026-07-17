@@ -207,7 +207,14 @@ namespace ModSync.Core.Services.Deployment
                     continue;
                 }
 
-                string destinationPath = Path.Combine(_gameDirectory, DenormalizeRelativePath(entry.RelativePath));
+                if (!TryResolveConfinedGamePath(entry.RelativePath, out string destinationPath))
+                {
+                    Logger.LogWarning(
+                        $"[Deployment] Skipping unsafe relative path '{entry.RelativePath}' during uninstall of " +
+                        $"'{manifest.ComponentName}' ({componentGuid}).");
+                    continue;
+                }
+
                 bool removed = false;
 
                 if (File.Exists(destinationPath))
@@ -232,8 +239,16 @@ namespace ModSync.Core.Services.Deployment
 
                 if (entry.OverwroteExisting && !string.IsNullOrWhiteSpace(entry.BackupRelativePath))
                 {
-                    string backupPath = Path.Combine(componentBackupDirectory, DenormalizeRelativePath(entry.BackupRelativePath));
-                    if (File.Exists(backupPath))
+                    if (!TryResolveConfinedBackupPath(
+                            componentBackupDirectory,
+                            entry.BackupRelativePath,
+                            out string backupPath))
+                    {
+                        Logger.LogWarning(
+                            $"[Deployment] Skipping unsafe backup path '{entry.BackupRelativePath}' during uninstall of " +
+                            $"'{manifest.ComponentName}' ({componentGuid}).");
+                    }
+                    else if (File.Exists(backupPath))
                     {
                         if (removed)
                         {
@@ -471,5 +486,57 @@ namespace ModSync.Core.Services.Deployment
         [NotNull]
         private static string DenormalizeRelativePath([NotNull] string relativePath) =>
             relativePath.Replace('/', Path.DirectorySeparatorChar);
+
+        /// <summary>
+        /// Resolves a manifest relative path under <paramref name="root"/>, rejecting
+        /// rooted paths, <c>..</c> segments, and any result that escapes the root.
+        /// </summary>
+        private static bool TryResolveConfinedPath(
+            [NotNull] string root,
+            [NotNull] string relativePath,
+            [CanBeNull] out string absolutePath)
+        {
+            absolutePath = null;
+            if (string.IsNullOrWhiteSpace(relativePath))
+            {
+                return false;
+            }
+
+            string denormalized = DenormalizeRelativePath(relativePath.Trim());
+            if (Path.IsPathRooted(denormalized))
+            {
+                return false;
+            }
+
+            string[] segments = denormalized.Split(
+                new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar },
+                StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Any(segment => segment == ".."))
+            {
+                return false;
+            }
+
+            string candidate = Path.GetFullPath(Path.Combine(root, denormalized));
+            string rootFull = Path.GetFullPath(root);
+            if (!candidate.StartsWith(rootFull + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(candidate, rootFull, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            absolutePath = candidate;
+            return true;
+        }
+
+        private bool TryResolveConfinedGamePath(
+            [NotNull] string relativePath,
+            [CanBeNull] out string absolutePath) =>
+            TryResolveConfinedPath(_gameDirectory, relativePath, out absolutePath);
+
+        private static bool TryResolveConfinedBackupPath(
+            [NotNull] string backupRoot,
+            [NotNull] string relativePath,
+            [CanBeNull] out string absolutePath) =>
+            TryResolveConfinedPath(backupRoot, relativePath, out absolutePath);
     }
 }

@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 
 using JetBrains.Annotations;
 
+using ModSync.Core.Services.Installation;
 using ModSync.Core.Utility;
 
 using Newtonsoft.Json;
@@ -854,6 +855,15 @@ namespace ModSync.Core
 
                 if (exitCode == InstallExitCode.Success)
                 {
+                    ManagedInstallSession managedSession = ManagedInstallSession.Current;
+                    if (managedSession != null)
+                    {
+                        exitCode = await managedSession.DeployComponentAsync(this, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+
+                if (exitCode == InstallExitCode.Success)
+                {
                     InstallState = ComponentInstallState.Completed;
                     LastCompletedUtc = DateTimeOffset.UtcNow;
                 }
@@ -920,6 +930,11 @@ namespace ModSync.Core
             }
             return InstallExitCode.UnknownError;
         }
+        private void ApplyManagedInstallHook([NotNull] Instruction instruction)
+        {
+            ManagedInstallSession.Current?.ApplyStagingRedirect(instruction, Guid);
+        }
+
         /// <summary>
         /// Resolves instruction source paths on disk, optionally pulling from downloaded archives first.
         /// Returns false when sources are still missing (caller should return <see cref="Instruction.ActionExitCode.FileNotFoundPre"/>).
@@ -933,6 +948,7 @@ namespace ModSync.Core
             try
             {
                 instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                ApplyManagedInstallHook(instruction);
                 return true;
             }
             catch (FileNotFoundException)
@@ -950,6 +966,7 @@ namespace ModSync.Core
                 if (TryRemapMoveFirstModSubfolderToVariant(instruction, fileSystemProvider))
                 {
                     instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                    ApplyManagedInstallHook(instruction);
                     return true;
                 }
 
@@ -970,6 +987,7 @@ namespace ModSync.Core
                 if (TryRemapMoveFirstModSubfolderToVariant(instruction, fileSystemProvider))
                 {
                     instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                    ApplyManagedInstallHook(instruction);
                     return true;
                 }
 
@@ -986,6 +1004,7 @@ namespace ModSync.Core
             try
             {
                 instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+                ApplyManagedInstallHook(instruction);
                 return true;
             }
             catch (FileNotFoundException)
@@ -1001,6 +1020,7 @@ namespace ModSync.Core
             }
 
             instruction.SetRealPaths(sourceIsNotFilePath, skipExistenceCheck);
+            ApplyManagedInstallHook(instruction);
             await Logger.LogVerboseAsync("Remapped extracted archive sources to resolved descendants.").ConfigureAwait(false);
             return true;
         }
@@ -1532,10 +1552,12 @@ namespace ModSync.Core
                     break;
                 case Instruction.ActionType.Delete:
                     instruction.SetRealPaths(skipExistenceCheck: true);
+                    ApplyManagedInstallHook(instruction);
                     exitCode = instruction.DeleteFile();
                     break;
                 case Instruction.ActionType.DelDuplicate:
                     instruction.SetRealPaths(sourceIsNotFilePath: true);
+                    ApplyManagedInstallHook(instruction);
                     instruction.DeleteDuplicateFile(caseInsensitive: true);
                     exitCode = Instruction.ActionExitCode.Success;
                     break;
@@ -1569,6 +1591,7 @@ namespace ModSync.Core
                     break;
                 case Instruction.ActionType.Rename:
                     instruction.SetRealPaths(skipExistenceCheck: true);
+                    ApplyManagedInstallHook(instruction);
                     exitCode = instruction.RenameFile();
                     break;
                 case Instruction.ActionType.Patcher:
@@ -1580,11 +1603,13 @@ namespace ModSync.Core
                         return Instruction.ActionExitCode.FileNotFoundPre;
                     }
 
+                    ApplyManagedInstallHook(instruction);
                     exitCode = await instruction.ExecuteTSLPatcherAsync().ConfigureAwait(false);
                     break;
                 case Instruction.ActionType.Execute:
                 case Instruction.ActionType.Run:
                     instruction.SetRealPaths(skipExistenceCheck: true);
+                    ApplyManagedInstallHook(instruction);
                     exitCode = await instruction.ExecuteProgramAsync().ConfigureAwait(false);
                     break;
                 case Instruction.ActionType.Choose:
@@ -1610,6 +1635,7 @@ namespace ModSync.Core
                     break;
                 case Instruction.ActionType.CleanList:
                     instruction.SetRealPaths(skipExistenceCheck: true);
+                    ApplyManagedInstallHook(instruction);
                     // Robust auto-selection: token-based matching and special-cases
                     bool IsModSelected(string modName)
                     {

@@ -11,23 +11,32 @@ namespace ModSync.Tests
     public class ApplicationLaunchCoordinatorTests
     {
         [Test]
-        public void DecideSecondaryAction_WithProtocolUrl_ForwardsProtocolUrl()
+        public void DecideSecondaryAction_WithProtocolUrl_ForwardsProtocol()
         {
-            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(true, false);
+            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(
+                hasProtocolHandoffUrl: true,
+                allowMultipleInstances: false);
+
             Assert.That(action, Is.EqualTo(SecondaryLaunchAction.ForwardProtocolUrlAndExit));
         }
 
         [Test]
         public void DecideSecondaryAction_WithoutProtocolUrl_ForwardsActivate()
         {
-            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(false, false);
+            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(
+                hasProtocolHandoffUrl: false,
+                allowMultipleInstances: false);
+
             Assert.That(action, Is.EqualTo(SecondaryLaunchAction.ForwardActivateAndExit));
         }
 
         [Test]
         public void DecideSecondaryAction_AllowMultiple_StartsNewInstance()
         {
-            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(false, true);
+            SecondaryLaunchAction action = ApplicationLaunchCoordinator.DecideSecondaryAction(
+                hasProtocolHandoffUrl: false,
+                allowMultipleInstances: true);
+
             Assert.That(action, Is.EqualTo(SecondaryLaunchAction.StartNewInstance));
         }
     }

@@ -14,7 +14,9 @@ using Avalonia.Threading;
 using JetBrains.Annotations;
 
 using ModSync.Core;
+using ModSync.Core.Ports.Profiles;
 using ModSync.Core.Services.Profiles;
+using ModSync.Models;
 using ModSync.Services;
 
 namespace ModSync.Dialogs
@@ -22,7 +24,7 @@ namespace ModSync.Dialogs
     public partial class ProfileManagerDialog : Window
     {
         [NotNull]
-        private readonly ProfileService _profileService;
+        private readonly IProfileStore _profileService;
 
         public ProfileManagerDialog()
         {
@@ -121,6 +123,11 @@ namespace ModSync.Dialogs
             try
             {
                 _profileService.ApplyProfile(profile, MainConfig.AllComponents);
+
+                AppSettings settings = SettingsManager.LoadSettings();
+                settings.ActiveProfileName = profile.Name;
+                SettingsManager.SaveSettings(settings);
+
                 RefreshProfiles();
                 SetStatus($"Activated profile '{profile.Name}'. Directories and mod selections were applied.");
             }
@@ -205,9 +212,21 @@ namespace ModSync.Dialogs
 
             try
             {
+                AppSettings currentSettings = SettingsManager.LoadSettings();
+                bool deletingActive = string.Equals(
+                    currentSettings.ActiveProfileName,
+                    profile.Name,
+                    StringComparison.OrdinalIgnoreCase);
+
+                string confirmText = deletingActive
+                    ? $"Delete active profile '{profile.Name}'?\n\n" +
+                      "The active profile setting will be cleared. " +
+                      "Managed deployments linked to this profile are not purged automatically."
+                    : $"Delete profile '{profile.Name}'? This cannot be undone.";
+
                 bool? confirm = await ConfirmationDialog.ShowConfirmationDialogAsync(
                     this,
-                    confirmText: $"Delete profile '{profile.Name}'? This cannot be undone.",
+                    confirmText: confirmText,
                     yesButtonText: "Delete",
                     noButtonText: "Cancel"
                 );
@@ -217,9 +236,19 @@ namespace ModSync.Dialogs
                 }
 
                 _ = _profileService.DeleteProfile(profile.Name);
+
+                if (deletingActive)
+                {
+                    currentSettings.ActiveProfileName = null;
+                    SettingsManager.SaveSettings(currentSettings);
+                }
+
                 RefreshProfiles();
                 UpdateButtonStates();
-                SetStatus($"Deleted profile '{profile.Name}'.");
+                SetStatus(
+                    deletingActive
+                        ? $"Deleted active profile '{profile.Name}' and cleared the active profile setting."
+                        : $"Deleted profile '{profile.Name}'.");
             }
             catch (Exception ex)
             {

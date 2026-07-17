@@ -4,7 +4,10 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+
+using ModSync.Services;
 
 namespace ModSync.Dialogs.WizardPages
 {
@@ -23,7 +26,11 @@ namespace ModSync.Dialogs.WizardPages
 
         public override bool CanCancel => false;
 
-        public override Task OnNavigatedToAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public override Task OnNavigatedToAsync(CancellationToken cancellationToken)
+        {
+            ManagedDeploymentUiHelper.TryApplySummary(this.FindControl<TextBlock>("ManagedDeploymentSummaryText"));
+            return Task.CompletedTask;
+        }
 
         public override Task OnNavigatingFromAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
