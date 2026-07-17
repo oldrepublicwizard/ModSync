@@ -6,17 +6,12 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel Spacing="16">
-        <TextBlock Text="🖥️ Widescreen Mods" />
-
-        <Border MaxHeight="350" Padding="12" CornerRadius="8">
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                <TextBlock
-                    x:Name="ContentText"
-                    TextWrapping="Wrap" />
+    <Grid Margin="16,12" RowDefinitions="Auto,*">
+        <TextBlock Grid.Row="0" Margin="0,0,0,12" Text="🖥️ Widescreen Mods" />
+        <Border Grid.Row="1" MinHeight="100" Padding="12" CornerRadius="8">
+            <ScrollViewer x:Name="ContentScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <TextBlock x:Name="ContentText" TextWrapping="Wrap" />
             </ScrollViewer>
         </Border>
-    </StackPanel>
+    </Grid>
 </UserControl>
-
-

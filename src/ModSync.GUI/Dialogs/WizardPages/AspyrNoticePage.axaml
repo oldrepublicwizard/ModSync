@@ -6,21 +6,13 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel Spacing="16">
-        <TextBlock Text="⚠️ Aspyr Version Notice" />
-
-        <Border MaxHeight="400" Padding="12" CornerRadius="8">
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                <TextBlock
-                    x:Name="ContentText"
-                    TextWrapping="Wrap" />
+    <Grid Margin="16,12" RowDefinitions="Auto,*,Auto">
+        <TextBlock Grid.Row="0" Margin="0,0,0,12" Text="⚠️ Aspyr Version Notice" />
+        <Border Grid.Row="1" MinHeight="100" Padding="12" CornerRadius="8">
+            <ScrollViewer x:Name="ContentScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <TextBlock x:Name="ContentText" TextWrapping="Wrap" />
             </ScrollViewer>
         </Border>
-
-        <TextBlock
-            Opacity="0.8"
-            Text="Please ensure you are using the correct game version before proceeding." />
-    </StackPanel>
+        <TextBlock Grid.Row="2" Margin="0,12,0,0" Opacity="0.8" Text="Please ensure you are using the correct game version before proceeding." TextWrapping="Wrap" />
+    </Grid>
 </UserControl>
-
-

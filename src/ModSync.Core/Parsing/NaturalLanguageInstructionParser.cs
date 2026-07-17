@@ -271,6 +271,12 @@ namespace ModSync.Core.Parsing
             ),
 
 			// === DELETE PATTERNS (exhaustive) ===
+			// "Before moving ... delete / be sure to delete ..."
+			new InstructionPattern(
+                @"before\s+moving(?:\s+the\s+files?)?(?:\s+to\s+(?:your\s+)?(?:override|game).*?)?,?\s+(?:be\s+sure\s+to\s+)?delete\s+(?:the\s+following(?:\s+files?)?:?\s*)?(?<source>.+?)(?:\.|$)",
+                Instruction.ActionType.Delete,
+                RegexOptions.IgnoreCase
+            ),
 			// "Delete X.ext & .txi"
 			new InstructionPattern(
                 @"delete\s+(?<source>[\w\-_.]+?)(?:\s+&\s+\.[\w]+)+\s+before",
@@ -283,15 +289,15 @@ namespace ModSync.Core.Parsing
                 Instruction.ActionType.Delete,
                 RegexOptions.IgnoreCase
             ),
-			// "(sorted by name) X through Y"
+			// "(sorted by name) X through Y" (markdown emphasis may already be stripped)
 			new InstructionPattern(
-                @"\(sorted\s+by\s+name\)\s+(?<start>[\w\-_.]+?)\s+\*\*through\*\*\s+(?<end>[\w\-_.]+)",
+                @"\(sorted\s+by\s+name\)\s+(?<start>[\w\-_.]+?)\s+(?:\*\*)?through(?:\*\*)?\s+(?<end>[\w\-_.]+)",
                 Instruction.ActionType.Delete,
                 RegexOptions.IgnoreCase
             ),
-			// "Delete the following files: X, Y, Z"
+			// "Delete the following files: X, Y, Z" / "delete the following: X, Y"
 			new InstructionPattern(
-                @"delete\s+the\s+following\s+files?:\s+(?<source>.+?)(?:\.|$)",
+                @"delete\s+the\s+following(?:\s+files?)?:?\s+(?<source>.+?)(?:\.|$)",
                 Instruction.ActionType.Delete,
                 RegexOptions.IgnoreCase
             ),
@@ -412,18 +418,18 @@ namespace ModSync.Core.Parsing
         // Destination normalization mappings
         private static readonly Dictionary<string, string> s_destinationMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["override"] = @"<<gameDirectory>>\Override",
-            ["override folder"] = @"<<gameDirectory>>\Override",
-            ["override directory"] = @"<<gameDirectory>>\Override",
-            ["game's override"] = @"<<gameDirectory>>\Override",
-            ["your override"] = @"<<gameDirectory>>\Override",
-            ["main game directory"] = @"<<gameDirectory>>",
-            ["main directory"] = @"<<gameDirectory>>",
-            ["game directory"] = @"<<gameDirectory>>",
-            ["game directory"] = @"<<gameDirectory>>",
-            ["movies folder"] = @"<<gameDirectory>>\Movies",
-            ["movies"] = @"<<gameDirectory>>\Movies",
-            ["your movies folder"] = @"<<gameDirectory>>\Movies",
+            ["override"] = @"<<kotorDirectory>>\Override",
+            ["override folder"] = @"<<kotorDirectory>>\Override",
+            ["override directory"] = @"<<kotorDirectory>>\Override",
+            ["game's override"] = @"<<kotorDirectory>>\Override",
+            ["your override"] = @"<<kotorDirectory>>\Override",
+            ["main game directory"] = @"<<kotorDirectory>>",
+            ["main directory"] = @"<<kotorDirectory>>",
+            ["game directory"] = @"<<kotorDirectory>>",
+            ["game directory"] = @"<<kotorDirectory>>",
+            ["movies folder"] = @"<<kotorDirectory>>\Movies",
+            ["movies"] = @"<<kotorDirectory>>\Movies",
+            ["your movies folder"] = @"<<kotorDirectory>>\Movies",
         };
 
         public NaturalLanguageInstructionParser([CanBeNull] Action<string> logInfo = null, [CanBeNull] Action<string> logVerbose = null)
@@ -455,8 +461,12 @@ namespace ModSync.Core.Parsing
 
             _logVerbose($"[NLParser] Parsing instructions for component: {parentComponent.Name}");
 
+            // Deadly Stream / mod-builds guides often wrap emphasis around verbs ("**before** moving").
+            // Strip common markdown emphasis markers so regex patterns see plain prose.
+            string normalizedInstructions = StripMarkdownEmphasis(installationInstructions);
+
             // Split into logical units (sentences/clauses)
-            List<string> units = SplitIntoProcessingUnits(installationInstructions);
+            List<string> units = SplitIntoProcessingUnits(normalizedInstructions);
             _logVerbose($"[NLParser] Found {units.Count} instruction units to parse");
 
             foreach (string unit in units)
@@ -529,6 +539,24 @@ namespace ModSync.Core.Parsing
             }
 
             return units;
+        }
+
+        /// <summary>
+        /// Removes common markdown emphasis markers so guide prose matches instruction regexes.
+        /// </summary>
+        [NotNull]
+        private static string StripMarkdownEmphasis([NotNull] string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
+            // Bold/italic markers used heavily in mod-builds Installation Instructions notes.
+            return text
+                .Replace("**", string.Empty)
+                .Replace("__", string.Empty)
+                .Replace("*", string.Empty);
         }
 
         /// <summary>
@@ -1037,12 +1065,12 @@ namespace ModSync.Core.Parsing
             // Check full unit for destination clues
             if (fullUnit.IndexOf("override", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                return @"<<gameDirectory>>\Override";
+                return @"<<kotorDirectory>>\Override";
             }
 
             if (fullUnit.IndexOf("movies", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                return @"<<gameDirectory>>\Movies";
+                return @"<<kotorDirectory>>\Movies";
             }
 
             // Treat as subdirectory of mod directory if it looks like a path
@@ -1052,7 +1080,7 @@ namespace ModSync.Core.Parsing
             }
 
             // Default to override for Move/Copy
-            return @"<<gameDirectory>>\Override";
+            return @"<<kotorDirectory>>\Override";
         }
 
         /// <summary>
@@ -1066,29 +1094,29 @@ namespace ModSync.Core.Parsing
             // Check for destination keywords
             if (lower.Contains("to override") || lower.Contains("to your override") || lower.Contains("in override"))
             {
-                return @"<<gameDirectory>>\Override";
+                return @"<<kotorDirectory>>\Override";
             }
 
             if (lower.Contains("to movies") || lower.Contains("in your movies") || lower.Contains("movies folder"))
             {
-                return @"<<gameDirectory>>\Movies";
+                return @"<<kotorDirectory>>\Movies";
             }
 
             if (lower.Contains("main game directory") || lower.Contains("main directory") || lower.Contains("game directory"))
             {
-                return @"<<gameDirectory>>";
+                return @"<<kotorDirectory>>";
             }
 
             // Patcher always uses kotorDirectory
             if (actionType == Instruction.ActionType.Patcher)
             {
-                return @"<<gameDirectory>>";
+                return @"<<kotorDirectory>>";
             }
 
             // Default for Move/Copy
             if (actionType == Instruction.ActionType.Move || actionType == Instruction.ActionType.Copy)
             {
-                return @"<<gameDirectory>>\Override";
+                return @"<<kotorDirectory>>\Override";
             }
 
             // Others don't need destination

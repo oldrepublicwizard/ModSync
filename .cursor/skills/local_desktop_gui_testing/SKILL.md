@@ -12,7 +12,7 @@ Use this skill when a task needs a real desktop session or VM to:
 Do **not** use this skill for paste-flow / wizard UX smoke that Avalonia headless already covers. Prefer:
 
 ```bash
-./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"
+./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~Headless|FullyQualifiedName~GuiSmoke"
 ```
 
 Do not use this skill for pure parser / serialization / core-only work.

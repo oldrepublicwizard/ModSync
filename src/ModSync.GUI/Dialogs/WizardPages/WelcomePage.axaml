@@ -18,10 +18,9 @@
                 <StackPanel HorizontalAlignment="Center" Spacing="8">
                     <TextBlock
                         HorizontalAlignment="Center"
-                        FontSize="28"
-                        FontWeight="Bold"
                         Text="Welcome to ModSync"
-                        TextAlignment="Center" />
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
                     <TextBlock
                         MaxWidth="720"
                         HorizontalAlignment="Center"
@@ -29,15 +28,16 @@
                         Text="The complete multi-mod installation solution for Knights of the Old Republic"
                         TextAlignment="Center"
                         TextWrapping="Wrap" />
-                    <StackPanel
+                    <WrapPanel
                         Margin="0,4,0,0"
                         HorizontalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="16">
+                        ItemSpacing="16"
+                        LineSpacing="4"
+                        Orientation="Horizontal">
                         <TextBlock Text="✓ Automatic Dependencies" />
                         <TextBlock Text="✓ Cross-Platform" />
                         <TextBlock Text="✓ One-Click Install" />
-                    </StackPanel>
+                    </WrapPanel>
                 </StackPanel>
             </Border>
 
@@ -48,7 +48,7 @@
                     Padding="14,12"
                     CornerRadius="10">
                     <StackPanel Spacing="6">
-                        <TextBlock FontWeight="Bold" Text="&#x274C; The Problem" />
+                        <TextBlock Text="&#x274C; The Problem" />
                         <TextBlock
                             Opacity="0.85"
                             Text="Installing multiple KOTOR mods is tedious and error-prone:"
@@ -68,7 +68,7 @@
                     Padding="14,12"
                     CornerRadius="10">
                     <StackPanel Spacing="6">
-                        <TextBlock FontWeight="Bold" Text="&#x2705; The Solution" />
+                        <TextBlock Text="&#x2705; The Solution" />
                         <TextBlock
                             Opacity="0.85"
                             Text="ModSync automates everything for you:"
@@ -89,7 +89,6 @@
                 <StackPanel Spacing="8">
                     <TextBlock
                         HorizontalAlignment="Center"
-                        FontWeight="SemiBold"
                         Text="&#x1F4CB; Installation Process" />
 
                     <StackPanel Spacing="6">
@@ -107,7 +106,7 @@
                                         Text="1" />
                                 </Border>
                                 <StackPanel Grid.Column="2" Spacing="2">
-                                    <TextBlock FontWeight="SemiBold" Text="&#x1F4C1; Configure Directories" />
+                                    <TextBlock Text="&#x1F4C1; Configure Directories" />
                                     <TextBlock
                                         Opacity="0.85"
                                         Text="Point to your KOTOR installation and mod workspace folder"
@@ -130,7 +129,7 @@
                                         Text="2" />
                                 </Border>
                                 <StackPanel Grid.Column="2" Spacing="2">
-                                    <TextBlock FontWeight="SemiBold" Text="&#x1F4C4; Load Instruction File" />
+                                    <TextBlock Text="&#x1F4C4; Load Instruction File" />
                                     <TextBlock
                                         Opacity="0.85"
                                         Text="Choose a curated mod build from popular configurations"
@@ -153,7 +152,7 @@
                                         Text="3" />
                                 </Border>
                                 <StackPanel Grid.Column="2" Spacing="2">
-                                    <TextBlock FontWeight="SemiBold" Text="&#x1F3AF; Select Your Mods" />
+                                    <TextBlock Text="&#x1F3AF; Select Your Mods" />
                                     <TextBlock
                                         Opacity="0.85"
                                         Text="Browse by category or tier — dependencies auto-select"
@@ -176,7 +175,7 @@
                                         Text="4" />
                                 </Border>
                                 <StackPanel Grid.Column="2" Spacing="2">
-                                    <TextBlock FontWeight="SemiBold" Text="&#x2B07;&#xFE0F; Automatic Downloads" />
+                                    <TextBlock Text="&#x2B07;&#xFE0F; Automatic Downloads" />
                                     <TextBlock
                                         Opacity="0.85"
                                         Text="Missing mods download in the background while you continue"
@@ -199,7 +198,7 @@
                                         Text="5" />
                                 </Border>
                                 <StackPanel Grid.Column="2" Spacing="2">
-                                    <TextBlock FontWeight="SemiBold" Text="&#x2705; Validation &amp; Install" />
+                                    <TextBlock Text="&#x2705; Validation &amp; Install" />
                                     <TextBlock
                                         Opacity="0.85"
                                         Text="Verify everything is ready, then install automatically"
@@ -216,13 +215,12 @@
                 <StackPanel Spacing="8">
                     <TextBlock
                         HorizontalAlignment="Center"
-                        FontWeight="SemiBold"
                         Text="&#x1F31F; Key Features" />
 
                     <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,6,Auto">
                         <Border Grid.Row="0" Grid.Column="0" Padding="10,8" CornerRadius="8">
                             <StackPanel Spacing="4">
-                                <TextBlock FontWeight="SemiBold" Text="Smart Dependencies" TextAlignment="Center" />
+                                <TextBlock Text="Smart Dependencies" TextAlignment="Center" />
                                 <TextBlock
                                     Opacity="0.8"
                                     Text="Resolves and installs required mods in the correct order"
@@ -233,7 +231,7 @@
 
                         <Border Grid.Row="0" Grid.Column="2" Padding="10,8" CornerRadius="8">
                             <StackPanel Spacing="4">
-                                <TextBlock FontWeight="SemiBold" Text="Pre-Install Validation" TextAlignment="Center" />
+                                <TextBlock Text="Pre-Install Validation" TextAlignment="Center" />
                                 <TextBlock
                                     Opacity="0.8"
                                     Text="Catches compatibility issues before installation starts"
@@ -244,7 +242,7 @@
 
                         <Border Grid.Row="2" Grid.Column="0" Padding="10,8" CornerRadius="8">
                             <StackPanel Spacing="4">
-                                <TextBlock FontWeight="SemiBold" Text="Checkpoint System" TextAlignment="Center" />
+                                <TextBlock Text="Checkpoint System" TextAlignment="Center" />
                                 <TextBlock
                                     Opacity="0.8"
                                     Text="Roll back to previous states if something goes wrong"
@@ -255,7 +253,7 @@
 
                         <Border Grid.Row="2" Grid.Column="2" Padding="10,8" CornerRadius="8">
                             <StackPanel Spacing="4">
-                                <TextBlock FontWeight="SemiBold" Text="Cross-Platform" TextAlignment="Center" />
+                                <TextBlock Text="Cross-Platform" TextAlignment="Center" />
                                 <TextBlock
                                     Opacity="0.8"
                                     Text="Works on Windows, Linux, and macOS without Wine"
@@ -275,7 +273,7 @@
                         VerticalAlignment="Top"
                         Text="&#x26A0;&#xFE0F;" />
                     <StackPanel Grid.Column="2" Spacing="4">
-                        <TextBlock FontWeight="Bold" Text="Important: Fresh Installation Required" />
+                        <TextBlock Text="Important: Fresh Installation Required" />
                         <TextBlock
                             Opacity="0.9"
                             Text="For best results, start with a clean KOTOR install. If you previously installed mods manually, uninstall and reinstall the game before proceeding."
@@ -288,7 +286,6 @@
             <Border Padding="16,12" CornerRadius="10">
                 <StackPanel HorizontalAlignment="Center" Spacing="4">
                     <TextBlock
-                        FontWeight="Bold"
                         Text="Ready to transform your KOTOR experience?"
                         TextAlignment="Center"
                         TextWrapping="Wrap" />

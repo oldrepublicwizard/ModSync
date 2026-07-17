@@ -62,11 +62,12 @@ KOTOR modding often requires dozens of repetitive, order-sensitive steps per mod
 | Capability | State |
 |------------|--------|
 | Paste-a-guide ingestion | Shipped (GUI clipboard + CLI `--stdin`) |
-| Draft instructions from guide prose | Shipped (review-flagged drafts via `DraftInstructionService`) |
+| Draft instructions from guide prose | Shipped (review-flagged drafts via `DraftInstructionService` / `--parse-directions`) |
 | Headless Avalonia GUI smoke | Shipped (`GuiSmokeHeadlessTests`) |
+| FOMOD CLI post-download configure | Shipped (TTY wizard, `--fomod-choices` / `MODSYNC_FOMOD_CHOICES`, `--fomod-skip`) |
 | FOMOD configure-before-validate/install gate | Shipped (`FomodConfigurationGate`; fail-closed on unreadable archives) |
 | `nxm://` entry point | Shipped |
-| `modsync://` / publish-share | Not shipped — see [product-vision.md](product-vision.md) |
+| `modsync://` (parse/CLI/handoff/consume + OS registration) | Shipped — Settings checkbox deferred; see [modsync-protocol-handler.md](modsync-protocol-handler.md) |
 
 ## Related
 

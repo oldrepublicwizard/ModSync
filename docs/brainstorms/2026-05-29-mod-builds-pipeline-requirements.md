@@ -62,3 +62,13 @@ Machine instructions and GUIDs live in TOML; markdown carries human metadata. **
 
 - Re-enabling excluded documentation round-trip tests in one pass.
 - Resolving all Nexus/download dependencies in CI.
+
+## Implemented
+
+Shipped in PR #91 and related plans `017`–`020` / `022`.
+
+| Area | Path |
+|------|------|
+| Round-trip / dry-run | `FullBuildSerializationRoundTripTests`, `FullBuildMergedDryRunTests` |
+| Agent script | `scripts/agents/cli_full_build_pipeline.sh`, `cli_validate.sh` |
+| KB | `docs/knowledgebase/mod-builds-sources.md`, `core-cli-reference.md` |

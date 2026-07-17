@@ -95,11 +95,13 @@ See [cli-selection-semantics.md](cli-selection-semantics.md) for install vs vali
 
 ### `convert`
 
-Convert format, autogenerate links, download, or merge (with `-m`).
+Convert format, autogenerate links, download, merge (with `-m`), or ingest a pasted/piped guide.
 
 | Flag | Description |
 |------|-------------|
-| `-i` / `--input` | Single-file input |
+| `-i` / `--input` | Single-file input (required unless `--stdin`) |
+| `--stdin` | Read guide/instruction content from standard input instead of `--input` (format auto-detected: TOML, Markdown, YAML, XML, JSON). Cannot combine with `--input` |
+| `--parse-directions` | Draft executable instructions from natural-language `Directions` prose for components that have none; drafted components are flagged for review in the output (never auto-trusted) |
 | `-o` / `--output` | Output path (stdout if omitted) |
 | `-f` / `--format` | `toml`, `yaml`, `json`, `xml`, `ini`, `markdown` |
 | `-a` / `--auto` | Autogenerate from URLs (no download) |
@@ -111,7 +113,21 @@ Convert format, autogenerate links, download, or merge (with `-m`).
 | Merge preference flags | `--prefer-existing-*`, `--prefer-incoming-*`, `--exclude-*-only`, `--use-existing-order` |
 | `--concurrent`, `--ignore-errors`, `--spoiler-free` | As labeled in `--help` |
 | `--auto-generate-local` | Generate instructions from local archives in `--source-path` for components missing instructions |
-| `--nexus-mods-api-key` | No | Nexus key for `convert` / merge downloads (name differs from `install --nexus-api-key`) |
+| `--nexus-mods-api-key` | Nexus key for `convert` / merge downloads (name differs from `install --nexus-api-key`) |
+
+**Guide paste / draft instructions (CLI parity for GUI Import from Clipboard):**
+
+```bash
+# Pipe a markdown guide (or TOML/YAML/XML/JSON) and emit review-flagged TOML with draft instructions
+cat ./mod-builds/content/k1/full.md | dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  convert --stdin --parse-directions -f toml -o ./tmp/ingested.toml
+
+# Same from a file (no pipe)
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  convert -i ./mod-builds/content/k1/full.md --parse-directions -f toml -o ./tmp/ingested.toml
+```
+
+Draft paths always use `<<modDirectory>>` / `<<kotorDirectory>>`. Review before `install`. Tests: `GuideIngestionTests`. See [guide-ingestion.md](guide-ingestion.md).
 
 ---
 
@@ -211,6 +227,7 @@ Used by `scripts/agents/launch_gui_desktop.sh`. See `agent-action-parity.md`.
 
 ## Related docs
 
+- [Guide ingestion](guide-ingestion.md)
 - [CLI selection semantics](cli-selection-semantics.md)
 - [Agent action parity](agent-action-parity.md)
 - [HoloPatcher resources](holopatcher-resources.md)

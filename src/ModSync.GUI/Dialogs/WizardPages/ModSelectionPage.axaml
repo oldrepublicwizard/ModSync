@@ -123,7 +123,10 @@
             Grid.Row="2"
             Padding="8"
             CornerRadius="8">
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer
+                x:Name="ModListScrollViewer"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
                 <StackPanel x:Name="ModListPanel" Spacing="0" />
             </ScrollViewer>
         </Border>

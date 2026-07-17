@@ -124,6 +124,16 @@ namespace ModSync.Dialogs.WizardPages
                     Text = $"• {mod.Name}",
                     TextWrapping = TextWrapping.Wrap,
                 });
+
+                if (!string.IsNullOrWhiteSpace(mod.InstallationWarning))
+                {
+                    _modListPanel.Children.Add(new TextBlock
+                    {
+                        Text = $"  ⚠ {mod.InstallationWarning}",
+                        TextWrapping = TextWrapping.Wrap,
+                        Opacity = 0.9,
+                    });
+                }
             }
         }
     }

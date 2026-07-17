@@ -30,7 +30,7 @@ Use these when citing findings in plans, PRs, or audits:
 | Install wizard or real install | [install-lifecycle.md](install-lifecycle.md) | [validation-pipeline.md](validation-pipeline.md) |
 | Missing mod archives / downloads | [download-system.md](download-system.md) | [install-lifecycle.md](install-lifecycle.md) |
 | Headless build/test/core | `.github/copilot-instructions.md` | `core-cli-reference.md` |
-| Avalonia GUI UX smoke (no X11) | `AGENTS.md` §Headless Avalonia GUI smoke | `./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"` |
+| Avalonia GUI UX smoke (no X11) | `AGENTS.md` §Headless Avalonia GUI smoke | `./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~Headless\|FullyQualifiedName~GuiSmoke"` |
 | GUI / install wizard / full-build | `docs/local_desktop_agent_runbook.md` | `agent-action-parity.md` → [install-lifecycle.md](install-lifecycle.md) |
 | Release or versioning | `docs/manual-release.md` | [Release readiness checklist](../plans/2026-07-13-005-release-readiness-checklist.md) → `docs/solutions/manual-release-workflow.md` |
 | Agent capability gaps | `agent-native-audit.md` | `agent-action-parity.md` |
@@ -57,9 +57,9 @@ Use these when citing findings in plans, PRs, or audits:
 - [Install profiles](install-profiles.md) — named loadouts, `ProfileService` capture/apply, `ProfileManagerDialog`
 - [Managed deployment engine](managed-deployment.md) — hardlink deploy, per-component manifests, uninstall/purge (Phase 4 slice 1)
 - [File-level conflicts](file-conflicts.md) — `FileConflictAnalyzer` dry-run VFS attribution and `ConflictsDialog` results UI
-- [FOMOD installer support](fomod-support.md) — ModuleConfig parser, Option/Choose mapping, FomodInstallerDialog GUI
+- [FOMOD installer support](fomod-support.md) — ModuleConfig parser, GUI/CLI post-download configure, `--fomod-choices`, configured-only gate
 - [nxm protocol handler](nxm-protocol-handler.md) — nxm:// URL parsing, OS scheme registration, single-instance hand-off, free-user download path
-- [modsync protocol handler](modsync-protocol-handler.md) — modsync:// build deep links (parse + CLI + handoff; OS registration planned)
+- [modsync protocol handler](modsync-protocol-handler.md) — modsync:// build deep links (parse + CLI + handoff + consume; OS registration shipped, Settings toggle deferred)
 
 ### Architecture and agent parity
 
@@ -138,9 +138,12 @@ KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-archite
 
 | Topic | Status | Pointers |
 |-------|--------|----------|
-| Paste / guide ingestion | Shipped | [product-vision.md](product-vision.md) 1b/1c; plan [001](../plans/2026-07-13-001-feat-guide-paste-ingestion-plan.md) |
+| Paste / guide ingestion | Shipped | [guide-ingestion.md](guide-ingestion.md); [product-vision.md](product-vision.md) 1b/1c; plan [001](../plans/2026-07-13-001-feat-guide-paste-ingestion-plan.md) |
 | Headless Avalonia GUI smoke | Shipped | `GuiSmokeHeadlessTests`; `AGENTS.md` §Headless Avalonia GUI smoke |
-| FOMOD configuration gate | Shipped | [fomod-support.md](fomod-support.md) — fail-closed until configured |
+| FOMOD discovery + CLI prompts + gate | Shipped | [fomod-support.md](fomod-support.md); fail-closed until configured; Plan [123](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md) |
+| `modsync://` Phase 1 (parse/CLI/handoff) | Shipped | [modsync-protocol-handler.md](modsync-protocol-handler.md) |
+| `modsync://` Phase 2 (OS reg + consume) | Shipped (Settings toggle deferred) | [modsync-protocol-handler.md](modsync-protocol-handler.md); #176 |
+| Multi-author publish/share | Open | [plan stub 003](../plans/2026-07-13-003-feat-multi-author-publish-share-plan.md) |
 | Release readiness checklist | Active | [005](../plans/2026-07-13-005-release-readiness-checklist.md) |
 
 ### Always-on rules (do not duplicate here)

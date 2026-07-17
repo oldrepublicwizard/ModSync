@@ -50,20 +50,16 @@ GUI (`src/ModSync.GUI/`):
 ## Deferred `[OPEN]`
 
 - Plugin images from `image path`.
+- In-validate **Configure FOMOD** action / `fomod configure` CLI verb (recovery hints only today).
 
-## Planned: CLI post-download parity `[REPO]`
+## Post-download hook + CLI parity `[REPO]`
 
-Requirements: [docs/brainstorms/2026-06-14-fomod-cli-download-prompts-requirements.md](../brainstorms/2026-06-14-fomod-cli-download-prompts-requirements.md)
-
-Plan: [docs/plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md)
-
-- Core `FomodPostDownloadOrchestrator` + CLI console host + `--fomod-skip` / `--fomod-choices`
-- Full TTY wizard; non-TTY default warn-continue; convert output persists FOMOD state
-
-## Post-download hook `[REPO]`
+**Shipped.** Requirements (completed): [archive discovery](../brainstorms/2026-06-14-fomod-archive-discovery-requirements.md), [CLI prompts](../brainstorms/2026-06-14-fomod-cli-download-prompts-requirements.md). Plan 123: [shipped](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md).
 
 - `FomodArchiveProbe` detects `fomod/ModuleConfig.xml` inside downloaded archives via entry listing.
-- `FomodPostDownloadPromptService` runs after GUI **Fetch Downloads** completes; optional prompt per archive.
+- `FomodPostDownloadOrchestrator` + `IFomodPostDownloadHost` adapters unify GUI and CLI after download.
+- GUI: `FomodPostDownloadPromptService` / `FomodGuiPostDownloadHost` after **Fetch Downloads**.
+- CLI `install -d` / `convert -d` / `merge -d`: TTY wizard, warn-continue, `--fomod-skip`, `--fomod-choices` / `MODSYNC_FOMOD_CHOICES` (also `--interactive` / `--non-interactive`, env `MODSYNC_FOMOD_POST_DOWNLOAD_MODE`).
 - `FomodDownloadPromptState` stores dismissed/configured/warned outcomes in resource handler metadata.
   - **`configured`**: permanently skips the Fetch Downloads / CLI post-download prompt; required to pass `FomodConfigurationGate`.
   - **`dismissed`**: does **not** pass the gate; Fetch Downloads / CLI will **re-prompt** (documented recovery path).
@@ -72,6 +68,8 @@ Plan: [docs/plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md](../pla
   - **R1 soft check:** `configured` without any archive-scoped install instructions (`<<modDirectory>>/<archive-folder>/...`) emits a **warning** (does not fail the gate). Re-run Configure FOMOD / Fetch Downloads so merger output is applied.
   - **R3 missing archives:** registered archive paths missing on disk are **fail-closed** when the archive already has FOMOD prompt state (configured/dismissed/warned). Otherwise they emit a soft warning (generic missing downloads stay with component archive validation).
 - `ArchiveEnumerationService` sets `FileTreeNode.IsFomodInstaller` when an archive contains FOMOD metadata.
+
+Non-TTY **warn-continue** / `--fomod-skip` print recovery hints (`FomodConfigurationGate.RecoveryHint`); they do **not** satisfy the configured-only gate.
 
 ## Verification
 
@@ -83,3 +81,4 @@ Plans:
 
 - [docs/plans/2026-06-12-115-fomod-parser-plan.md](../plans/2026-06-12-115-fomod-parser-plan.md)
 - [docs/plans/2026-06-14-121-fomod-installer-dialog-plan.md](../plans/2026-06-14-121-fomod-installer-dialog-plan.md)
+- [docs/plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md) (shipped; residual TTY polish / in-validate recovery are deferred)

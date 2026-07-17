@@ -1,67 +1,35 @@
-<!--  Copyright 2021-2025 ModSync  -->
-<!--  Licensed under the Business Source License 1.1 (BSL 1.1).  -->
-<!--  See LICENSE.txt file in the project root for full license information.  -->
 <UserControl
     x:Class="ModSync.Dialogs.WizardPages.FinishedPage"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="24">
-        <TextBlock
-            HorizontalAlignment="Center"
-            Text="🎉 Installation Complete!"
-            TextAlignment="Center" />
-
-        <TextBlock
-            HorizontalAlignment="Center"
-            Text="All mods have been successfully installed."
-            TextAlignment="Center" />
-
-        <TextBlock
-            x:Name="ManagedDeploymentSummaryText"
-            HorizontalAlignment="Center"
-            IsVisible="False"
-            MaxWidth="600"
-            TextAlignment="Center"
-            TextWrapping="Wrap" />
-
-        <Border CornerRadius="8" MaxWidth="600" Padding="24">
-            <StackPanel Spacing="12">
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    Text="🎮 Next Steps:"
-                    TextAlignment="Center" />
-                <TextBlock Text="• Launch the game and enjoy your modded experience!" />
-                <TextBlock Text="• If you encounter issues, you can rollback to previous checkpoints." />
-                <TextBlock Text="• Check the output log for detailed installation information." />
-            </StackPanel>
-        </Border>
-
-        <Border CornerRadius="8" MaxWidth="500" Padding="20">
-            <StackPanel Spacing="8">
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    Text="💝 Support the Project"
-                    TextAlignment="Center" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    Text="If you found ModSync helpful, consider supporting the project!"
-                    TextAlignment="Center"
-                    TextWrapping="Wrap" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    Opacity="0.8"
-                    Text="Visit our sponsor page to learn more."
-                    TextAlignment="Center" />
-            </StackPanel>
-        </Border>
-
-        <TextBlock
-            HorizontalAlignment="Center"
-            Opacity="0.7"
-            Text="Click 'Finish' to close the wizard."
-            TextAlignment="Center" />
-    </StackPanel>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16,12" HorizontalAlignment="Center" Spacing="14">
+            <TextBlock HorizontalAlignment="Center" Text="🎉 Installation Complete!" TextAlignment="Center" />
+            <TextBlock HorizontalAlignment="Center" Text="All mods have been successfully installed." TextAlignment="Center" TextWrapping="Wrap" />
+            <TextBlock
+                x:Name="ManagedDeploymentSummaryText"
+                HorizontalAlignment="Center"
+                IsVisible="False"
+                MaxWidth="600"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+            <Border MaxWidth="600" Padding="16,14" CornerRadius="8">
+                <StackPanel Spacing="8">
+                    <TextBlock HorizontalAlignment="Center" Text="🎮 Next Steps:" TextAlignment="Center" />
+                    <TextBlock Text="• Launch the game and enjoy your modded experience!" TextWrapping="Wrap" />
+                    <TextBlock Text="• If you encounter issues, you can rollback to previous checkpoints." TextWrapping="Wrap" />
+                    <TextBlock Text="• Check the output log for detailed installation information." TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <Border MaxWidth="500" Padding="14,12" CornerRadius="8">
+                <StackPanel Spacing="6">
+                    <TextBlock HorizontalAlignment="Center" Text="💝 Support the Project" TextAlignment="Center" />
+                    <TextBlock HorizontalAlignment="Center" Text="If you found ModSync helpful, consider supporting the project!" TextAlignment="Center" TextWrapping="Wrap" />
+                    <TextBlock HorizontalAlignment="Center" Opacity="0.8" Text="Visit our sponsor page to learn more." TextAlignment="Center" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <TextBlock HorizontalAlignment="Center" Opacity="0.7" Text="Click 'Finish' to close the wizard." TextAlignment="Center" />
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>
-
-

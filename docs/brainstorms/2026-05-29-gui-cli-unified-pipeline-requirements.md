@@ -34,3 +34,14 @@ Every install-wizard and legacy GUI validation/install action runs through the s
 
 - Rewriting Avalonia UI or wizard page order.
 - Removing `ComponentValidation` class — it becomes a pipeline stage, not a CLI-only shortcut.
+
+## Implemented
+
+Shipped in PR #94 / plan `docs/plans/2026-05-29-023-unify-gui-cli-validation-pipeline-plan.md`.
+
+| Area | Path |
+|------|------|
+| Shared pipeline | `src/ModSync.Core/Services/Validation/InstallationValidationPipeline.cs` |
+| CLI `validate` | `src/ModSync.Core/CLI/ModBuildConverter.cs` |
+| GUI wiring | `ValidatePage`, `ValidationPipelineDialogMapper` |
+| KB | `docs/knowledgebase/validation-pipeline.md`, `agent-action-parity.md` |

@@ -1,8 +1,10 @@
 ---
 title: "feat: guide paste ingestion + NaturalLanguageInstructionParser wiring"
-status: active
+status: completed
 date: 2026-07-13
-origin: .cursor plan "ModSync Vision and Ingestion" (vision docs landed separately in STRATEGY.md + docs/knowledgebase/product-vision.md)
+completed: 2026-07-13
+origin: docs/brainstorms/2026-07-13-guide-paste-ingestion-requirements.md
+related_strategy: STRATEGY.md + docs/knowledgebase/product-vision.md
 ---
 
 # Plan 2026-07-13-001 — Guide paste ingestion

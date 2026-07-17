@@ -87,6 +87,10 @@ namespace ModSync.Core.Services.Fomod
 
                     if (configured is null)
                     {
+                        await host.ReportExtractFailureAsync(
+                            context,
+                            $"FOMOD configuration was not applied for '{archiveFileName}'.",
+                            cancellationToken).ConfigureAwait(false);
                         continue;
                     }
 

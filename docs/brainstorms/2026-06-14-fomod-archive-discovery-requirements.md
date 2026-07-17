@@ -1,7 +1,8 @@
 ---
 title: "FOMOD archive discovery after download"
-status: reviewed
+status: completed
 date: 2026-06-14
+completed: 2026-07-13
 origin: docs/plans/vortex-mo2-feature-parity-living-plan.md
 ---
 
@@ -59,10 +60,13 @@ archives in the mod workspace without surfacing FOMOD packages automatically.
   Started).
 - Reuse of `FomodDetector`, `FomodInstallerDialog`, and existing mapper/presenter stack.
 
-**Deferred**
+**Deferred (completed separately)**
 
-- CLI download/install parity.
-- Validation blocking when FOMOD choices are unset.
+- CLI download/install parity → [2026-06-14-fomod-cli-download-prompts-requirements.md](2026-06-14-fomod-cli-download-prompts-requirements.md)
+- Validation blocking when FOMOD choices are unset → `FomodConfigurationGate`
+
+**Still deferred**
+
 - Plugin images and advanced conditional file-install runtime beyond current mapper.
 
 ## Key Decisions
@@ -73,7 +77,19 @@ archives in the mod workspace without surfacing FOMOD packages automatically.
 - Wizard output merges into the existing instruction-file component rather than
   creating a separate standalone component.
 
+## Implemented
+
+Shipped in PR #169 and follow-ups.
+
+| Area | Path |
+|------|------|
+| Archive probe | `src/ModSync.Core/Services/Fomod/FomodArchiveProbe.cs` |
+| Prompt state | `src/ModSync.Core/Services/Fomod/FomodDownloadPromptState.cs` |
+| GUI post-download | `src/ModSync.GUI/Services/FomodPostDownloadPromptService.cs` |
+| GUI dialog host | `src/ModSync.GUI/Services/FomodGuiPostDownloadHost.cs` |
+| File-tree mark | `src/ModSync.GUI/Services/ArchiveEnumerationService.cs` |
+| KB | `docs/knowledgebase/fomod-support.md`, `docs/knowledgebase/download-system.md` |
+
 ## Outstanding Questions
 
-- Whether all GUI download entry points beyond **Fetch Downloads** should share the
-  same prompt hook in a follow-up slice.
+- None.

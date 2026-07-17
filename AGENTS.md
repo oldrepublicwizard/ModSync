@@ -75,7 +75,11 @@ Cloud agents run headless (no X11 desktop). The following applies:
 `HeadlessTestApp` (`src/ModSync.Tests/HeadlessTestApp.cs`) bootstraps `Avalonia.Headless.XUnit` with `UseHeadlessDrawing = true`. Agents should use this path for GUI surface smoke instead of a real desktop:
 
 ```bash
-# Preferred wrapper
+# Preferred wrapper — expanded Avalonia smoke (GuiSmoke + *Headless*)
+./scripts/agents/run_headless_tests.sh \
+  --filter "FullyQualifiedName~Headless|FullyQualifiedName~GuiSmoke"
+
+# Narrow GuiSmoke only
 ./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"
 
 # Or direct

@@ -35,6 +35,18 @@ namespace ModSync.Tests
         private const string PatcherProse =
             "Run the installer, then move the files from the patch to your override.";
 
+        private const string DeleteBeforeMoveProse =
+            "Make sure to delete LSI_win01.tpc and LSI_box01.tpc **before** moving to override.";
+
+        private const string BeforeMovingDeleteProse =
+            "Before moving the files to the override folder, be sure to delete the following: PFBI01 through PFBI04, and PMBI01 through PMBI04.";
+
+        private const string RerunPatcherProse =
+            "Install the main mod, then re-run the patcher and select the K1CP compatibility install option and install it as well, if using K1CP.";
+
+        private const string MoveExceptProse =
+            "The file has the wrong readme; move all the files in the Creatures folder, except for the readme and Gizka.jpg (any .jpg/.png files are always previews and can be deleted), to the override.";
+
         private const string MarkdownGuide = @"### Guide Ingestion Test Mod
 
 **Name:** [Guide Ingestion Test Mod](https://example.com/guide-ingestion-test-mod.zip)
@@ -96,22 +108,20 @@ ___
         {
             foreach (string source in instruction.Source)
             {
-                Assert.That(
-                    source.StartsWith(ModDirectoryPlaceholder, StringComparison.Ordinal)
-                    || source.StartsWith(KotorDirectoryPlaceholder, StringComparison.Ordinal),
-                    Is.True,
-                    $"Source '{source}' must start with {ModDirectoryPlaceholder} or {KotorDirectoryPlaceholder}");
+                Assert.That(DraftInstructionService.IsSandboxedPath(source), Is.True,
+                    $"Source '{source}' must be confined to a placeholder root without '..' / rooted escapes");
                 Assert.That(source, Does.Not.Contain("<<gameDirectory>>"), "Legacy placeholder must be normalized away");
+                Assert.That(source.Replace('\\', '/').Split('/'), Does.Not.Contain(".."),
+                    $"Source '{source}' must not contain '..' segments");
             }
 
             if (!string.IsNullOrEmpty(instruction.Destination))
             {
-                Assert.That(
-                    instruction.Destination.StartsWith(ModDirectoryPlaceholder, StringComparison.Ordinal)
-                    || instruction.Destination.StartsWith(KotorDirectoryPlaceholder, StringComparison.Ordinal),
-                    Is.True,
-                    $"Destination '{instruction.Destination}' must start with {ModDirectoryPlaceholder} or {KotorDirectoryPlaceholder}");
+                Assert.That(DraftInstructionService.IsSandboxedPath(instruction.Destination), Is.True,
+                    $"Destination '{instruction.Destination}' must be confined to a placeholder root without '..' / rooted escapes");
                 Assert.That(instruction.Destination, Does.Not.Contain("<<gameDirectory>>"), "Legacy placeholder must be normalized away");
+                Assert.That(instruction.Destination.Replace('\\', '/').Split('/'), Does.Not.Contain(".."),
+                    $"Destination '{instruction.Destination}' must not contain '..' segments");
             }
         }
 
@@ -150,6 +160,72 @@ ___
 
             Assert.That(results, Has.Count.EqualTo(1));
             Assert.That(component.Instructions, Is.Not.Empty);
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_DeleteBeforeMoveProse_ProducesSandboxedDelete()
+        {
+            ModComponent component = CreateComponent(DeleteBeforeMoveProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1), "Delete-before-move prose from mod-builds should draft");
+            Assert.That(component.Instructions.Any(i => i.Action == Instruction.ActionType.Delete), Is.True,
+                "Prose that deletes files before moving should draft a Delete instruction");
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_BeforeMovingDeleteProse_ProducesSandboxedDelete()
+        {
+            ModComponent component = CreateComponent(BeforeMovingDeleteProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i => i.Action == Instruction.ActionType.Delete), Is.True);
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_RerunPatcherProse_ProducesSandboxedPatcher()
+        {
+            ModComponent component = CreateComponent(RerunPatcherProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i => i.Action == Instruction.ActionType.Patcher), Is.True,
+                "Re-run patcher / compatibility option prose should draft a Patcher instruction");
+
+            foreach (Instruction instruction in component.Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
+        public void DraftInstructions_MoveExceptProse_ProducesSandboxedMove()
+        {
+            ModComponent component = CreateComponent(MoveExceptProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.Instructions.Any(i => i.Action == Instruction.ActionType.Move), Is.True);
 
             foreach (Instruction instruction in component.Instructions)
             {
@@ -246,6 +322,103 @@ ___
             });
         }
 
+        [Test]
+        public void TrySanitizeInstruction_RejectsParentDirectoryTraversalAfterPlaceholder()
+        {
+            var traversalSource = new Instruction
+            {
+                Action = Instruction.ActionType.Move,
+                Source = new List<string> { "<<modDirectory>>/../outside" },
+                Destination = "<<kotorDirectory>>/Override",
+            };
+
+            var traversalDestination = new Instruction
+            {
+                Action = Instruction.ActionType.Move,
+                Source = new List<string> { @"<<modDirectory>>\textures\*" },
+                Destination = @"<<kotorDirectory>>\..\Windows",
+            };
+
+            var gluedTraversal = new Instruction
+            {
+                Action = Instruction.ActionType.Move,
+                Source = new List<string> { "<<modDirectory>>../outside" },
+                Destination = "<<kotorDirectory>>/Override",
+            };
+
+            var driveAfterPlaceholder = new Instruction
+            {
+                Action = Instruction.ActionType.Move,
+                Source = new List<string> { @"<<modDirectory>>\C:\Windows\evil.dll" },
+                Destination = @"<<kotorDirectory>>\Override",
+            };
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(DraftInstructionService.IsSandboxedPath("<<modDirectory>>/../outside"), Is.False);
+                Assert.That(DraftInstructionService.IsSandboxedPath(@"<<kotorDirectory>>\..\Windows"), Is.False);
+                Assert.That(DraftInstructionService.IsSandboxedPath("<<modDirectory>>../outside"), Is.False);
+                Assert.That(DraftInstructionService.IsSandboxedPath(@"<<modDirectory>>\C:\Windows\evil.dll"), Is.False);
+                Assert.That(DraftInstructionService.IsSandboxedPath("<<modDirectory>>/textures/*"), Is.True);
+                Assert.That(DraftInstructionService.TrySanitizeInstruction(traversalSource), Is.False,
+                    "Source with '..' after placeholder must be dropped");
+                Assert.That(DraftInstructionService.TrySanitizeInstruction(traversalDestination), Is.False,
+                    "Destination with '..' after placeholder must be dropped");
+                Assert.That(DraftInstructionService.TrySanitizeInstruction(gluedTraversal), Is.False,
+                    "Missing separator before '..' must be dropped");
+                Assert.That(DraftInstructionService.TrySanitizeInstruction(driveAfterPlaceholder), Is.False,
+                    "Drive letter segment after placeholder must be dropped");
+            });
+        }
+
+        [Test]
+        public void DraftInstructions_TraversalProse_DoesNotKeepEscapingPaths()
+        {
+            ModComponent escapeComponent = CreateComponent(
+                "Move everything from <<modDirectory>>/../outside to your Override.");
+            ModComponent bareDotDot = CreateComponent(
+                "Move .. to override.");
+
+            IReadOnlyList<DraftInstructionResult> escapeResults =
+                DraftInstructionService.GenerateDraftInstructions(new[] { escapeComponent });
+            IReadOnlyList<DraftInstructionResult> bareResults =
+                DraftInstructionService.GenerateDraftInstructions(new[] { bareDotDot });
+
+            Assert.Multiple(() =>
+            {
+                foreach (Instruction instruction in escapeComponent.Instructions)
+                {
+                    AssertInstructionIsSandboxed(instruction);
+                }
+
+                foreach (Instruction instruction in bareDotDot.Instructions)
+                {
+                    AssertInstructionIsSandboxed(instruction);
+                }
+
+                if (escapeResults.Count > 0)
+                {
+                    Assert.That(escapeComponent.InstallationWarning, Does.Contain(DraftInstructionService.ReviewFlagMessage));
+                }
+
+                if (bareResults.Count > 0)
+                {
+                    Assert.That(bareDotDot.InstallationWarning, Does.Contain(DraftInstructionService.ReviewFlagMessage));
+                }
+            });
+        }
+
+        [Test]
+        public void DraftInstructions_SuccessfulDraft_AppliesReviewFlagMessage()
+        {
+            ModComponent component = CreateComponent(MoveFoldersProse);
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(component.InstallationWarning, Is.EqualTo(DraftInstructionService.ReviewFlagMessage));
+        }
+
         #endregion
 
         #region Paste cascade format sniffing
@@ -294,22 +467,36 @@ Name = ""Paste Cascade Toml Mod""
 
         #region Real guide (mod-builds)
 
-        [Test]
-        public void RealGuide_K1FullMarkdown_DraftedInstructionsAreAllSandboxed()
+        [TestCase("k1", "full.md")]
+        [TestCase("k2", "full.md")]
+        [TestCase("k1", "spoiler-free.md")]
+        [TestCase("k2", "spoiler-free.md")]
+        [TestCase("k1", "full_mobile.md")]
+        public void RealGuide_ModBuildsMarkdown_DraftedInstructionsAreAllSandboxed(string gameFolder, string guideFile)
         {
             string repoRoot = ResolveRepoRoot();
-            string markdownPath = Path.Combine(repoRoot, "mod-builds", "content", "k1", "full.md");
+            string markdownPath = Path.Combine(repoRoot, "mod-builds", "content", gameFolder, guideFile);
             if (!File.Exists(markdownPath))
             {
                 Assert.Ignore($"mod-builds guide not found: {markdownPath}");
             }
 
-            List<ModComponent> components = FileLoadingService.LoadFromFile(markdownPath).ToList();
-            Assert.That(components, Is.Not.Empty);
+            List<ModComponent> components;
+            try
+            {
+                components = FileLoadingService.LoadFromFile(markdownPath).ToList();
+            }
+            catch (InvalidDataException ex)
+            {
+                Assert.Ignore($"Guide is not a component markdown list ({gameFolder}/{guideFile}): {ex.Message}");
+                return;
+            }
+
+            Assert.That(components, Is.Not.Empty, $"Expected components from {gameFolder}/{guideFile}");
 
             IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(components);
 
-            Assert.That(results, Is.Not.Empty, "Real guide prose should draft instructions for at least one component");
+            Assert.That(results, Is.Not.Empty, $"Real guide prose ({gameFolder}/{guideFile}) should draft instructions for at least one component");
 
             foreach (DraftInstructionResult result in results)
             {
@@ -319,6 +506,28 @@ Name = ""Paste Cascade Toml Mod""
                     AssertInstructionIsSandboxed(instruction);
                 }
             }
+        }
+
+        #endregion
+
+        #region Guide emission (GenerateModDocumentation)
+
+        [Test]
+        public void GenerateModDocumentation_AfterDraftingGuide_RoundTripsComponentNameAndDirections()
+        {
+            IReadOnlyList<ModComponent> components = ModComponentSerializationService.DeserializeModComponentFromString(MarkdownGuide);
+            Assert.That(components, Has.Count.EqualTo(1));
+
+            DraftInstructionService.GenerateDraftInstructions(components);
+
+            string emitted = ModComponentSerializationService.GenerateModDocumentation(components.ToList());
+            Assert.That(emitted, Does.Contain("Guide Ingestion Test Mod"));
+            Assert.That(emitted, Does.Contain("Move everything from the Straight Fixes"));
+
+            IReadOnlyList<ModComponent> reparsed = ModComponentSerializationService.DeserializeModComponentFromString(emitted);
+            Assert.That(reparsed, Has.Count.EqualTo(1));
+            Assert.That(reparsed[0].Name, Is.EqualTo("Guide Ingestion Test Mod"));
+            Assert.That(reparsed[0].Directions, Does.Contain("Move everything from the Straight Fixes"));
         }
 
         #endregion
@@ -375,6 +584,38 @@ Name = ""Paste Cascade Toml Mod""
         }
 
         [Test]
+        public void CliConvert_FileInputWithParseDirections_EmitsReviewFlaggedToml()
+        {
+            string inputMd = Path.Combine(_testDirectory, "guide.md");
+            string outputToml = Path.Combine(_testDirectory, "from-file.toml");
+            File.WriteAllText(inputMd, MarkdownGuide);
+
+            int exitCode = ModBuildConverter.Run(new[]
+            {
+                "convert",
+                "--input", inputMd,
+                "--parse-directions",
+                "-f", "toml",
+                "-o", outputToml,
+                "--plaintext",
+            });
+
+            Assert.That(exitCode, Is.EqualTo(0), "convert -i guide.md --parse-directions should succeed");
+            Assert.That(File.Exists(outputToml), Is.True);
+            string tomlOutput = File.ReadAllText(outputToml);
+            Assert.That(tomlOutput, Does.Contain(DraftInstructionService.ReviewFlagMessage));
+
+            var reloaded = ModComponentSerializationService
+                .DeserializeModComponentFromString(tomlOutput, "toml")
+                .ToList();
+            Assert.That(reloaded[0].Instructions, Is.Not.Empty);
+            foreach (Instruction instruction in reloaded[0].Instructions)
+            {
+                AssertInstructionIsSandboxed(instruction);
+            }
+        }
+
+        [Test]
         public void CliConvert_StdinCombinedWithInput_Fails()
         {
             TextReader previousIn = Console.In;
@@ -415,6 +656,18 @@ Name = ""Paste Cascade Toml Mod""
                 {
                     return candidate;
                 }
+            }
+
+            // Walk up from the test directory (covers git worktrees and nested bin layouts).
+            DirectoryInfo dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+            while (dir != null)
+            {
+                if (File.Exists(Path.Combine(dir.FullName, "ModSync.sln")))
+                {
+                    return dir.FullName;
+                }
+
+                dir = dir.Parent;
             }
 
             throw new DirectoryNotFoundException("Could not locate repository root containing ModSync.sln");
