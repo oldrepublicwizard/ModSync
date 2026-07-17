@@ -31,10 +31,14 @@ Classic remains default when the toggle is off. Session entry:
 `ManagedInstallSession` + `InstallationService.RunWithManagedInstallSessionAsync`
 (wizard + single-mod). Settings UI: Deployment checkbox (requires active profile).
 
+`[REPO]` CLI overrides (parity U3 / [#177](https://github.com/oldrepublicwizard/ModSync/pull/177)):
+`install --managed`, `--no-managed`, and `--profile` force classic vs managed without
+editing `settings.json`. Fail-closed when managed is on without a resolvable profile.
+Documented in [core-cli-reference.md](core-cli-reference.md).
+
 `[OPEN]` Still deferred: patcher provenance (ImmutableCheckpoint), per-component
-uninstall GUI polish, managed dry-run/VFS validation parity, CLI `--profile`
-polish (U3). Follow-up plan:
+uninstall GUI polish, managed dry-run/VFS validation parity. Follow-up plan:
 [docs/plans/2026-07-13-004-managed-deployment-validation-plan.md](../plans/2026-07-13-004-managed-deployment-validation-plan.md).
 
 Tests: `DeploymentServiceTests`, `ManagedInstallSessionTests`, `ModSyncSettingsTests`,
-`ParityPortsTests` (backend selector).
+`ParityPortsTests` (backend selector), `ManagedInstallCliOverridesTests`.

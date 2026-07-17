@@ -1,6 +1,6 @@
 # Agent action parity
 
-`[REPO]` Maps user-visible flows to headless agent capabilities. Label key: **Full** = achievable without desktop; **Partial** = CLI/script with gaps; **UI** = desktop session required; **N/A** = out of scope.
+`[REPO]` Maps user-visible flows to headless agent capabilities. Label key: **Full** = achievable without desktop; **Partial** = CLI/script with gaps; **UI** = desktop session required; **N/A** = out of scope. Last light refresh: **2026-07-17** (see [agent-native-audit.md](agent-native-audit.md)).
 
 ## Install wizard (primary flow)
 
@@ -18,6 +18,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | 8 | `DownloadsExplainPage` | Continue (downloads may run) | `install -d` or `convert -d` (+ FOMOD: TTY / `--fomod-choices` / `--fomod-skip`) | Partial — live download status is `[UI]`; FOMOD configure is Full via CLI (see [fomod-support.md](fomod-support.md)) |
 | 9 | `ValidatePage` | Run validation | `validate --full --dry-run --use-file-selection` (same Core `InstallationValidationPipeline` as GUI) | Full |
 | 10 | `InstallStartPage` | Confirm install | `install -y` (runs `InstallationValidationPipeline` / `WizardFull` pre-check unless `--skip-validation`) | Full |
+| 10b | Managed deploy | Opt-in hardlink deploy via active profile | `install --managed` / `--no-managed` / `--profile` (#177); settings toggle still GUI | Full (CLI overrides); Partial (profile CRUD `[UI]`) — [managed-deployment.md](managed-deployment.md) |
 | 11 | `InstallingPage` | Watch progress | `install` (console progress) | Full — see [install-lifecycle.md](install-lifecycle.md) |
 | 12 | `BaseInstallCompletePage` | Continue | N/A | Full |
 | 13+ | Widescreen pages | `WidescreenNoticePage`, `WidescreenModSelectionPage`, `WidescreenInstallingPage`, `WidescreenCompletePage` (dynamic) | No dedicated CLI | UI |
@@ -35,6 +36,8 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | `ValidateButton` | `validate --full --dry-run --use-file-selection` (via `InstallationValidationPipeline`) | Full |
 | `OpenModDirectoryButton` | `ls` / file tools on mod dir | Full |
 | Download status / stop | No first-class CLI | UI |
+| Profiles… (`ProfileManagerDialog`) | Core `ProfileService` files under `{settingsDir}/profiles/`; `install --profile` selects existing; no CLI CRUD | Partial — [install-profiles.md](install-profiles.md) |
+| `modsync://` deep link | `--modsync=` or bare URI → handoff / fetch | Full (consume); Settings toggle deferred — [modsync-protocol-handler.md](modsync-protocol-handler.md) |
 
 ## Common agent workflows
 
@@ -43,6 +46,8 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 | Smoke-test repo | `./scripts/agents/run_headless_tests.sh` |
 | GUI UX smoke (paste import, wizard page order, page-0 layout, validate log splitter) | `./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~Headless\|FullyQualifiedName~GuiSmoke"` (Avalonia.Headless — **no desktop**) |
 | Ingest guide → draft TOML | `convert -i guide.md --parse-directions -f toml -o out.toml` or `convert --stdin --parse-directions` — [guide-ingestion.md](guide-ingestion.md) |
+| Open `modsync://` instruction URL | Launch GUI with `--modsync=` / URI, or rely on OS handler after registration — [modsync-protocol-handler.md](modsync-protocol-handler.md) |
+| Managed install with profile | `install … --managed --profile <name>` (or `--no-managed`) — [managed-deployment.md](managed-deployment.md) |
 | Validate TOML structure only | `./scripts/agents/cli_validate.sh --input path.toml` |
 | Full validation | `cli_validate.sh` with `--game-dir`, `--source-dir`, `--full` |
 | Validate only TOML-selected mods | `cli_validate.sh` … `--use-file-selection` (matches GUI Mod Selection) |
@@ -79,5 +84,7 @@ Wizard order from `src/ModSync.GUI/Dialogs/InstallWizardDialog.axaml.cs` and `AG
 8. **Install pre-check opt-out** — `install --skip-validation` and `install_best_effort.sh` skip the wizard-equivalent pipeline; default `install` does not.
 9. **FOMOD post-download** — GUI prompts after Fetch Downloads (PR #169). CLI: TTY wizard, `--fomod-skip`, `--fomod-choices` / `MODSYNC_FOMOD_CHOICES`, or non-TTY **warn-continue** (marks `warned`; `FomodConfigurationGate` still blocks validate/install until `configured`). See [fomod-support.md](fomod-support.md).
 10. **Guide drafts** — `--parse-directions` / GUI paste drafts are review-flagged; never treat as trusted install instructions without review. See [guide-ingestion.md](guide-ingestion.md).
+11. **Managed / profile CLI** — `install --managed` / `--no-managed` / `--profile` shipped (#177). Profile create/list/delete remains `[UI]` / file edits under `{settingsDir}/profiles/`. See [managed-deployment.md](managed-deployment.md).
+12. **Validation presentation vs pipeline** — CLI and GUI share `InstallationValidationPipeline`; stage-card UX / copy-report / go-to-first-issue remain `[UI]` ([gui-validation-surfaces.md](gui-validation-surfaces.md)).
 
 See [agent-native-audit.md](agent-native-audit.md) for scored principles and [core-cli-reference.md](core-cli-reference.md) for flags.

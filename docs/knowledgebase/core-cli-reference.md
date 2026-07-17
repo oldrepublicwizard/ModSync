@@ -86,6 +86,11 @@ Install selected mods from an instruction file.
 | `--patcher-engine` | No | `Holopatcher` or `KPatcher` |
 | `--kpatcher-path` | No | KPatcher executable when using KPatcher |
 | `--ignore-errors` | No | Best-effort dependency resolution |
+| `--managed` | No | Force managed hardlink deploy for this run (requires `--profile` or an active profile in settings) — [#177](https://github.com/oldrepublicwizard/ModSync/pull/177) |
+| `--no-managed` | No | Force classic install for this run (ignore `managedDeploymentEnabled`) |
+| `--profile` | No | Profile name for managed deploy (overrides `activeProfileName` for this run) |
+
+**Managed deploy:** fail-closed when `--managed` is set without a resolvable profile. See [managed-deployment.md](managed-deployment.md) and [install-profiles.md](install-profiles.md).
 
 **Example (best-effort full list):** see `scripts/agents/install_best_effort.sh` (also passes `--skip-validation`).
 

@@ -4,9 +4,9 @@ Canonical index for humans and coding agents working on this repository. Start h
 
 ## Index currency
 
-**Last reviewed:** 2026-07-13.
+**Last reviewed:** 2026-07-17.
 
-Reflects shipped paste/guide ingestion, Avalonia headless GUI smoke (`GuiSmokeHeadlessTests`), and the FOMOD configure-before-validate/install gate. Before publishing a GitHub Release, use [release readiness checklist](../plans/2026-07-13-005-release-readiness-checklist.md) and [manual-release.md](../manual-release.md).
+Reflects shipped paste/guide ingestion (#171), Avalonia headless GUI smoke (`GuiSmokeHeadlessTests`), FOMOD configure-before-validate/install gate, `modsync://` Phase 1–2, managed CLI overrides (#177), and the 2026-07-17 [agent-native-audit.md](agent-native-audit.md) refresh. Before publishing a GitHub Release, use [release readiness checklist](../plans/2026-07-13-005-release-readiness-checklist.md) and [manual-release.md](../manual-release.md).
 
 ## Evidence labels
 
@@ -143,6 +143,8 @@ KB routing: [rebrand-legacy-strings.md](rebrand-legacy-strings.md), [gui-archite
 | FOMOD discovery + CLI prompts + gate | Shipped | [fomod-support.md](fomod-support.md); fail-closed until configured; Plan [123](../plans/2026-06-14-123-feat-fomod-cli-download-prompts-plan.md) |
 | `modsync://` Phase 1 (parse/CLI/handoff) | Shipped | [modsync-protocol-handler.md](modsync-protocol-handler.md) |
 | `modsync://` Phase 2 (OS reg + consume) | Shipped (Settings toggle deferred) | [modsync-protocol-handler.md](modsync-protocol-handler.md); #176 |
+| Agent-native audit refresh | Docs (2026-07-17) | [agent-native-audit.md](agent-native-audit.md); parity [agent-action-parity.md](agent-action-parity.md) |
+| CLI `install --managed` / `--profile` (parity U3) | Shipped (#177) | [core-cli-reference.md](core-cli-reference.md); [managed-deployment.md](managed-deployment.md) |
 | Multi-author publish/share | Open | [plan stub 003](../plans/2026-07-13-003-feat-multi-author-publish-share-plan.md) |
 | Release readiness checklist | Active | [005](../plans/2026-07-13-005-release-readiness-checklist.md) |
 
