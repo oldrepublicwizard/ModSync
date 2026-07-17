@@ -354,7 +354,7 @@ Gate itself remains **U7 / #170** until that PR lands — do not bypass it when 
 
 | Unit | Status |
 |------|--------|
-| U3 CLI `--profile` + shared session polish | Deferred |
+| U3 CLI `--profile` + shared session polish | In PR (CLI `--managed`/`--no-managed`/`--profile`) |
 | U4 Managed VFS / validation parity | Deferred |
 | U5 Uninstall / purge GUI | Deferred |
 | U6 Patcher provenance (ImmutableCheckpoint) | Deferred |

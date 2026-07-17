@@ -18,6 +18,8 @@ using JetBrains.Annotations;
 using ModSync.Core.Services;
 using ModSync.Core.Services.Download;
 using ModSync.Core.Services.Fomod;
+using ModSync.Core.Services.Installation;
+using ModSync.Core.Services.Settings;
 using ModSync.Core.Services.Validation;
 using ModSync.Core.Utility;
 
@@ -652,6 +654,15 @@ namespace ModSync.Core.CLI
 
             [Option("ignore-errors", Required = false, Default = false, HelpText = "Ignore dependency resolution errors and attempt to load components in the best possible order")]
             public bool IgnoreErrors { get; set; }
+
+            [Option("managed", Required = false, Default = false, HelpText = "Force managed deployment for this install (requires --profile or an active profile in settings)")]
+            public bool Managed { get; set; }
+
+            [Option("no-managed", Required = false, Default = false, HelpText = "Force classic (non-managed) install for this run, ignoring settings.json managedDeploymentEnabled")]
+            public bool NoManaged { get; set; }
+
+            [Option("profile", Required = false, HelpText = "Install profile name for managed deployment (overrides activeProfileName for this run)")]
+            public string Profile { get; set; }
         }
 
         [Verb("set-nexus-api-key", HelpText = "Set and validate your Nexus Mods API key")]
@@ -3267,13 +3278,44 @@ componentName: null,
                 await Logger.LogAsync("Starting installation...").ConfigureAwait(false);
                 await Logger.LogAsync(new string('=', 50)).ConfigureAwait(false);
 
+                ModSyncSettings managedSettings = ModSyncSettings.Load();
+                string managedCliError = ManagedInstallCliOverrides.Apply(
+                    managedSettings,
+                    opts.Managed,
+                    opts.NoManaged,
+                    opts.Profile);
+                if (managedCliError != null)
+                {
+                    await Logger.LogErrorAsync(managedCliError).ConfigureAwait(false);
+                    return 1;
+                }
+
+                bool? managedOverride = ManagedInstallCliOverrides.ResolveManagedOverride(opts.Managed, opts.NoManaged);
+                string profileOverride = string.IsNullOrWhiteSpace(opts.Profile) ? null : opts.Profile.Trim();
+                if (managedSettings.ManagedDeploymentEnabled)
+                {
+                    await Logger.LogAsync(
+                        $"Managed deployment enabled for profile '{managedSettings.ActiveProfileName}'."
+                    ).ConfigureAwait(false);
+                }
+
                 ModComponent.InstallExitCode exitCode = await InstallationService.InstallAllSelectedComponentsAsync(
                     components,
                     async (currentIndex, total, componentName) =>
                     {
                         await Logger.LogAsync($"[{currentIndex + 1}/{total}] Installing: {componentName}").ConfigureAwait(false);
-                    }
+                    },
+                    cancellationToken: default,
+                    profileOverride: profileOverride,
+                    managedDeploymentOverride: managedOverride
                 ).ConfigureAwait(false);
+
+                if (InstallationService.LastManagedInstallResult != null)
+                {
+                    await Logger.LogAsync(
+                        ManagedInstallSummaryFormatter.FormatWizardSummary(InstallationService.LastManagedInstallResult)
+                    ).ConfigureAwait(false);
+                }
 
                 await Logger.LogAsync(new string('=', 50)).ConfigureAwait(false);
 

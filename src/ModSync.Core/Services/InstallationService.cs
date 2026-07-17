@@ -43,12 +43,23 @@ namespace ModSync.Core.Services
         /// </summary>
         private static async Task<ModComponent.InstallExitCode> RunWithManagedInstallSessionAsync(
             [NotNull] Func<Task<ModComponent.InstallExitCode>> installAction,
-            [CanBeNull] string profileOverride = null)
+            [CanBeNull] string profileOverride = null,
+            bool? managedDeploymentOverride = null)
         {
             ManagedInstallSession managedSession = null;
             try
             {
                 ModSyncSettings settings = ModSyncSettings.Load();
+                if (managedDeploymentOverride.HasValue)
+                {
+                    settings.ManagedDeploymentEnabled = managedDeploymentOverride.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(profileOverride))
+                {
+                    settings.ActiveProfileName = profileOverride.Trim();
+                }
+
                 var profileService = new ProfileService(ModSyncSettings.GetSettingsDirectory());
                 managedSession = ManagedInstallSession.TryCreate(settings, profileService, profileOverride);
                 ManagedInstallSession.Current = managedSession;
@@ -968,7 +979,9 @@ Exception Type: {ex.GetType().FullName}";
         public static async Task<ModComponent.InstallExitCode> InstallSingleComponentAsync(
             [NotNull] ModComponent component,
             [NotNull][ItemNotNull] IReadOnlyList<ModComponent> allComponents,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            [CanBeNull] string profileOverride = null,
+            bool? managedDeploymentOverride = null)
         {
             if (component is null)
             {
@@ -982,7 +995,8 @@ Exception Type: {ex.GetType().FullName}";
 
             return await RunWithManagedInstallSessionAsync(
                 () => InstallSingleComponentCoreAsync(component, allComponents, cancellationToken),
-                profileOverride: null).ConfigureAwait(false);
+                profileOverride,
+                managedDeploymentOverride).ConfigureAwait(false);
         }
 
         private static async Task<ModComponent.InstallExitCode> InstallSingleComponentCoreAsync(
@@ -1033,7 +1047,8 @@ Exception Type: {ex.GetType().FullName}";
             [NotNull][ItemNotNull] List<ModComponent> allComponents,
             [CanBeNull] Action<int, int, string> progressCallback = null,
             CancellationToken cancellationToken = default,
-            [CanBeNull] string profileOverride = null)
+            [CanBeNull] string profileOverride = null,
+            bool? managedDeploymentOverride = null)
         {
             if (allComponents is null)
             {
@@ -1042,7 +1057,8 @@ Exception Type: {ex.GetType().FullName}";
 
             return await RunWithManagedInstallSessionAsync(
                 () => InstallAllSelectedComponentsCoreAsync(allComponents, progressCallback, cancellationToken),
-                profileOverride).ConfigureAwait(false);
+                profileOverride,
+                managedDeploymentOverride).ConfigureAwait(false);
         }
 
         private static async Task<ModComponent.InstallExitCode> InstallAllSelectedComponentsCoreAsync(
@@ -1219,14 +1235,20 @@ Exception Type: {ex.GetType().FullName}";
             [NotNull][ItemNotNull] IReadOnlyList<ModComponent> allComponents,
             [CanBeNull] Action<int, int, string> progressCallback = null,
             CancellationToken cancellationToken = default,
-            [CanBeNull] string profileOverride = null)
+            [CanBeNull] string profileOverride = null,
+            bool? managedDeploymentOverride = null)
         {
             if (allComponents is null)
             {
                 throw new ArgumentNullException(nameof(allComponents));
             }
 
-            return InstallAllSelectedComponentsAsync(allComponents.ToList(), progressCallback, cancellationToken, profileOverride);
+            return InstallAllSelectedComponentsAsync(
+                allComponents.ToList(),
+                progressCallback,
+                cancellationToken,
+                profileOverride,
+                managedDeploymentOverride);
         }
 
     }
