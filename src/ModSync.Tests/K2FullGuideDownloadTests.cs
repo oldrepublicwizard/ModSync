@@ -160,13 +160,8 @@ namespace ModSync.Tests
                     || modWorkspaceFiles.Any(path => path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)),
                     Is.True,
                     "Silent Sion archive should be present in the mod workspace after download");
-                Assert.That(
-                    modWorkspaceFiles.Any(path =>
-                        path.EndsWith("153sion.dlg", StringComparison.OrdinalIgnoreCase))
-                    || File.Exists(installedDlg)
-                    || Directory.GetFiles(Path.Combine(_kotorDirectory, "Override"), "*.dlg", SearchOption.AllDirectories).Length > 0,
-                    Is.True,
-                    "Expected 153sion.dlg in the mod workspace or Override after download + extract");
+                Assert.That(File.Exists(installedDlg), Is.True,
+                    "153sion.dlg should be installed to Override after download, extract, and move");
             });
         }
 
@@ -202,6 +197,7 @@ namespace ModSync.Tests
         }
 
         [Test]
+        [Timeout(600_000)]
         public void RoundTripHelper_OverlaySilentSion_AddsExtractForRegistryArchive()
         {
             (string fixturePath, string goldenTomlPath) = ResolveInputs();
@@ -230,6 +226,13 @@ namespace ModSync.Tests
                     silentSion.Instructions.Any(i => i.Action == Instruction.ActionType.Move),
                     Is.True,
                     "Round-trip overlay should keep ingested Move draft");
+                Instruction moveInstruction = silentSion.Instructions.First(i => i.Action == Instruction.ActionType.Move);
+                Assert.That(
+                    moveInstruction.Source.Any(source =>
+                        source.IndexOf("153sion.dlg", StringComparison.OrdinalIgnoreCase) >= 0
+                        && source.IndexOf('*', StringComparison.Ordinal) >= 0),
+                    Is.True,
+                    "Round-trip Move should search nested extract folders for 153sion.dlg");
             });
         }
 

@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 
 using ModSync.Core;
 using ModSync.Core.CLI;
+using ModSync.Core.Parsing;
 using ModSync.Core.Services;
 
 namespace ModSync.Tests
@@ -223,12 +224,6 @@ namespace ModSync.Tests
                 return;
             }
 
-            bool usesWildcard = move.Source?.Any(source => source.IndexOf('*', StringComparison.Ordinal) >= 0) == true;
-            if (!usesWildcard)
-            {
-                return;
-            }
-
             Match fileMatch = Regex.Match(
                 component.Directions,
                 @"\b([\w\.\-]+\.(?:dlg|2da|tga|tpc|utc|uti|utm|utd|ute|uts|utw|ssf|bwm|mdl|mdx|txi|lip|lyt|vis|pth|ncs|gui))\b",
@@ -240,12 +235,7 @@ namespace ModSync.Tests
             }
 
             string fileName = fileMatch.Groups[1].Value;
-            move.Source = new List<string>
-            {
-                $"<<modDirectory>>\\{fileName}",
-                $"<<modDirectory>>\\*\\{fileName}",
-                $"<<modDirectory>>\\*{fileName}",
-            };
+            move.Source = DraftInstructionService.ExpandLooseFileMoveSources(move.Source, fileName);
         }
 
         private static bool ShouldIncludeRegistryArchive(string modName, string archiveFileName)

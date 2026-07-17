@@ -1069,8 +1069,9 @@ namespace ModSync.Core.Parsing
                 List<string> files = ParseFileList(filesText);
                 foreach (string file in files)
                 {
-                    sources.Add($"<<modDirectory>>\\{file}");
+                    sources.AddRange(DraftInstructionService.BuildLooseFileMoveSources(file));
                 }
+
                 if (sources.Count > 0)
                 {
                     return sources;
@@ -1091,8 +1092,7 @@ namespace ModSync.Core.Parsing
             if (singleFileMatch.Success)
             {
                 string file = singleFileMatch.Groups["file"].Value.Trim('"', '\'');
-                sources.Add($"<<modDirectory>>\\{file}");
-                return sources;
+                return DraftInstructionService.BuildLooseFileMoveSources(file);
             }
 
             // === Fallback: treat as folder or pattern ===
@@ -1104,7 +1104,7 @@ namespace ModSync.Core.Parsing
                     // Check if it looks like a file (has extension)
                     if (Path.HasExtension(cleaned))
                     {
-                        sources.Add($"<<modDirectory>>\\{cleaned}");
+                        return DraftInstructionService.BuildLooseFileMoveSources(cleaned);
                     }
                     // Check if it has wildcards
                     else if (cleaned.Contains("*") || cleaned.Contains("?"))

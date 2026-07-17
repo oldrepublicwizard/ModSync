@@ -1393,7 +1393,8 @@ namespace ModSync.Core
                     // Check if this resource contains the missing file
                     foreach (var file in resource.Value.Files)
                     {
-                        if (file.Value == true && ResourceRegistryEntryMatchesMissingSource(file.Key, missingFile))
+                        if (ResourceRegistryEntryMatchesMissingSource(file.Key, missingFile)
+                            && (file.Value == true || file.Value == null))
                         {
                             if (!archiveMatches.ContainsKey(missingFile))
                             {
