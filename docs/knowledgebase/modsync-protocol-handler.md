@@ -2,7 +2,7 @@
 
 `[REPO]` How an "Install with ModSync" deep link reaches the app: URL parsing, CLI launch args, and single-instance hand-off. OS scheme registration is planned but not shipped in this slice.
 
-Sources: `src/ModSync.Core/Services/Protocol/ModSyncUrl.cs`, `src/ModSync.GUI/CLIArguments.cs`, `src/ModSync.GUI/Program.cs`, `src/ModSync.GUI/Services/SingleInstanceService.cs`, `src/ModSync.GUI/Services/ModSyncHandoffQueue.cs`, `src/ModSync.GUI/Services/ApplicationLaunchCoordinator.cs`. Requirements: [docs/brainstorms/2026-07-13-modsync-protocol-requirements.md](../brainstorms/2026-07-13-modsync-protocol-requirements.md). Follow-up: [docs/plans/2026-07-13-002-feat-modsync-protocol-os-registration-plan.md](../plans/2026-07-13-002-feat-modsync-protocol-os-registration-plan.md). Related shipped pattern: [nxm-protocol-handler.md](nxm-protocol-handler.md).
+Sources: `src/ModSync.Core/Services/Protocol/ModSyncUrl.cs`, `src/ModSync.GUI/CLIArguments.cs`, `src/ModSync.GUI/Program.cs`, `src/ModSync.GUI/Services/SingleInstanceService.cs`, `src/ModSync.GUI/Services/ModSyncHandoffQueue.cs`, `src/ModSync.GUI/Services/ApplicationLaunchCoordinator.cs`. Requirements: [docs/brainstorms/2026-07-13-modsync-protocol-requirements.md](../brainstorms/2026-07-13-modsync-protocol-requirements.md). Follow-up: [docs/plans/2026-07-13-006-feat-modsync-protocol-os-registration-plan.md](../plans/2026-07-13-006-feat-modsync-protocol-os-registration-plan.md). Related shipped pattern: [nxm-protocol-handler.md](nxm-protocol-handler.md).
 
 ## URL model
 
@@ -29,7 +29,7 @@ Rules:
 | Stage | Component | Behavior |
 |-------|-----------|----------|
 | Parse | `ModSyncUrl` | `IsModSyncUrl` / `TryParse` in Core |
-| Launch | `CLIArguments` | `--modsync=<url>` or bare positional `modsync://...` sets `CLIArguments.ModSyncUrl` |
+| Launch | `CLIArguments` | `--modsync=<url>` or bare positional `modsync://...` sets `CLIArguments.ModSyncProtocolUrl` |
 | Single instance | `SingleInstanceService` + `ApplicationLaunchCoordinator` | Same named-pipe primary/secondary model as nxm; secondary with a protocol URL uses `ForwardProtocolUrlAndExit` |
 | Buffering | `ModSyncHandoffQueue` | Thread-safe queue + `UrlEnqueued` for URLs that arrive before the main window is ready |
 
