@@ -48,7 +48,7 @@
     <Window.Styles />
 
     <Panel>
-        <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <Grid RowDefinitions="Auto,Auto,*,Auto,160">
             <!--  Header row: menu, toggles, title, toggles, theme switcher, window controls  -->
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
@@ -283,6 +283,7 @@
                                 InstallRequested="GettingStartedTab_InstallRequested"
                                 JumpToCurrentStepRequested="GettingStartedTab_JumpToCurrentStepRequested"
                                 JumpToModRequested="GettingStartedTab_JumpToModRequested"
+                                ImportFromClipboardRequested="GettingStartedTab_ImportFromClipboardRequested"
                                 LoadInstructionFileRequested="GettingStartedTab_LoadInstructionFileRequested"
                                 NextErrorRequested="GettingStartedTab_NextErrorRequested"
                                 OpenModDirectoryRequested="GettingStartedTab_OpenModDirectoryRequested"
@@ -370,11 +371,20 @@
                 VerticalAlignment="Stretch"
                 IsVisible="{Binding LandingPageVisible}" />
 
+            <GridSplitter
+                x:Name="LogPanelSplitter"
+                Grid.Row="3"
+                Height="6"
+                HorizontalAlignment="Stretch"
+                ResizeDirection="Rows"
+                ShowsPreview="True"
+                ToolTip.Tip="Drag to resize the output log" />
+
             <controls:EmbeddedLogPanel
                 x:Name="EmbeddedLogPanel"
-                Grid.Row="3"
-                MaxHeight="280"
-                VerticalAlignment="Bottom" />
+                Grid.Row="4"
+                MinHeight="60"
+                VerticalAlignment="Stretch" />
 
             <!--  Drag & Drop Overlay  -->
             <Border
