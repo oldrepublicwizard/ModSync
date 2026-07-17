@@ -11,28 +11,28 @@
     mc:Ignorable="d">
     <UserControl.Styles>
         <Style Selector="Border.landing-hero">
-            <Setter Property="Padding" Value="36,32" />
-            <Setter Property="CornerRadius" Value="18" />
+            <Setter Property="Padding" Value="20,16" />
+            <Setter Property="CornerRadius" Value="14" />
             <Setter Property="Background" Value="{DynamicResource LandingHeroBackgroundBrush}" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="BoxShadow" Value="{DynamicResource LandingHeroBoxShadow}" />
         </Style>
 
         <Style Selector="Border.landing-card">
-            <Setter Property="Padding" Value="24" />
-            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="CornerRadius" Value="12" />
             <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="MinWidth" Value="280" />
-            <Setter Property="MaxWidth" Value="400" />
-            <Setter Property="Margin" Value="12" />
+            <Setter Property="MinWidth" Value="240" />
+            <Setter Property="MaxWidth" Value="360" />
+            <Setter Property="Margin" Value="6" />
             <Setter Property="BoxShadow" Value="{DynamicResource LandingCardBoxShadow}" />
         </Style>
 
         <Style Selector="Border.landing-section">
-            <Setter Property="Padding" Value="24" />
-            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="CornerRadius" Value="12" />
             <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -40,89 +40,89 @@
         </Style>
 
         <Style Selector="TextBlock.landing-hero-title">
-            <Setter Property="FontSize" Value="32" />
+            <Setter Property="FontSize" Value="26" />
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="Foreground" Value="{DynamicResource LandingHeroTitleForegroundBrush}" />
-            <Setter Property="Margin" Value="0,0,0,4" />
+            <Setter Property="Margin" Value="0,0,0,2" />
         </Style>
 
         <Style Selector="TextBlock.landing-hero-subtitle">
-            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontSize" Value="15" />
             <Setter Property="Foreground" Value="{DynamicResource LandingHeroSubtitleForegroundBrush}" />
-            <Setter Property="Margin" Value="0,0,0,24" />
+            <Setter Property="Margin" Value="0,0,0,8" />
         </Style>
 
         <Style Selector="TextBlock.landing-hero-detail">
-            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontSize" Value="13" />
             <Setter Property="Foreground" Value="{DynamicResource LandingHeroDetailForegroundBrush}" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
         <Style Selector="TextBlock.landing-card-title">
-            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontSize" Value="16" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
         <Style Selector="TextBlock.landing-card-body">
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
-
-        <Style Selector="Button.landing-action-button">
-            <Setter Property="MinHeight" Value="48" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="BorderThickness" Value="2" />
-            <Setter Property="CornerRadius" Value="10" />
-        </Style>
-
-        <Style Selector="TextBlock.landing-status">
             <Setter Property="FontSize" Value="13" />
             <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
+        <Style Selector="Button.landing-action-button">
+            <Setter Property="MinHeight" Value="40" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+
+        <Style Selector="TextBlock.landing-status">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
         <Style Selector="TextBlock.landing-section-title">
-            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
         </Style>
 
         <Style Selector="TextBlock.landing-section-subtitle">
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontSize" Value="13" />
             <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
             <Setter Property="Opacity" Value="0.85" />
-            <Setter Property="Margin" Value="0,4,0,16" />
+            <Setter Property="Margin" Value="0,2,0,8" />
         </Style>
 
         <Style Selector="Border.landing-step-card">
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Padding" Value="16" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="12" />
             <Setter Property="Background" Value="{DynamicResource LandingStepCardBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource LandingStepCardBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Margin" Value="0,0,0,12" />
+            <Setter Property="Margin" Value="0,0,0,6" />
         </Style>
 
         <Style Selector="TextBlock.landing-step-title">
-            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{DynamicResource LandingStepTitleForegroundBrush}" />
         </Style>
 
         <Style Selector="TextBlock.landing-step-body">
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontSize" Value="13" />
             <Setter Property="Foreground" Value="{DynamicResource LandingStepBodyForegroundBrush}" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
     </UserControl.Styles>
 
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="32" Spacing="28">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16,12" Spacing="14">
             <Border Classes="landing-hero">
-                <StackPanel Spacing="10">
+                <StackPanel Spacing="6">
                     <TextBlock
                         x:Name="HeaderText"
                         Classes="landing-hero-title"
@@ -140,12 +140,11 @@
             <WrapPanel
                 x:Name="CardPanel"
                 HorizontalAlignment="Center"
-                Margin="0,8,0,0"
                 MinWidth="200">
                 <Border Classes="landing-card">
-                    <StackPanel Spacing="18">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="Auto,*">
-                            <TextBlock Grid.Column="0" FontSize="28" Margin="0,0,12,0" Text="📂" />
+                            <TextBlock Grid.Column="0" Margin="0,0,8,0" Text="📂" />
                             <TextBlock Grid.Column="1" Classes="landing-card-title" Text="Load a curated instruction set" />
                         </Grid>
                         <TextBlock
@@ -154,12 +153,12 @@
                         <Button
                             x:Name="LoadInstructionButton"
                             Classes="landing-action-button">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-                                <TextBlock FontSize="18" Text="🔎" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                                <TextBlock Text="🔎" />
                                 <TextBlock Text="Browse Instruction File" />
                             </StackPanel>
                         </Button>
-                        <Border Background="{DynamicResource LandingInfoPanelBackgroundBrush}" CornerRadius="10" Padding="12">
+                        <Border Background="{DynamicResource LandingInfoBannerBackgroundBrush}" CornerRadius="8" Padding="10">
                             <TextBlock
                                 x:Name="InstructionStatusText"
                                 Classes="landing-status"
@@ -169,9 +168,9 @@
                 </Border>
 
                 <Border Classes="landing-card">
-                    <StackPanel Spacing="18">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="Auto,*">
-                            <TextBlock Grid.Column="0" FontSize="28" Margin="0,0,12,0" Text="🛠️" />
+                            <TextBlock Grid.Column="0" Margin="0,0,8,0" Text="🛠️" />
                             <TextBlock Grid.Column="1" Classes="landing-card-title" Text="Build your own instruction set" />
                         </Grid>
                         <TextBlock
@@ -180,12 +179,12 @@
                         <Button
                             x:Name="CreateInstructionsButton"
                             Classes="landing-action-button">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-                                <TextBlock FontSize="18" Text="✏️" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                                <TextBlock Text="✏️" />
                                 <TextBlock Text="Open the Editor" />
                             </StackPanel>
                         </Button>
-                        <Border Background="{DynamicResource LandingInfoPanelBackgroundBrush}" CornerRadius="10" Padding="12">
+                        <Border Background="{DynamicResource LandingInfoBannerBackgroundBrush}" CornerRadius="8" Padding="10">
                             <TextBlock
                                 x:Name="EditorStatusText"
                                 Classes="landing-status"
@@ -196,16 +195,16 @@
                 </Border>
 
                 <Border Classes="landing-card">
-                    <StackPanel Spacing="18">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="Auto,*">
-                            <TextBlock Grid.Column="0" FontSize="28" Margin="0,0,12,0" Text="📘" />
+                            <TextBlock Grid.Column="0" Margin="0,0,8,0" Text="📘" />
                             <TextBlock Grid.Column="1" Classes="landing-card-title" Text="Follow the quick-start checklist" />
                         </Grid>
                         <TextBlock
                             Classes="landing-card-body"
                             Text="Need a refresher? Review the installation playbook, sandbox overview, and validation tips before diving into your next mod session." />
-                        <Border Background="{DynamicResource LandingInfoPanelBackgroundBrush}" CornerRadius="10" Padding="12">
-                            <StackPanel Spacing="6">
+                        <Border Background="{DynamicResource LandingInfoBannerBackgroundBrush}" CornerRadius="8" Padding="10">
+                            <StackPanel Spacing="4">
                                 <TextBlock Classes="landing-status" Text="• Secure sandboxed file operations" />
                                 <TextBlock Classes="landing-status" Text="• Built-in wizard for guided installs" />
                                 <TextBlock Classes="landing-status" Text="• Editor with raw + visual modes" />
@@ -215,9 +214,9 @@
                 </Border>
 
                 <Border Classes="landing-card">
-                    <StackPanel Spacing="18">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="Auto,*">
-                            <TextBlock Grid.Column="0" FontSize="28" Margin="0,0,12,0" Text="💖" />
+                            <TextBlock Grid.Column="0" Margin="0,0,8,0" Text="💖" />
                             <TextBlock Grid.Column="1" Classes="landing-card-title" Text="Support Development" />
                         </Grid>
                         <TextBlock
@@ -227,8 +226,8 @@
                             x:Name="SponsorButton"
                             Classes="landing-action-button"
                             Click="OnSponsorButtonClick">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-                                <TextBlock FontSize="18" Text="❤️" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                                <TextBlock Text="❤️" />
                                 <TextBlock Text="Sponsor on GitHub" />
                             </StackPanel>
                         </Button>
@@ -243,33 +242,33 @@
             </WrapPanel>
 
             <Border Classes="landing-section">
-                <StackPanel Spacing="12">
+                <StackPanel Spacing="8">
                     <TextBlock Classes="landing-section-title" Text="Getting started in four quick steps" />
                     <TextBlock
                         Classes="landing-section-subtitle"
                         Text="Follow this guided path to move from a fresh install to a fully modded galaxy in minutes." />
 
-                    <StackPanel Spacing="12">
+                    <StackPanel Spacing="6">
                         <Border Classes="landing-step-card">
-                            <StackPanel Spacing="6">
+                            <StackPanel Spacing="2">
                                 <TextBlock Classes="landing-step-title" Text="1. Point to your KOTOR directories" />
                                 <TextBlock Classes="landing-step-body" Text="Use the directory selectors to set your dedicated mod workspace and the KOTOR installation you want to patch." />
                             </StackPanel>
                         </Border>
                         <Border Classes="landing-step-card">
-                            <StackPanel Spacing="6">
+                            <StackPanel Spacing="2">
                                 <TextBlock Classes="landing-step-title" Text="2. Load or author instructions" />
                                 <TextBlock Classes="landing-step-body" Text="Bring in a curated file or flip on the editor to craft instructions with dependency tracking, tiers, and validation hints." />
                             </StackPanel>
                         </Border>
                         <Border Classes="landing-step-card">
-                            <StackPanel Spacing="6">
+                            <StackPanel Spacing="2">
                                 <TextBlock Classes="landing-step-title" Text="3. Validate and download everything" />
                                 <TextBlock Classes="landing-step-body" Text="The wizard resolves downloads, checks archives in the sandbox, and highlights any issues before install time." />
                             </StackPanel>
                         </Border>
                         <Border Classes="landing-step-card">
-                            <StackPanel Spacing="6">
+                            <StackPanel Spacing="2">
                                 <TextBlock Classes="landing-step-title" Text="4. Install with confidence" />
                                 <TextBlock Classes="landing-step-body" Text="Launch the guided installer or perform manual actions knowing every file stays inside the sandboxed mod + game directories." />
                             </StackPanel>

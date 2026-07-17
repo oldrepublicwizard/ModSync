@@ -375,7 +375,6 @@ namespace ModSync
                 _menuBuilderService = new MenuBuilderService(ModManagementService, this);
                 InitializeTopMenu();
                 UpdateMenuVisibility();
-                InitializeDirectoryPickers();
                 InitializeModListBox();
                 _selectionService = new SelectionService(MainConfigInstance);
                 _fileSystemService = new FileSystemService();
@@ -395,6 +394,8 @@ namespace ModSync
                 _instructionGenerationService = new InstructionGenerationService(MainConfigInstance, this);
                 _validationDisplayService = new ValidationDisplayService(_validationService, () => MainConfig.AllComponents);
                 _settingsService = new SettingsService(MainConfigInstance, this);
+                // Must run after SettingsService exists (delegates picker wiring to it).
+                InitializeDirectoryPickers();
                 _stepNavigationService = new StepNavigationService(MainConfigInstance, _validationService);
 
                 _telemetryService = TelemetryService.Instance;
@@ -6410,6 +6411,57 @@ namespace ModSync
         }
 
         [SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "<Pending>")]
+        private async void ImportFromClipboard_Click(object sender, RoutedEventArgs e)
+        {
+            _telemetryService?.RecordUiInteraction("click", "ImportFromClipboardButton");
+
+            try
+            {
+                if (Clipboard is null)
+                {
+                    throw new InvalidOperationException(nameof(Clipboard));
+                }
+
+                string clipboardText = await Clipboard.GetTextAsync();
+                if (string.IsNullOrWhiteSpace(clipboardText))
+                {
+                    await Logger.LogWarningAsync("Clipboard has no text to import.");
+                    return;
+                }
+
+                ShowLoadingOverlay("Importing from clipboard...");
+                try
+                {
+                    bool loaded = await _fileLoadingService.LoadInstructionTextAsync(
+                        clipboardText,
+                        EditorMode,
+                        () => ProcessComponentsAsync(MainConfig.AllComponents),
+                        TryAutoGenerateInstructionsForComponents,
+                        sourceDescription: "clipboard text");
+
+                    if (loaded)
+                    {
+                        await Logger.LogAsync($"Imported {MainConfig.AllComponents.Count} components from clipboard.");
+                    }
+                    else
+                    {
+                        await Logger.LogWarningAsync("Clipboard text was not recognized as an instruction file or mod-build guide; nothing was imported.");
+                    }
+                }
+                finally
+                {
+                    HideLoadingOverlay();
+                    await UpdateStepProgressAsync();
+                }
+            }
+            catch (Exception exception)
+            {
+                HideLoadingOverlay();
+                await Logger.LogExceptionAsync(exception, "[ImportFromClipboard_Click] Exception occurred");
+            }
+        }
+
+        [SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "<Pending>")]
         private async void GettingStartedValidateButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -6446,6 +6498,7 @@ namespace ModSync
         private void GettingStartedTab_InstallRequested(object sender, RoutedEventArgs e) => InstallButton_Click(sender, e);
         private void GettingStartedTab_JumpToCurrentStepRequested(object sender, RoutedEventArgs e) => JumpToCurrentStep_Click(sender, e);
         private void GettingStartedTab_JumpToModRequested(object sender, RoutedEventArgs e) => JumpToModButton_Click(sender, e);
+        private void GettingStartedTab_ImportFromClipboardRequested(object sender, RoutedEventArgs e) => ImportFromClipboard_Click(sender, e);
         private void GettingStartedTab_LoadInstructionFileRequested(object sender, RoutedEventArgs e) => Step2Button_Click(sender, e);
         private void GettingStartedTab_NextErrorRequested(object sender, RoutedEventArgs e) => NextErrorButton_Click(sender, e);
         private void GettingStartedTab_OpenModDirectoryRequested(object sender, RoutedEventArgs e) => OpenModDirectoryButton_Click(sender, e);

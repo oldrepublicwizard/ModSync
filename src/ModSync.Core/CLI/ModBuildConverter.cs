@@ -469,6 +469,12 @@ namespace ModSync.Core.CLI
 
             [Option("auto-generate-local", Required = false, HelpText = "Generate instructions from local archives in --source-path for components missing instructions")]
             public bool AutoGenerateLocal { get; set; }
+
+            [Option("stdin", Required = false, HelpText = "Read guide/instruction content from standard input instead of --input (format auto-detected: TOML, Markdown, YAML, XML, JSON)")]
+            public bool UseStdin { get; set; }
+
+            [Option("parse-directions", Required = false, HelpText = "Draft executable instructions from natural-language Directions prose for components that have none; drafted components are flagged for review in the output")]
+            public bool ParseDirections { get; set; }
         }
 
         [Verb("merge", HelpText = "Merge two instruction sets together")]
@@ -1829,25 +1835,32 @@ componentName: null,
                 }
 
                 // Convert mode validation
-                if (string.IsNullOrEmpty(opts.InputPath))
+                if (string.IsNullOrEmpty(opts.InputPath) && !opts.UseStdin)
                 {
 
 
-                    await Logger.LogErrorAsync("--input is required for convert mode").ConfigureAwait(false);
+                    await Logger.LogErrorAsync("--input (or --stdin) is required for convert mode").ConfigureAwait(false);
                     await Logger.LogAsync("Usage: convert --input <file> [options]").ConfigureAwait(false);
+                    await Logger.LogAsync("   OR: convert --stdin [options] (pipe guide/instruction content on standard input)").ConfigureAwait(false);
                     await Logger.LogAsync("   OR: Use the 'merge' command to merge two instruction sets").ConfigureAwait(false);
                     await Logger.LogAsync("       merge --existing <file> --incoming <file> [options]").ConfigureAwait(false);
                     await Logger.LogAsync("   OR: convert --merge --existing <file> --incoming <file> [options] (backward compatible)").ConfigureAwait(false);
                     return 1;
                 }
 
-                if (!File.Exists(opts.InputPath))
+                if (opts.UseStdin && !string.IsNullOrEmpty(opts.InputPath))
+                {
+                    await Logger.LogErrorAsync("--stdin cannot be combined with --input").ConfigureAwait(false);
+                    return 1;
+                }
+
+                if (!opts.UseStdin && !File.Exists(opts.InputPath))
                 {
                     await Logger.LogErrorAsync($"Input file not found: {opts.InputPath}").ConfigureAwait(false);
                     return 1;
                 }
 
-                await Logger.LogVerboseAsync($"Convert mode: {opts.InputPath}").ConfigureAwait(false);
+                await Logger.LogVerboseAsync($"Convert mode: {(opts.UseStdin ? "<stdin>" : opts.InputPath)}").ConfigureAwait(false);
                 await Logger.LogVerboseAsync($"Output format: {opts.Format}").ConfigureAwait(false);
 
                 if (opts.Download && string.IsNullOrEmpty(opts.SourcePath))
@@ -1890,7 +1903,17 @@ componentName: null,
                 List<ModComponent> components;
                 try
                 {
-                    components = await FileLoadingService.LoadFromFileAsync(opts.InputPath).ConfigureAwait(false);
+                    if (opts.UseStdin)
+                    {
+                        string stdinContent = await Console.In.ReadToEndAsync().ConfigureAwait(false);
+                        components = (await ModComponentSerializationService
+                            .DeserializeModComponentFromStringAsync(stdinContent)
+                            .ConfigureAwait(false)).ToList();
+                    }
+                    else
+                    {
+                        components = await FileLoadingService.LoadFromFileAsync(opts.InputPath).ConfigureAwait(false);
+                    }
 
                     // Handle dependency resolution
                     components = (List<ModComponent>)HandleDependencyResolutionErrors(components, opts.IgnoreErrors, "Convert");
@@ -1911,9 +1934,38 @@ componentName: null,
                         ErrorCollector.ErrorCategory.FileOperation,
 componentName: null,
                         "Failed to load components from file",
-                        $"Input file: {opts.InputPath}",
+                        $"Input file: {(opts.UseStdin ? "<stdin>" : opts.InputPath)}",
                         ex);
                     throw;
+                }
+
+                List<Parsing.DraftInstructionResult> draftResults = null;
+                if (opts.ParseDirections)
+                {
+                    msg = "Drafting instructions from natural-language Directions prose...";
+                    if (s_progressDisplay != null)
+                    {
+                        s_progressDisplay.WriteScrollingLog(msg);
+                    }
+                    else
+                    {
+                        await Logger.LogVerboseAsync(msg).ConfigureAwait(false);
+                    }
+
+                    draftResults = Parsing.DraftInstructionService.GenerateDraftInstructions(
+                        components,
+                        logInfo: message => Logger.Log(message),
+                        logVerbose: message => Logger.LogVerbose(message)).ToList();
+
+                    msg = $"Drafted instructions for {draftResults.Count} component(s) - all drafts are flagged for review";
+                    if (s_progressDisplay != null)
+                    {
+                        s_progressDisplay.WriteScrollingLog(msg);
+                    }
+                    else
+                    {
+                        await Logger.LogAsync(msg).ConfigureAwait(false);
+                    }
                 }
 
                 if (opts.Download)
@@ -2081,6 +2133,17 @@ componentName: null,
 
                 // Create validation context to track issues for serialization
                 var validationContext = new ComponentValidationContext();
+
+                // Flag prose-drafted instructions for review in the serialized output (never auto-trusted)
+                if (draftResults != null)
+                {
+                    foreach (Parsing.DraftInstructionResult draftResult in draftResults)
+                    {
+                        validationContext.AddModComponentIssue(
+                            draftResult.Component.Guid,
+                            Parsing.DraftInstructionService.ReviewFlagMessage);
+                    }
+                }
 
                 // Collect download failures from cache
                 if (downloadCache != null)

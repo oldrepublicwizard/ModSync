@@ -49,6 +49,16 @@ Optional filter:
 ./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~ReleaseVersionAlignment"
 ```
 
+### Avalonia GUI UX smoke (no desktop / no X11)
+
+Uses `Avalonia.Headless.XUnit` via `HeadlessTestApp` — do **not** launch the real GUI for paste-flow or page-0 layout smoke:
+
+```bash
+./scripts/agents/run_headless_tests.sh --filter "FullyQualifiedName~GuiSmokeHeadlessTests"
+```
+
+Covers: `ImportFromClipboardButton` invokable, Welcome/Landing scroll layout in a compact host, ValidatePage log `GridSplitter`.
+
 ### Validate instruction file
 
 ```bash
