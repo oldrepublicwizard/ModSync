@@ -84,6 +84,40 @@ namespace ModSync.Tests
             }
         }
 
+        [AvaloniaFact(DisplayName = "BuildGlobalActionsFlyout includes Nexus update check in common items")]
+        public void BuildGlobalActionsFlyout_IncludesNexusUpdateCheckItem()
+        {
+            MenuBuilderService service = CreateService(out Window window);
+            var flyout = new MenuFlyout();
+
+            try
+            {
+                service.BuildGlobalActionsFlyout(
+                    flyout,
+                    editorMode: false,
+                    () => { },
+                    () => Task.CompletedTask,
+                    () => Task.CompletedTask,
+                    () => Task.CompletedTask,
+                    () => new ModComponent { Name = "New" },
+                    _ => { },
+                    (_, __) => { },
+                    new TabControl(),
+                    new TabItem(),
+                    () => Task.CompletedTask,
+                    () => Task.CompletedTask,
+                    (_, __) => { },
+                    (_, __) => { });
+
+                List<string> headers = GetMenuHeaders(flyout.Items);
+                Assert.Contains("🔔 Check for Nexus Updates", headers);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
         [AvaloniaFact(DisplayName = "BuildGlobalActionsFlyout editor mode includes bulk actions before editor tools")]
         public void BuildGlobalActionsFlyout_Editor_IncludesBulkActions()
         {

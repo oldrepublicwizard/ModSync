@@ -277,6 +277,86 @@ namespace ModSync.Tests
         }
 
         [Test]
+        public void NexusUpdateAvailable_TrueWhenAnyResourceHasUpdate()
+        {
+            var upToDate = new ResourceMetadata { UpdateAvailable = false };
+            var stale = new ResourceMetadata { UpdateAvailable = true };
+            ModComponent component = CreateComponent(
+                "Mixed Resources",
+                ("https://www.nexusmods.com/kotor/mods/1", upToDate),
+                ("https://www.nexusmods.com/kotor/mods/2", stale));
+
+            Assert.That(component.NexusUpdateAvailable, Is.True);
+        }
+
+        [Test]
+        public void NotifyNexusUpdateStateChanged_RaisesPropertyChangedForNexusUpdateAvailable()
+        {
+            var metadata = new ResourceMetadata { UpdateAvailable = true };
+            ModComponent component = CreateComponent(
+                "Notify Test",
+                ("https://www.nexusmods.com/kotor/mods/1", metadata));
+
+            var changedProperties = new List<string>();
+            component.PropertyChanged += (_, args) =>
+            {
+                if (!string.IsNullOrEmpty(args.PropertyName))
+                {
+                    changedProperties.Add(args.PropertyName);
+                }
+            };
+
+            component.NotifyNexusUpdateStateChanged();
+
+            Assert.That(changedProperties, Does.Contain(nameof(ModComponent.NexusUpdateAvailable)));
+        }
+
+        [Test]
+        public async Task CheckForUpdatesAsync_EmptyApiVersion_PreservesExistingMetadata()
+        {
+            var handler = new RoutingHttpMessageHandler();
+            handler.AddModInfo("kotor", 42, string.Empty);
+            var metadata = new ResourceMetadata
+            {
+                ModVersion = "1.0",
+                UpdateAvailable = true,
+                LatestKnownVersion = "1.0",
+            };
+            ModComponent component = CreateComponent("Stale Badge", ("https://www.nexusmods.com/kotor/mods/42", metadata));
+            ModUpdateCheckService service = CreateService(handler);
+
+            ModUpdateCheckResult result = await service.CheckForUpdatesAsync(new[] { component });
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.CheckedCount, Is.EqualTo(0));
+                Assert.That(metadata.UpdateAvailable, Is.True);
+                Assert.That(metadata.ModVersion, Is.EqualTo("1.0"));
+                Assert.That(metadata.LatestKnownVersion, Is.EqualTo("1.0"));
+                Assert.That(metadata.LastUpdateCheck, Is.Null);
+            });
+        }
+
+        [Test]
+        public async Task CheckForUpdatesAsync_VersionWhitespace_TreatedAsEqual()
+        {
+            var handler = new RoutingHttpMessageHandler();
+            handler.AddModInfo("kotor", 7, "1.0");
+            var metadata = new ResourceMetadata { ModVersion = " 1.0 " };
+            ModComponent component = CreateComponent("Trim Test", ("https://www.nexusmods.com/kotor/mods/7", metadata));
+            ModUpdateCheckService service = CreateService(handler);
+
+            ModUpdateCheckResult result = await service.CheckForUpdatesAsync(new[] { component });
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.CheckedCount, Is.EqualTo(1));
+                Assert.That(result.UpdatesFound, Is.Empty);
+                Assert.That(metadata.UpdateAvailable, Is.False);
+            });
+        }
+
+        [Test]
         public void CheckForUpdatesAsync_NullComponents_Throws()
         {
             ModUpdateCheckService service = CreateService(new RoutingHttpMessageHandler());
