@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 using ModSync.Core;
 using ModSync.Core.Services.FileSystem;
+using ModSync.Core.Services.Fomod;
 using ModSync.Core.Services.Validation;
 using ModSync.Dialogs;
 using ModSync.Services;
@@ -189,6 +190,28 @@ namespace ModSync.Tests
             Assert.That(modIssues[0].Icon, Is.EqualTo("✗"));
             Assert.That(modIssues[1].ModName, Is.EqualTo("Conflicts"));
             Assert.That(modIssues[1].IssueType, Is.EqualTo("Conflict"));
+        }
+
+        [Test]
+        public void AddPipelineStageIssues_FomodConfigurationFailure_MapsPrefixedRows()
+        {
+            var pipelineResult = new ValidationPipelineResult();
+            var fomod = new ValidationPipelineStageResult
+            {
+                Stage = ValidationPipelineStage.FomodConfiguration,
+                Passed = false,
+                Summary = "1 unconfigured FOMOD archive(s).",
+            };
+            fomod.Messages.Add("ERROR: Sample Mod: FOMOD archive 'pack.zip' is not configured.");
+            pipelineResult.Stages.Add(fomod);
+
+            var modIssues = new List<DialogValidationIssue>();
+            ValidationPipelineDialogMapper.AddPipelineStageIssues(pipelineResult, modIssues);
+
+            Assert.That(modIssues, Has.Count.EqualTo(1));
+            Assert.That(modIssues[0].ModName, Is.EqualTo("Sample Mod"));
+            Assert.That(modIssues[0].IssueType, Is.EqualTo(FomodConfigurationGate.IssueCategory));
+            Assert.That(modIssues[0].Solution, Is.EqualTo(FomodConfigurationGate.RecoveryHint));
         }
 
         [Test]

@@ -365,8 +365,7 @@ namespace ModSync.Core.Parsing
                 extractedHeading = ExtractValue(componentTextWithoutMetadata, _profile.HeadingPattern, "heading", "HeadingPattern", sectionStartIndex);
                 if (extractedHeading != null)
                 {
-                    component.Heading = extractedHeading;
-                    _logVerbose($"  Extracted Heading: '{extractedHeading}'");
+                    _logVerbose($"  Extracted display heading text: '{extractedHeading}'");
                 }
             }
 
@@ -395,6 +394,15 @@ namespace ModSync.Core.Parsing
             else
             {
                 _logVerbose($"  No name found using pattern: {_profile.NamePattern}");
+            }
+
+            // ### falls back to Name when Heading is empty during MD serialize. Only keep an
+            // explicit Heading when the display title differs from Name so empty Heading round-trips.
+            if (extractedHeading != null
+                && !string.Equals(extractedHeading, component.Name, StringComparison.Ordinal))
+            {
+                component.Heading = extractedHeading;
+                _logVerbose($"  Using distinct Heading: '{extractedHeading}'");
             }
 
             string extractedAuthor = ExtractValue(componentTextWithoutMetadata, _profile.AuthorPattern, "author", "AuthorPattern", sectionStartIndex);
@@ -928,16 +936,13 @@ namespace ModSync.Core.Parsing
                 target.Author = source.Author;
             }
 
-            // Preserve Heading from metadata if present, but don't overwrite if target already has a Heading
-            // extracted from text (which takes precedence for Markdown parsing)
-            if (!string.IsNullOrWhiteSpace(source.Heading))
+            // Preserve Heading from metadata if present, but don't overwrite text-extracted Heading.
+            // Skip Name-duplicated Heading values so empty Heading round-trips through MD display fallback.
+            if (!string.IsNullOrWhiteSpace(source.Heading)
+                && string.IsNullOrWhiteSpace(target.Heading)
+                && !string.Equals(source.Heading, target.Name, StringComparison.Ordinal))
             {
-                // Only set Heading from metadata if target doesn't already have one extracted from text
-                // This ensures text-extracted Heading takes precedence over metadata Heading
-                if (string.IsNullOrWhiteSpace(target.Heading))
-                {
-                    target.Heading = source.Heading;
-                }
+                target.Heading = source.Heading;
             }
 
             if (!string.IsNullOrWhiteSpace(source.Description))

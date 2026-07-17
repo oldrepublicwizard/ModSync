@@ -38,7 +38,7 @@ namespace ModSync.Services
                 + "Configure installer options now?"
                 + Environment.NewLine
                 + Environment.NewLine
-                + "Choose No to skip for now. You can still use Mod Management → Configure FOMOD Mod later.")
+                + "Choose No to skip for now. Run Fetch Downloads again later to configure, or use Mod Management → Configure FOMOD Mod with this mod selected.")
                 .ConfigureAwait(true);
 
             if (configure == true)

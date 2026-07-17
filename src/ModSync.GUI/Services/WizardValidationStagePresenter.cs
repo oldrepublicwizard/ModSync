@@ -63,6 +63,9 @@ namespace ModSync.Services
                     case ValidationPipelineStage.ComponentValidation:
                         ApplyComponentValidationStage(stage, stepIndex, appendLog, addResult);
                         break;
+                    case ValidationPipelineStage.FomodConfiguration:
+                        ApplyFomodConfigurationStage(stage, stepIndex, appendLog, addResult);
+                        break;
                     case ValidationPipelineStage.DryRun:
                         ApplyDryRunStage(pipelineResult, stepIndex, appendLog, addResult);
                         break;
@@ -209,6 +212,30 @@ namespace ModSync.Services
             else if (stage.HasWarnings)
             {
                 addResult("⚠️ Archive Validation", stage.Summary ?? "Archive validation passed with warnings");
+            }
+        }
+
+        private static void ApplyFomodConfigurationStage(
+            ValidationPipelineStageResult stage,
+            int stepIndex,
+            AppendLogDelegate appendLog,
+            AddResultDelegate addResult)
+        {
+            appendLog($"Step {stepIndex}: Checking FOMOD configuration");
+            foreach (string message in stage.Messages)
+            {
+                appendLog($"  {message}");
+            }
+
+            ApplyPrefixedStageMessageCards(stage.Messages, addResult);
+
+            if (!stage.Passed)
+            {
+                addResult("❌ FOMOD Configuration", stage.Summary ?? "Unconfigured FOMOD archives detected");
+            }
+            else
+            {
+                addResult("✅ FOMOD Configuration", stage.Summary ?? "All detected FOMOD archives are configured.");
             }
         }
 

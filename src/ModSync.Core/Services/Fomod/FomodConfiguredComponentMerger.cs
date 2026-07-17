@@ -38,8 +38,7 @@ namespace ModSync.Core.Services.Fomod
                 throw new ArgumentException("Archive file name cannot be null or whitespace.", nameof(archiveFileName));
             }
 
-            string archiveFolder = Path.GetFileNameWithoutExtension(archiveFileName);
-            string archivePathPrefix = ModDirectoryPlaceholder + "/" + archiveFolder + "/";
+            string archivePathPrefix = BuildArchivePathPrefix(archiveFileName);
 
             var configuredOptionGuids = new HashSet<Guid>(configured.Options.Select(option => option.Guid));
             RemovePriorFomodInstructions(target, archivePathPrefix, configuredOptionGuids);
@@ -67,6 +66,58 @@ namespace ModSync.Core.Services.Fomod
                 instruction.SetParentComponent(target);
                 target.Instructions.Add(instruction);
             }
+        }
+
+        /// <summary>
+        /// True when the component (or any option) has Copy/Move/etc. sources scoped to this archive folder.
+        /// Used as a soft integrity check after status is marked <c>configured</c>.
+        /// </summary>
+        public static bool HasArchiveScopedInstructions(
+            [NotNull] ModComponent component,
+            [NotNull] string archiveFileName)
+        {
+            if (component is null)
+            {
+                throw new ArgumentNullException(nameof(component));
+            }
+
+            if (string.IsNullOrWhiteSpace(archiveFileName))
+            {
+                return false;
+            }
+
+            string archivePathPrefix = BuildArchivePathPrefix(archiveFileName);
+            if (AnyInstructionReferencesArchive(component.Instructions, archivePathPrefix))
+            {
+                return true;
+            }
+
+            if (component.Options is null)
+            {
+                return false;
+            }
+
+            foreach (Option option in component.Options)
+            {
+                if (option?.Instructions is null)
+                {
+                    continue;
+                }
+
+                if (AnyInstructionReferencesArchive(option.Instructions, archivePathPrefix))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        [NotNull]
+        internal static string BuildArchivePathPrefix([NotNull] string archiveFileName)
+        {
+            string archiveFolder = Path.GetFileNameWithoutExtension(Path.GetFileName(archiveFileName));
+            return ModDirectoryPlaceholder + "/" + archiveFolder + "/";
         }
 
         private static void RemovePriorFomodInstructions(
@@ -98,7 +149,24 @@ namespace ModSync.Core.Services.Fomod
             }
         }
 
-        private static bool InstructionReferencesArchive([NotNull] Instruction instruction, [NotNull] string archivePathPrefix)
+        private static bool AnyInstructionReferencesArchive(
+            [NotNull] System.Collections.ObjectModel.ObservableCollection<Instruction> instructions,
+            [NotNull] string archivePathPrefix)
+        {
+            foreach (Instruction instruction in instructions)
+            {
+                if (instruction != null && InstructionReferencesArchive(instruction, archivePathPrefix))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        internal static bool InstructionReferencesArchive(
+            [NotNull] Instruction instruction,
+            [NotNull] string archivePathPrefix)
         {
             if (instruction.Source is null)
             {
@@ -107,8 +175,14 @@ namespace ModSync.Core.Services.Fomod
 
             foreach (string source in instruction.Source)
             {
-                if (!string.IsNullOrEmpty(source)
-                    && source.StartsWith(archivePathPrefix, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(source))
+                {
+                    continue;
+                }
+
+                string normalizedSource = source.Replace('\\', '/');
+                string normalizedPrefix = archivePathPrefix.Replace('\\', '/');
+                if (normalizedSource.StartsWith(normalizedPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

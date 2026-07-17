@@ -16,6 +16,7 @@ namespace ModSync.Core.Services.Validation
         Conflicts,
         InstallOrder,
         ComponentValidation,
+        FomodConfiguration,
         DryRun,
     }
 

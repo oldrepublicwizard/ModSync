@@ -16,6 +16,7 @@ using ModSync.Core;
 using ModSync.Core.FileSystemUtils;
 using ModSync.Core.Installation;
 using ModSync.Core.Services.Checkpoints;
+using ModSync.Core.Services.Fomod;
 using ModSync.Core.Services.Installation;
 using ModSync.Core.Services.Profiles;
 using ModSync.Core.Services.Settings;
@@ -996,8 +997,34 @@ Exception Type: {ex.GetType().FullName}";
                 return ModComponent.InstallExitCode.InvalidOperation;
             }
 
-            // FOMOD fail-closed gate (#170) lands here when merged — do not wrap install
-            // ahead of that gate; keep validation/gates inside this core path.
+            string modDirectory = MainConfig.Instance?.sourcePath?.FullName;
+            if (string.IsNullOrWhiteSpace(modDirectory) || !System.IO.Directory.Exists(modDirectory))
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: mod directory is not set or does not exist."
+                ).ConfigureAwait(false);
+                return ModComponent.InstallExitCode.InvalidOperation;
+            }
+
+            FomodConfigurationGate.GateResult fomodGate = FomodConfigurationGate.Validate(
+                allComponents,
+                new[] { component },
+                modDirectory);
+            if (!fomodGate.Passed)
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: one or more FOMOD archives are not configured."
+                ).ConfigureAwait(false);
+                foreach (FomodConfigurationGate.GateIssue issue in fomodGate.Issues)
+                {
+                    await Logger.LogErrorAsync(
+                        $"[{issue.Component.Name}] {FomodConfigurationGate.FormatIssueMessage(issue)}"
+                    ).ConfigureAwait(false);
+                }
+
+                return ModComponent.InstallExitCode.InvalidOperation;
+            }
+
             return await component.InstallAsync(allComponents.ToList(), cancellationToken).ConfigureAwait(false);
         }
 
@@ -1028,8 +1055,35 @@ Exception Type: {ex.GetType().FullName}";
                 throw new ArgumentNullException(nameof(allComponents));
             }
 
-            // FOMOD fail-closed gate (#170) lands here when merged — keep classic + managed
-            // install cores behind the same pre-install gates.
+            List<ModComponent> selectedComponents = allComponents.Where(component => component.IsSelected).ToList();
+            string modDirectory = MainConfig.Instance?.sourcePath?.FullName;
+            if (string.IsNullOrWhiteSpace(modDirectory) || !System.IO.Directory.Exists(modDirectory))
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: mod directory is not set or does not exist."
+                ).ConfigureAwait(false);
+                return ModComponent.InstallExitCode.InvalidOperation;
+            }
+
+            FomodConfigurationGate.GateResult fomodGate = FomodConfigurationGate.Validate(
+                allComponents,
+                selectedComponents,
+                modDirectory);
+            if (!fomodGate.Passed)
+            {
+                await Logger.LogErrorAsync(
+                    "Installation blocked: one or more FOMOD archives are not configured."
+                ).ConfigureAwait(false);
+                foreach (FomodConfigurationGate.GateIssue issue in fomodGate.Issues)
+                {
+                    await Logger.LogErrorAsync(
+                        $"[{issue.Component.Name}] {FomodConfigurationGate.FormatIssueMessage(issue)}"
+                    ).ConfigureAwait(false);
+                }
+
+                return ModComponent.InstallExitCode.InvalidOperation;
+            }
+
             var coordinator = new InstallCoordinator();
             try
             {

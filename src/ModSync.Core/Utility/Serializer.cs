@@ -147,6 +147,36 @@ namespace ModSync.Core.Utility
 
                         break;
                     }
+                default:
+                    {
+                        // TOML/YAML often yield List<object>; previously only IList<string>/string were
+                        // normalized, so XML (collapsed string Source) rewrote \→/ on Linux while
+                        // TOML preserved backslashes — breaking XML round-trip equality.
+                        System.Collections.IEnumerable enumerable = pathValue as System.Collections.IEnumerable;
+                        if (enumerable != null && !(pathValue is string))
+                        {
+                            var normalized = new List<string>();
+                            foreach (object item in enumerable)
+                            {
+                                if (item is null)
+                                {
+                                    continue;
+                                }
+
+                                string currentPath = item as string ?? item.ToString();
+                                if (string.IsNullOrWhiteSpace(currentPath))
+                                {
+                                    continue;
+                                }
+
+                                normalized.Add(PrefixPath(PathHelper.FixPathFormatting(currentPath)));
+                            }
+
+                            dict[key] = normalized;
+                        }
+
+                        break;
+                    }
             }
         }
 
