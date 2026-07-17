@@ -14,7 +14,7 @@ namespace ModSync.Core.Services.Protocol
 {
     /// <summary>
     /// Downloads an http(s) instruction URL to a local temp file for
-    /// <see cref="FileLoadingService"/> consumption.
+    /// file-loading consumption. Enforces host safety and a size cap.
     /// </summary>
     public static class ModSyncInstructionFetcher
     {
@@ -29,23 +29,14 @@ namespace ModSync.Core.Services.Protocol
             [NotNull] HttpClient httpClient,
             CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(instructionUrl))
-            {
-                throw new ArgumentException("Instruction URL is required.", nameof(instructionUrl));
-            }
-
             if (httpClient is null)
             {
                 throw new ArgumentNullException(nameof(httpClient));
             }
 
-            if (!Uri.TryCreate(instructionUrl, UriKind.Absolute, out Uri uri)
-                || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
-            {
-                throw new ArgumentException(
-                    "Instruction URL must be an absolute http(s) URL.",
-                    nameof(instructionUrl));
-            }
+            Uri uri = InstructionUrlSafety.RequireAbsoluteHttpUrl(instructionUrl);
+            await InstructionUrlSafety.EnsureSafeFetchTargetAsync(uri, cancellationToken)
+                .ConfigureAwait(false);
 
             string extension = Path.GetExtension(uri.AbsolutePath);
             if (string.IsNullOrWhiteSpace(extension) || extension.Length > 8)
@@ -57,25 +48,98 @@ namespace ModSync.Core.Services.Protocol
                 Path.GetTempPath(),
                 "modsync-protocol-" + Guid.NewGuid().ToString("N") + extension);
 
-            using (HttpResponseMessage response = await httpClient
-                       .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                       .ConfigureAwait(false))
+            try
             {
-                response.EnsureSuccessStatusCode();
-                using (Stream remote = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                using (FileStream local = new FileStream(
-                           tempPath,
-                           FileMode.CreateNew,
-                           FileAccess.Write,
-                           FileShare.None,
-                           bufferSize: 81920,
-                           useAsync: true))
+                using (HttpResponseMessage response = await httpClient
+                           .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                           .ConfigureAwait(false))
                 {
-                    await remote.CopyToAsync(local, 81920, cancellationToken).ConfigureAwait(false);
+                    response.EnsureSuccessStatusCode();
+
+                    Uri finalUri = response.RequestMessage?.RequestUri ?? uri;
+                    await InstructionUrlSafety.EnsureSafeFetchTargetAsync(finalUri, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    long? contentLength = response.Content.Headers.ContentLength;
+                    if (contentLength.HasValue && contentLength.Value > InstructionUrlSafety.MaxInstructionBytes)
+                    {
+                        throw new InvalidOperationException(
+                            $"Instruction file exceeds the {InstructionUrlSafety.MaxInstructionBytes} byte download limit.");
+                    }
+
+                    using (Stream remote = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                    using (FileStream local = new FileStream(
+                               tempPath,
+                               FileMode.CreateNew,
+                               FileAccess.Write,
+                               FileShare.None,
+                               bufferSize: 81920,
+                               useAsync: true))
+                    {
+                        await CopyWithLimitAsync(
+                                remote,
+                                local,
+                                InstructionUrlSafety.MaxInstructionBytes,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    }
                 }
+
+                return tempPath;
+            }
+            catch
+            {
+                TryDeleteTempFile(tempPath);
+                throw;
+            }
+        }
+
+        private static async Task CopyWithLimitAsync(
+            [NotNull] Stream source,
+            [NotNull] Stream destination,
+            long maxBytes,
+            CancellationToken cancellationToken)
+        {
+            byte[] buffer = new byte[81920];
+            long total = 0;
+            while (true)
+            {
+                int read = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken)
+                    .ConfigureAwait(false);
+                if (read <= 0)
+                {
+                    break;
+                }
+
+                total += read;
+                if (total > maxBytes)
+                {
+                    throw new InvalidOperationException(
+                        $"Instruction file exceeds the {maxBytes} byte download limit.");
+                }
+
+                await destination.WriteAsync(buffer, 0, read, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private static void TryDeleteTempFile([CanBeNull] string tempPath)
+        {
+            if (string.IsNullOrEmpty(tempPath))
+            {
+                return;
             }
 
-            return tempPath;
+            try
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+            catch
+            {
+                // Best-effort cleanup after a failed download.
+            }
         }
     }
 }

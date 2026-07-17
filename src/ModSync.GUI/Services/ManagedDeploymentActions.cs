@@ -25,12 +25,19 @@ namespace ModSync.Services
         [NotNull]
         public static ManagedDeploymentStatus GetStatusOrClassic()
         {
-            if (!TryResolveBackend(out IInstallBackend backend, out string error))
+            if (!TryResolveBackend(out IInstallBackend backend, out string error, out bool managedRequested))
             {
+                if (managedRequested && !string.IsNullOrWhiteSpace(error))
+                {
+                    return new ManagedDeploymentStatus(
+                        managedBackend: false,
+                        deployedComponentCount: 0,
+                        resolveError: error);
+                }
+
                 return new ManagedDeploymentStatus(managedBackend: false, deployedComponentCount: 0);
             }
 
-            _ = error;
             return ManagedDeploymentLifecycle.GetStatus(backend);
         }
 
@@ -39,15 +46,30 @@ namespace ModSync.Services
         public static async Task<(bool Success, string Message)> PurgeAsync(
             CancellationToken cancellationToken = default)
         {
-            if (!TryResolveBackend(out IInstallBackend backend, out string error))
+            if (ManagedInstallSession.Current != null)
+            {
+                return (
+                    false,
+                    "Cannot purge managed deployments while a managed install is in progress. " +
+                    "Wait for the install to finish, then try again.");
+            }
+
+            if (!TryResolveBackend(out IInstallBackend backend, out string error, out _))
             {
                 return (false, error);
             }
 
-            ManagedDeploymentPurgeResult result = await ManagedDeploymentLifecycle
-                .PurgeAsync(backend, cancellationToken)
-                .ConfigureAwait(false);
-            return (true, result.FormatSummary());
+            try
+            {
+                ManagedDeploymentPurgeResult result = await ManagedDeploymentLifecycle
+                    .PurgeAsync(backend, cancellationToken)
+                    .ConfigureAwait(false);
+                return (true, result.FormatSummary());
+            }
+            catch (Exception ex)
+            {
+                return (false, "Purge failed: " + ex.Message);
+            }
         }
 
         [NotNull]
@@ -56,21 +78,49 @@ namespace ModSync.Services
             Guid componentGuid,
             CancellationToken cancellationToken = default)
         {
-            if (!TryResolveBackend(out IInstallBackend backend, out string error))
+            if (ManagedInstallSession.Current != null)
+            {
+                return (
+                    false,
+                    "Cannot uninstall a managed deployment while a managed install is in progress.");
+            }
+
+            if (!TryResolveBackend(out IInstallBackend backend, out string error, out _))
             {
                 return (false, error);
             }
 
-            await ManagedDeploymentLifecycle
-                .UninstallComponentAsync(backend, componentGuid, cancellationToken)
-                .ConfigureAwait(false);
-            return (true, "Uninstalled managed deployment for the selected component.");
+            try
+            {
+                if (backend is ManagedDeploymentInstallBackend managed)
+                {
+                    bool removed = await managed.DeploymentService
+                        .UninstallComponentAsync(componentGuid, cancellationToken)
+                        .ConfigureAwait(false);
+                    return removed
+                        ? (true, "Uninstalled managed deployment for the selected component.")
+                        : (false, "No managed deployment manifest was found for that component.");
+                }
+
+                await ManagedDeploymentLifecycle
+                    .UninstallComponentAsync(backend, componentGuid, cancellationToken)
+                    .ConfigureAwait(false);
+                return (true, "Uninstalled managed deployment for the selected component.");
+            }
+            catch (Exception ex)
+            {
+                return (false, "Uninstall failed: " + ex.Message);
+            }
         }
 
-        private static bool TryResolveBackend(out IInstallBackend backend, out string error)
+        private static bool TryResolveBackend(
+            out IInstallBackend backend,
+            out string error,
+            out bool managedRequested)
         {
             backend = null;
             error = null;
+            managedRequested = false;
 
             try
             {
@@ -80,6 +130,8 @@ namespace ModSync.Services
                     error = "Managed deployment is disabled. Enable it in Settings, then try again.";
                     return false;
                 }
+
+                managedRequested = true;
 
                 var profileService = new ProfileService(ModSyncSettings.GetSettingsDirectory());
                 ManagedInstallSession session = ManagedInstallSession.TryCreate(settings, profileService);
@@ -94,6 +146,7 @@ namespace ModSync.Services
             }
             catch (Exception ex)
             {
+                managedRequested = true;
                 error = ex.Message;
                 return false;
             }

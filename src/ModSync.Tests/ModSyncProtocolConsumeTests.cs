@@ -95,6 +95,46 @@ namespace ModSync.Tests
             }
         }
 
+        [Test]
+        public void DownloadToTempFileAsync_RejectsLoopbackHost()
+        {
+            using (var client = new HttpClient())
+            {
+                Assert.That(
+                    async () => await ModSyncInstructionFetcher.DownloadToTempFileAsync(
+                        "http://127.0.0.1/build.toml",
+                        client),
+                    Throws.TypeOf<InvalidOperationException>()
+                        .With.Message.Contains("private or loopback"));
+            }
+        }
+
+        [Test]
+        public void DownloadToTempFileAsync_RejectsOversizedBody()
+        {
+            string oversized = new string('x', (int)InstructionUrlSafety.MaxInstructionBytes + 1);
+            using (var handler = new StubHttpHandler(HttpStatusCode.OK, oversized))
+            using (var client = new HttpClient(handler))
+            {
+                Assert.That(
+                    async () => await ModSyncInstructionFetcher.DownloadToTempFileAsync(
+                        "https://example.com/builds/huge.toml",
+                        client),
+                    Throws.TypeOf<InvalidOperationException>()
+                        .With.Message.Contains("download limit"));
+            }
+        }
+
+        [Test]
+        public void IsBlockedAddress_FlagsPrivateRanges()
+        {
+            Assert.That(InstructionUrlSafety.IsBlockedAddress(IPAddress.Loopback), Is.True);
+            Assert.That(InstructionUrlSafety.IsBlockedAddress(IPAddress.Parse("10.0.0.1")), Is.True);
+            Assert.That(InstructionUrlSafety.IsBlockedAddress(IPAddress.Parse("192.168.1.1")), Is.True);
+            Assert.That(InstructionUrlSafety.IsBlockedAddress(IPAddress.Parse("169.254.169.254")), Is.True);
+            Assert.That(InstructionUrlSafety.IsBlockedAddress(IPAddress.Parse("8.8.8.8")), Is.False);
+        }
+
         private sealed class StubHttpHandler : HttpMessageHandler
         {
             private readonly HttpStatusCode _status;

@@ -3,6 +3,7 @@
 // See LICENSE.txt file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -169,6 +170,36 @@ namespace ModSync.Tests
             Assert.That(fakeBackend.LastComponentGuid, Is.EqualTo(componentGuid));
             Assert.That(fakeBackend.LastStagedDirectory, Is.EqualTo(stagedDir));
             Assert.That(session.ManifestsWritten, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ApplyStagingRedirect_RemapsSourcesUnderGameDirectory()
+        {
+            _profileService.CreateProfile("Alpha");
+            var settings = new ModSyncSettings { ManagedDeploymentEnabled = true, ActiveProfileName = "Alpha" };
+            ManagedInstallSession session = ManagedInstallSession.TryCreate(settings, _profileService);
+            Assert.That(session, Is.Not.Null);
+
+            Guid componentGuid = Guid.NewGuid();
+            string gameOverrideFile = Path.Combine(_gameDir, "Override", "file.mdl");
+            string gameOverrideDir = Path.Combine(_gameDir, "Override");
+
+            var instruction = new Instruction
+            {
+                Action = Instruction.ActionType.Rename,
+                Destination = "file_renamed.mdl",
+            };
+            instruction.RedirectResolvedSources(new[] { gameOverrideFile });
+            instruction.RedirectResolvedDestination(gameOverrideDir);
+
+            session.ApplyStagingRedirect(instruction, componentGuid);
+
+            Assert.That(instruction.TryGetResolvedSourcePaths(out IReadOnlyList<string> sources), Is.True);
+            Assert.That(sources, Has.Count.EqualTo(1));
+            Assert.That(sources[0], Does.Contain(componentGuid.ToString()));
+            Assert.That(sources[0], Does.Contain(Path.Combine("Override", "file.mdl")));
+            Assert.That(sources[0], Does.Not.Contain(_gameDir));
+            Assert.That(session.ComponentHadStagedOperations(componentGuid), Is.True);
         }
 
         private sealed class RecordingInstallBackend : IInstallBackend

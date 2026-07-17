@@ -45,7 +45,7 @@ namespace ModSync.Services
             _loadInstructionFileAsync = loadInstructionFileAsync
                 ?? throw new ArgumentNullException(nameof(loadInstructionFileAsync));
             _activateWindow = activateWindow ?? throw new ArgumentNullException(nameof(activateWindow));
-            _httpClientFactory = httpClientFactory ?? (() => new HttpClient());
+            _httpClientFactory = httpClientFactory ?? (() => new HttpClient { Timeout = TimeSpan.FromSeconds(60) });
             _protocolRegistry = protocolRegistry ?? ProtocolHandlerRegistry.CreateDefault();
         }
 
@@ -61,13 +61,14 @@ namespace ModSync.Services
         }
 
         /// <summary>
-        /// Processes all URLs currently in the hand-off queue.
+        /// Processes all URLs currently in the hand-off queue, re-draining until empty
+        /// so URLs enqueued during an active pass are not stranded.
         /// </summary>
         public async Task ProcessPendingAsync()
         {
             EnsureSubscribed();
 
-            if (_processing)
+            if (_processing || _disposed)
             {
                 return;
             }
@@ -75,14 +76,29 @@ namespace ModSync.Services
             _processing = true;
             try
             {
-                foreach (string rawUrl in ModSyncHandoffQueue.DrainAll())
+                while (!_disposed)
                 {
-                    await ProcessUrlAsync(rawUrl).ConfigureAwait(true);
+                    var batch = ModSyncHandoffQueue.DrainAll();
+                    if (batch.Count == 0)
+                    {
+                        break;
+                    }
+
+                    foreach (string rawUrl in batch)
+                    {
+                        await ProcessUrlAsync(rawUrl).ConfigureAwait(true);
+                    }
                 }
             }
             finally
             {
                 _processing = false;
+            }
+
+            // Catch a race where enqueue landed between the last empty drain and clearing the flag.
+            if (!_disposed && ModSyncHandoffQueue.Count > 0)
+            {
+                await ProcessPendingAsync().ConfigureAwait(true);
             }
         }
 
@@ -105,6 +121,22 @@ namespace ModSync.Services
                 await ShowInfoAsync(
                         "Invalid ModSync link",
                         "ModSync could not parse the modsync:// URL handed off by the browser or CLI.")
+                    .ConfigureAwait(true);
+                return;
+            }
+
+            bool? confirmed = await ConfirmationDialog.ShowConfirmationDialogAsync(
+                    _parentWindow,
+                    confirmText:
+                    "Open this ModSync build link and download its instruction file?\n\n" +
+                    $"{modSyncUrl.InstructionUrl}\n\n" +
+                    "Only continue for links you trust.",
+                    yesButtonText: "Download & Open",
+                    noButtonText: "Cancel")
+                .ConfigureAwait(true);
+            if (confirmed != true)
+            {
+                await Logger.LogAsync("[ModSyncHandoff] User declined modsync:// instruction download.")
                     .ConfigureAwait(true);
                 return;
             }

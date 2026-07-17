@@ -16,21 +16,37 @@ namespace ModSync.Core.Services.Deployment
     /// <summary>Snapshot of managed deployment state for UI indicators.</summary>
     public sealed class ManagedDeploymentStatus
     {
-        public ManagedDeploymentStatus(bool managedBackend, int deployedComponentCount)
+        public ManagedDeploymentStatus(
+            bool managedBackend,
+            int deployedComponentCount,
+            [CanBeNull] string resolveError = null)
         {
             ManagedBackend = managedBackend;
             DeployedComponentCount = deployedComponentCount;
+            ResolveError = resolveError;
         }
 
         public bool ManagedBackend { get; }
 
         public int DeployedComponentCount { get; }
 
+        /// <summary>
+        /// When managed mode was requested but the backend could not be resolved,
+        /// contains a user-facing explanation instead of silently reporting classic mode.
+        /// </summary>
+        [CanBeNull]
+        public string ResolveError { get; }
+
         public bool HasDeployments => DeployedComponentCount > 0;
 
         [NotNull]
         public string FormatIndicator()
         {
+            if (!string.IsNullOrWhiteSpace(ResolveError))
+            {
+                return "Managed deployment: configuration error — " + ResolveError;
+            }
+
             if (!ManagedBackend)
             {
                 return "Managed deployment: classic mode (no staging manifests).";

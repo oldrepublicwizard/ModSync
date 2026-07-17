@@ -202,16 +202,49 @@ namespace ModSync.Core.Services.Installation
                 return;
             }
 
-            if (!instruction.TryGetResolvedDestinationFullName(out string destinationFullName)
-                || !IsPathUnderGameDirectory(destinationFullName))
+            bool remapped = false;
+
+            // Follow prior staged outputs: Rename/Move/Copy sources that still resolve under the
+            // live game tree must be remapped into staging or they operate on the wrong files.
+            if (instruction.TryGetResolvedSourcePaths(out IReadOnlyList<string> sourcePaths)
+                && sourcePaths != null
+                && sourcePaths.Count > 0)
             {
-                return;
+                var remappedSources = new List<string>(sourcePaths.Count);
+                bool anySourceRemapped = false;
+                foreach (string sourcePath in sourcePaths)
+                {
+                    if (IsPathUnderGameDirectory(sourcePath))
+                    {
+                        remappedSources.Add(MapGamePathToStaging(componentGuid, sourcePath));
+                        anySourceRemapped = true;
+                    }
+                    else
+                    {
+                        remappedSources.Add(sourcePath);
+                    }
+                }
+
+                if (anySourceRemapped)
+                {
+                    instruction.RedirectResolvedSources(remappedSources);
+                    remapped = true;
+                }
             }
 
-            string stagingDestination = MapGamePathToStaging(componentGuid, destinationFullName);
-            instruction.RedirectResolvedDestination(stagingDestination);
-            Directory.CreateDirectory(stagingDestination);
-            _ = _stagedComponentGuids.Add(componentGuid);
+            if (instruction.TryGetResolvedDestinationFullName(out string destinationFullName)
+                && IsPathUnderGameDirectory(destinationFullName))
+            {
+                string stagingDestination = MapGamePathToStaging(componentGuid, destinationFullName);
+                instruction.RedirectResolvedDestination(stagingDestination);
+                Directory.CreateDirectory(stagingDestination);
+                remapped = true;
+            }
+
+            if (remapped)
+            {
+                _ = _stagedComponentGuids.Add(componentGuid);
+            }
         }
 
         public bool IsPathUnderGameDirectory([NotNull] string absolutePath)
