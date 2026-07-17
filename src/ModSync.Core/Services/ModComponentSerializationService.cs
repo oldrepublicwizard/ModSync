@@ -1747,10 +1747,18 @@ namespace ModSync.Core.Services
                 foreach (KeyValuePair<string, Dictionary<string, bool?>> kvp in deserializedFilenames)
                 {
                     string url = kvp.Key;
-                    Dictionary<string, bool?> filenames = kvp.Value;
+                    Dictionary<string, bool?> filenames = kvp.Value ?? new Dictionary<string, bool?>(StringComparer.OrdinalIgnoreCase);
 
                     // Check if ResourceRegistry already has an entry for this URL (keyed by URL directly)
-                    bool urlExistsInRegistry = registryDict.ContainsKey(url);
+                    bool urlExistsInRegistry = registryDict.TryGetValue(url, out ResourceMetadata existingMeta);
+
+                    if (urlExistsInRegistry && filenames.Count > 0 &&
+                        (existingMeta.Files == null || existingMeta.Files.Count == 0))
+                    {
+                        existingMeta.Files = new Dictionary<string, bool?>(filenames, StringComparer.OrdinalIgnoreCase);
+                        Logger.LogVerbose($"Merged ModLinkFilenames into existing ResourceRegistry entry for URL: {url}");
+                        continue;
+                    }
 
                     // Empty ModLinkFilenames tables ({ }) still denote a download source; populate registry so
                     // download/cache and FileValidation see the URL.

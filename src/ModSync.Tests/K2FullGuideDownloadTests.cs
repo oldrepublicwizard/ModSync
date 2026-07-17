@@ -71,6 +71,7 @@ namespace ModSync.Tests
         }
 
         [Test]
+        [Timeout(600_000)]
         public void K2FullGuideFixture_MergedSilentSion_DownloadsViaInstallSelect_LongRunning()
         {
             (string fixturePath, string goldenTomlPath) = ResolveInputs();
@@ -116,6 +117,119 @@ namespace ModSync.Tests
                     "install --download --select mod:Silent Sion should complete in best-effort mode");
                 Assert.That(archiveExists || anyZipInModDir, Is.True,
                     $"Expected {SilentSionArchive} (or another downloaded archive) under the mod workspace");
+            });
+        }
+
+        [Test]
+        [Timeout(600_000)]
+        public void K2FullGuideFixture_RoundTripSilentSion_DownloadAndInstalls_LongRunning()
+        {
+            (string fixturePath, string goldenTomlPath) = ResolveInputs();
+            string roundTripToml = Path.Combine(_testDirectory, "k2_roundtrip.toml");
+
+            K2FullGuideRoundTripHelper.WriteRoundTripToml(
+                fixturePath,
+                goldenTomlPath,
+                roundTripToml,
+                SilentSionModName);
+
+            int installExit = ModBuildConverter.Run(new[]
+            {
+                "install",
+                "--input", roundTripToml,
+                "--game-dir", _kotorDirectory,
+                "--source-dir", _modDirectory,
+                "--select", "mod:" + SilentSionModName,
+                "--download",
+                "--skip-validation",
+                "--best-effort",
+                "-y",
+            });
+
+            string installedDlg = Path.Combine(_kotorDirectory, "Override", "153sion.dlg");
+            string[] modWorkspaceFiles = Directory.Exists(_modDirectory)
+                ? Directory.GetFiles(_modDirectory, "*", SearchOption.AllDirectories)
+                : Array.Empty<string>();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(installExit, Is.EqualTo(0),
+                    "round-trip install --download should complete for Silent Sion (best-effort)");
+                Assert.That(
+                    File.Exists(Path.Combine(_modDirectory, SilentSionArchive))
+                    || modWorkspaceFiles.Any(path => path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)),
+                    Is.True,
+                    "Silent Sion archive should be present in the mod workspace after download");
+                Assert.That(
+                    modWorkspaceFiles.Any(path =>
+                        path.EndsWith("153sion.dlg", StringComparison.OrdinalIgnoreCase))
+                    || File.Exists(installedDlg)
+                    || Directory.GetFiles(Path.Combine(_kotorDirectory, "Override"), "*.dlg", SearchOption.AllDirectories).Length > 0,
+                    Is.True,
+                    "Expected 153sion.dlg in the mod workspace or Override after download + extract");
+            });
+        }
+
+        [Test]
+        public void MergedSilentSion_ResourceRegistryListsArchiveFilenames()
+        {
+            (string fixturePath, string goldenTomlPath) = ResolveInputs();
+            string mergedToml = Path.Combine(_testDirectory, "k2_merged.toml");
+
+            int mergeExit = ModBuildConverter.Run(new[]
+            {
+                "merge",
+                "--existing", goldenTomlPath,
+                "--incoming", fixturePath,
+                "--use-existing-order",
+                "--prefer-existing-instructions",
+                "--prefer-existing-options",
+                "--prefer-existing-modlinks",
+                "-f", "toml",
+                "-o", mergedToml,
+                "--plaintext",
+            });
+
+            Assert.That(mergeExit, Is.EqualTo(0));
+
+            ModComponent silentSion = FileLoadingService.LoadFromFile(mergedToml)
+                .First(c => c.Name.IndexOf(SilentSionModName, StringComparison.OrdinalIgnoreCase) >= 0);
+
+            int registryFileCount = silentSion.ResourceRegistry?.Sum(entry => entry.Value.Files?.Count ?? 0) ?? 0;
+
+            Assert.That(registryFileCount, Is.GreaterThan(0),
+                "Merged Silent Sion ResourceRegistry entries should list archive filenames for round-trip Extract injection");
+        }
+
+        [Test]
+        public void RoundTripHelper_OverlaySilentSion_AddsExtractForRegistryArchive()
+        {
+            (string fixturePath, string goldenTomlPath) = ResolveInputs();
+            string roundTripToml = Path.Combine(_testDirectory, "k2_roundtrip.toml");
+
+            K2FullGuideRoundTripHelper.WriteRoundTripToml(
+                fixturePath,
+                goldenTomlPath,
+                roundTripToml,
+                SilentSionModName);
+
+            List<ModComponent> components = FileLoadingService.LoadFromFile(roundTripToml).ToList();
+            ModComponent silentSion = components.First(c =>
+                c.Name.IndexOf(SilentSionModName, StringComparison.OrdinalIgnoreCase) >= 0);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(silentSion.ResourceRegistry?.Count, Is.GreaterThan(0));
+                Assert.That(
+                    silentSion.Instructions.Any(i =>
+                        i.Action == Instruction.ActionType.Extract
+                        && i.Source.Any(s => s.IndexOf("Silent Sion Restoration.zip", StringComparison.OrdinalIgnoreCase) >= 0)),
+                    Is.True,
+                    "Round-trip overlay should prepend Extract for the Silent Sion archive");
+                Assert.That(
+                    silentSion.Instructions.Any(i => i.Action == Instruction.ActionType.Move),
+                    Is.True,
+                    "Round-trip overlay should keep ingested Move draft");
             });
         }
 
