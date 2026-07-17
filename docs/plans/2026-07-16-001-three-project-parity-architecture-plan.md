@@ -48,16 +48,17 @@ parity references.
 - Vision: `docs/knowledgebase/product-vision.md` (vision vs current state)
 - Competitor probe: `docs/knowledgebase/nxm-protocol-handler.md` (MO2 / Vortex / ModSync)
 
-### Related open PRs (2026-07-16 snapshot)
+### Related PRs (refreshed 2026-07-17 / U7)
 
 | PR | State | Relevance |
 |----|-------|-----------|
-| [#168](https://github.com/th3w1zard1/ModSync/pull/168) | OPEN | Managed deployment install wiring (Phase 4 gap) |
-| [#169](https://github.com/th3w1zard1/ModSync/pull/169) | MERGED | FOMOD post-download GUI + CLI (living plan still says “in PR #169” — stale) |
-| [#170](https://github.com/th3w1zard1/ModSync/pull/170) | OPEN | Fail-closed FOMOD validate/install gate |
-| [#171](https://github.com/th3w1zard1/ModSync/pull/171) | OPEN | Paste guide + draft instructions (STRATEGY track; may already be on tip elsewhere) |
-| [#172](https://github.com/th3w1zard1/ModSync/pull/172) | OPEN | `modsync://` Phase 1 parse/CLI/handoff |
-| [#173](https://github.com/th3w1zard1/ModSync/pull/173)–[#175](https://github.com/th3w1zard1/ModSync/pull/175) | OPEN | Docs consolidation / validation progress / test triage — not parity features |
+| [#168](https://github.com/oldrepublicwizard/ModSync/pull/168) | CLOSED | Superseded by #176 managed wiring |
+| [#169](https://github.com/oldrepublicwizard/ModSync/pull/169) | MERGED | FOMOD post-download GUI + CLI |
+| [#170](https://github.com/oldrepublicwizard/ModSync/pull/170) | MERGED | Fail-closed FOMOD validate/install gate (U7 code) |
+| [#171](https://github.com/oldrepublicwizard/ModSync/pull/171) | MERGED | Paste guide + draft instructions (U9) |
+| [#172](https://github.com/oldrepublicwizard/ModSync/pull/172) | MERGED | `modsync://` Phase 1 parse/CLI/handoff |
+| [#176](https://github.com/oldrepublicwizard/ModSync/pull/176) | MERGED | Parity ports foundation + managed install wiring + `modsync://` Phase 2 |
+| [#177](https://github.com/oldrepublicwizard/ModSync/pull/177)–[#181](https://github.com/oldrepublicwizard/ModSync/pull/181) | MERGED | U3 CLI, KB audit, U5 uninstall, U4 decision B, U6 patcher provenance |
 
 ## 2. Capability matrix (important only)
 
@@ -69,17 +70,17 @@ endorsements UI, plugin images, save-game isolation, Steam Workshop, etc.
 | `nxm://` Mod Manager Download | ● | ● | — | Shipped (#155–#164) | Low (macOS `.app` release bundling residual) |
 | Nexus update checks / badges | ● | ○ | — | Shipped core + badges (#156/#167) | Low (persist cache; endorse deferred) |
 | Install profiles / loadouts | ○ | ● | — | Shipped (#157); no save isolation | Medium (wizard hooks) |
-| Non-destructive deploy (hardlink/copy) | ● | ● | — | Engine shipped (#158); **not wired to install** | **High** (#168) |
-| Per-mod uninstall / purge | ● | ● | — | Engine APIs only; no GUI | **High** |
+| Non-destructive deploy (hardlink/copy) | ● | ● | — | Engine (#158) + install wiring (#176) + CLI (#177) | Low (managed VFS DryRun option A deferred) |
+| Per-mod uninstall / purge | ● | ● | — | GUI + Deployed badge (#179) | Low |
 | File conflict analysis | ○ | ● | — | Analyzer + dialog shipped | Medium (badges / ValidatePage) |
-| FOMOD configure | ● | ● | — | Parser + dialog + post-download (#169); gate in #170 | Medium until #170 lands |
-| Instruction / patch execute (TSLPatcher) | — | — | ● | Shipped via Patch + Resources | Low (managed provenance incomplete) |
-| Guide ingest → instructions | — | — | — | STRATEGY unique; paste/draft shipped on vision tips | Medium until on `master` |
+| FOMOD configure | ● | ● | — | Parser + dialog + post-download (#169); **fail-closed gate Merged (#170)** | Low |
+| Instruction / patch execute (TSLPatcher) | — | — | ● | Shipped via Patch + Resources | Low (U6 live-hash provenance #181; CAS restore deferred) |
+| Guide ingest → instructions | — | — | — | Paste/draft on master (#171); guide ports (#176) | Low |
 | Guide emit | — | — | — | `GenerateModDocumentation` shipped | Low |
-| Share-a-build deep link | ○ | ○ | — | `modsync://` Phase 1 in #172; OS consume open | Medium |
+| Share-a-build deep link | ○ | ○ | — | Phase 1 (#172) + Phase 2 consume/OS reg (#176); Settings toggle deferred | Low |
 | Multi-author publish/share | — | — | — | Merge/profiles only | Medium (stub plan 003) |
-| Dry-run / VFS validate | ○ | ● | ○ | Classic VFS validation shipped; managed staging not modeled | Medium |
-| Agent/CLI parity for above | — | — | — | Strong for validate/install/download; gaps on managed/uninstall GUI | Medium |
+| Dry-run / VFS validate | ○ | ● | ○ | Classic VFS shipped; managed decision B (#180) | Medium (option A deferred) |
+| Agent/CLI parity for above | — | — | — | Strong validate/install/download + `--managed`/`--profile` (#177) | Medium (U10 polish) |
 
 Legend: ● = core to that project’s important UX; ○ = partial/adjacent; — = N/A.
 
@@ -110,7 +111,7 @@ Place under `src/ModSync.Core/` (suggested folders; names illustrative):
 |------|----------------|------------------------|
 | `IDownloadProvider` / handler chain | Resolve URL → archive (HTTP, Nexus, nxm, Mega, …) | `IDownloadHandler`, `DownloadHandlerFactory` |
 | `IProtocolHandler` | Parse + register OS schemes (`nxm`, `modsync`) | `NxmUrl`; GUI `NxmProtocolRegistrationService`; upcoming `ModSyncUrl` |
-| `IInstallBackend` | Classic direct-to-game vs managed stage+deploy | `InstallationService` + `DeploymentService` (+ #168 `ManagedInstallSession`) |
+| `IInstallBackend` | Classic direct-to-game vs managed stage+deploy | `InstallationService` + `DeploymentService` (+ #176 `ManagedInstallSession`) |
 | `IDeploymentStore` | Manifests, uninstall, purge | `DeploymentService` |
 | `IProfileStore` | Named loadouts | `ProfileService` |
 | `IConflictAnalyzer` | Multi-writer attribution | `FileConflictAnalyzer` |
@@ -158,20 +159,20 @@ Place under `src/ModSync.Core/` (suggested folders; names illustrative):
 | Classic install + validation | `InstallationService`, `InstallationValidationPipeline`, VFS dry-run |
 | Patcher | HoloPatcher Resources + Patch instruction |
 | Download multi-provider | `IDownloadHandler` family |
-| Guide round-trip (on vision tips / open PRs) | Paste, `--parse-directions`, `GenerateModDocumentation` |
+| Guide round-trip | Paste (#171), `--parse-directions`, `GenerateModDocumentation`, guide ports (#176) |
+| Managed install + CLI | `ManagedInstallSession` (#176); `--managed`/`--profile` (#177) |
+| FOMOD fail-closed gate | `FomodConfigurationGate` (#170); see `fomod-support.md` |
+| `modsync://` Phase 1–2 | Parse/CLI/handoff (#172); consume + OS registration (#176); Settings toggle deferred |
+| Patcher live-file provenance | Manifest hash snapshot (#181); CAS restore deferred |
 
-### Top gaps (ordered)
+### Top gaps (ordered) — residual only
 
-1. **Managed deploy not on the install path** — engine idle; classic still mutates game dir (#168 / living-plan Phase 4).
-2. **Uninstall / purge / deployment indicator GUI** — MO2/Vortex expectation unmet.
-3. **Managed dry-run / VFS parity undecided** — validate may lie in managed mode.
-4. **`modsync://` Phase 2** — OS registration + MainWindow consume (vision entry points).
-5. **Patcher provenance in managed manifests** — uninstall incomplete without ImmutableCheckpoint.
-6. **FOMOD fail-closed gate on master** — #170 open.
-7. **NexusApiClient migration for download handler** — living-plan “Next”.
-8. **Publish/share multi-author** — STRATEGY track; stub only.
-9. **Conflict badges / ValidatePage integration** — analyzer exists; UX incomplete.
-10. **Living plan freshness** — still lists FOMOD as “in PR #169” after merge.
+1. **U6 CAS restore** — pre-image restore when patchers overwrite existing game files in place.
+2. **U8 residual** — Settings UI toggle for `modsync://` OS registration + conflict probe polish.
+3. **NexusApiClient migration for download handler** — living-plan “Next” / U10.
+4. **Publish/share multi-author** — STRATEGY track; stub only.
+5. **Conflict badges / ValidatePage integration** — analyzer exists; UX incomplete.
+6. **Managed VFS DryRun option A** — decision B (#180) documents classic DryRun caveat; option A deferred.
 
 ## 5. Phased implementation units
 
@@ -207,6 +208,8 @@ this file; refresh Phase 4/6 status notes.
 **Goal:** `--profile`, Core-readable `managedDeploymentEnabled`, shared session
 for wizard and single-mod install.
 
+**Status:** **Done** (#177).
+
 **Depends on:** U2.
 
 ---
@@ -217,6 +220,8 @@ for wizard and single-mod install.
 install-only managed validation in `validation-pipeline.md` /
 `managed-deployment.md`.
 
+**Status:** **Done** — decision B (#180); option A deferred.
+
 **Depends on:** U2.
 
 ---
@@ -225,6 +230,8 @@ install-only managed validation in `validation-pipeline.md` /
 
 **Goal:** Per-component uninstall, purge-all, deployment-state indicator on mod
 list; CLI verbs if agent-parity requires.
+
+**Status:** **Done** (#179).
 
 **Depends on:** U2 (manifests written).
 
@@ -235,6 +242,8 @@ list; CLI verbs if agent-parity requires.
 **Goal:** Record patcher outputs into deployment manifests so managed uninstall
 does not orphan HoloPatcher writes.
 
+**Status:** **Done** — live hash → manifests (#181); CAS restore deferred.
+
 **Depends on:** U2; exercises `IPatcherEngine` seam.
 
 ---
@@ -243,6 +252,8 @@ does not orphan HoloPatcher writes.
 
 **Goal:** Merge #170 (or equivalent); update
 `vortex-mo2-feature-parity-living-plan.md` Phase 4/6; mark #169 merged.
+
+**Status:** **Done** — gate Merged (#170); living-plan sync (this docs update).
 
 **Depends on:** none (can parallel U2).
 
@@ -253,6 +264,8 @@ does not orphan HoloPatcher writes.
 **Goal:** OS registration + MainWindow consume behind `IProtocolHandler`; keep
 nxm adapter unchanged.
 
+**Status:** **Done** per KB (#176); Settings toggle deferred (residual).
+
 **Depends on:** #172 Phase 1.
 
 ---
@@ -261,6 +274,8 @@ nxm adapter unchanged.
 
 **Goal:** Ensure ingest/emit sit behind `IGuideIngestor` / `IGuideEmitter`; land
 #171 residuals if still open; agent-action-parity rows current.
+
+**Status:** **Done** — ports (#176); paste/draft (#171).
 
 **Depends on:** vision-branch content on master.
 
@@ -346,19 +361,17 @@ Tests: `ParityPortsTests`, `ModSyncUrlTests`.
 
 Tests: `ManagedInstallSessionTests`, `ModSyncSettingsTests`, `DeploymentService` filters.
 
-**FOMOD gate:** Install cores leave a clear insertion point for #170 fail-closed
-`FomodConfigurationGate` inside `Install*CoreAsync` (same path for classic + managed).
-Gate itself remains **U7 / #170** until that PR lands — do not bypass it when merging.
+**FOMOD gate:** Fail-closed `FomodConfigurationGate` is **Merged (#170)** on both classic and managed install paths. U7 docs sync updates the [living plan](vortex-mo2-feature-parity-living-plan.md); KB `fomod-support.md` already documents gate behavior.
 
-### Still deferred
+### Unit status (2026-07-17 / U7)
 
 | Unit | Status |
 |------|--------|
-| U3 CLI `--profile` + shared session polish | In PR (CLI `--managed`/`--no-managed`/`--profile`) |
-| U4 Managed VFS / validation parity | Done (decision B — document classic DryRun caveat; option A deferred) |
-| U5 Uninstall / purge GUI | Done ([#179](https://github.com/oldrepublicwizard/ModSync/pull/179)) |
-| U6 Patcher provenance (ImmutableCheckpoint) | In PR (live game-file hash diff → manifest; CAS restore for in-place overwrites deferred) |
-| U7 FOMOD gate (#170) + living-plan sync | Deferred (open PR) |
-| U8 `modsync://` Phase 2 OS consume | Deferred |
-| U9 Guide ports fully on master | Deferred |
-| U10 Expansion polish | Deferred |
+| U3 CLI `--managed` / `--no-managed` / `--profile` | **Done** ([#177](https://github.com/oldrepublicwizard/ModSync/pull/177)) |
+| U4 Managed VFS / validation parity | **Done** (decision B — [#180](https://github.com/oldrepublicwizard/ModSync/pull/180); option A deferred) |
+| U5 Uninstall / purge GUI | **Done** ([#179](https://github.com/oldrepublicwizard/ModSync/pull/179)) |
+| U6 Patcher provenance (live hash → manifests) | **Done** ([#181](https://github.com/oldrepublicwizard/ModSync/pull/181); CAS restore for in-place overwrites deferred) |
+| U7 FOMOD gate + living-plan sync | **Done** (gate [#170](https://github.com/oldrepublicwizard/ModSync/pull/170); living-plan / this docs sync) |
+| U8 `modsync://` Phase 2 OS consume | **Done** ([#176](https://github.com/oldrepublicwizard/ModSync/pull/176); Settings toggle deferred — residual) |
+| U9 Guide ports on master | **Done** (ports [#176](https://github.com/oldrepublicwizard/ModSync/pull/176); paste/draft [#171](https://github.com/oldrepublicwizard/ModSync/pull/171)) |
+| U10 Expansion polish | Deferred (residual) |
