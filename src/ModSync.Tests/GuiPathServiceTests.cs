@@ -12,6 +12,7 @@ using Xunit;
 
 namespace ModSync.Tests
 {
+    [Collection(MainConfigStaticState.CollectionName)]
     public sealed class GuiPathServiceTests
     {
         [Fact(DisplayName = "AddToRecentDirectories inserts path at front")]
@@ -81,31 +82,47 @@ namespace ModSync.Tests
         {
             string modPath = CreateTempDirectory();
 
-            try
+            lock (MainConfigStaticState.Gate)
             {
-                var config = new MainConfig();
-                var service = new GuiPathService(config);
+                try
+                {
+                    MainConfigStaticState.Reset();
+                    var config = new MainConfig();
+                    var service = new GuiPathService(config);
 
-                bool applied = service.TryApplySourcePath(modPath);
+                    bool applied = service.TryApplySourcePath(modPath);
 
-                Assert.True(applied);
-                Assert.Equal(modPath, config.sourcePath.FullName);
-            }
-            finally
-            {
-                TryDeleteDirectory(modPath);
+                    Assert.True(applied);
+                    Assert.Equal(modPath, config.sourcePath.FullName);
+                }
+                finally
+                {
+                    MainConfigStaticState.Reset();
+                    TryDeleteDirectory(modPath);
+                }
             }
         }
 
         [Fact(DisplayName = "TryApplySourcePath returns false for missing directory")]
         public void TryApplySourcePath_MissingDirectory_ReturnsFalse()
         {
-            var config = new MainConfig();
-            var service = new GuiPathService(config);
+            lock (MainConfigStaticState.Gate)
+            {
+                try
+                {
+                    MainConfigStaticState.Reset();
+                    var config = new MainConfig();
+                    var service = new GuiPathService(config);
 
-            bool applied = service.TryApplySourcePath(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
+                    bool applied = service.TryApplySourcePath(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
 
-            Assert.False(applied);
+                    Assert.False(applied);
+                }
+                finally
+                {
+                    MainConfigStaticState.Reset();
+                }
+            }
         }
 
         [Fact(DisplayName = "TryApplyDestinationPath sets config when directory exists")]
@@ -113,19 +130,24 @@ namespace ModSync.Tests
         {
             string gamePath = CreateTempDirectory();
 
-            try
+            lock (MainConfigStaticState.Gate)
             {
-                var config = new MainConfig();
-                var service = new GuiPathService(config);
+                try
+                {
+                    MainConfigStaticState.Reset();
+                    var config = new MainConfig();
+                    var service = new GuiPathService(config);
 
-                bool applied = service.TryApplyDestinationPath(gamePath);
+                    bool applied = service.TryApplyDestinationPath(gamePath);
 
-                Assert.True(applied);
-                Assert.Equal(gamePath, config.destinationPath.FullName);
-            }
-            finally
-            {
-                TryDeleteDirectory(gamePath);
+                    Assert.True(applied);
+                    Assert.Equal(gamePath, config.destinationPath.FullName);
+                }
+                finally
+                {
+                    MainConfigStaticState.Reset();
+                    TryDeleteDirectory(gamePath);
+                }
             }
         }
 

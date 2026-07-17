@@ -11,6 +11,7 @@ using Xunit;
 
 namespace ModSync.Tests
 {
+    [Collection(MainConfigStaticState.CollectionName)]
     public sealed class StepNavigationServiceTests : IDisposable
     {
         private readonly List<string> _directoriesToCleanup = new List<string>();
@@ -18,62 +19,77 @@ namespace ModSync.Tests
         [Fact(DisplayName = "GetCurrentIncompleteStep returns 1 when directories are not configured")]
         public void GetCurrentIncompleteStep_MissingPaths_Returns1()
         {
-            ResetMainConfigState();
-            StepNavigationService service = CreateService();
+            lock (MainConfigStaticState.Gate)
+            {
+                MainConfigStaticState.Reset();
+                StepNavigationService service = CreateService();
 
-            Assert.Equal(1, service.GetCurrentIncompleteStep());
+                Assert.Equal(1, service.GetCurrentIncompleteStep());
+            }
         }
 
         [Fact(DisplayName = "GetCurrentIncompleteStep returns 2 when step 1 is complete but no mods are loaded")]
         public void GetCurrentIncompleteStep_NoComponents_Returns2()
         {
-            ResetMainConfigState();
-            ConfigureValidPaths();
-            StepNavigationService service = CreateService();
+            lock (MainConfigStaticState.Gate)
+            {
+                MainConfigStaticState.Reset();
+                ConfigureValidPaths();
+                StepNavigationService service = CreateService();
 
-            Assert.Equal(2, service.GetCurrentIncompleteStep());
+                Assert.Equal(2, service.GetCurrentIncompleteStep());
+            }
         }
 
         [Fact(DisplayName = "GetCurrentIncompleteStep returns 3 when mods are loaded but none are selected")]
         public void GetCurrentIncompleteStep_NoSelection_Returns3()
         {
-            ResetMainConfigState();
-            ConfigureValidPaths();
-            MainConfig.AllComponents = new List<ModComponent>
+            lock (MainConfigStaticState.Gate)
             {
-                new ModComponent { Name = "Unselected Mod", IsSelected = false },
-            };
-            StepNavigationService service = CreateService();
+                MainConfigStaticState.Reset();
+                ConfigureValidPaths();
+                MainConfig.AllComponents = new List<ModComponent>
+                {
+                    new ModComponent { Name = "Unselected Mod", IsSelected = false },
+                };
+                StepNavigationService service = CreateService();
 
-            Assert.Equal(3, service.GetCurrentIncompleteStep());
+                Assert.Equal(3, service.GetCurrentIncompleteStep());
+            }
         }
 
         [Fact(DisplayName = "GetCurrentIncompleteStep returns 4 when selected mods are not downloaded")]
         public void GetCurrentIncompleteStep_SelectedNotDownloaded_Returns4()
         {
-            ResetMainConfigState();
-            ConfigureValidPaths();
-            MainConfig.AllComponents = new List<ModComponent>
+            lock (MainConfigStaticState.Gate)
             {
-                new ModComponent { Name = "Pending Mod", IsSelected = true, IsDownloaded = false },
-            };
-            StepNavigationService service = CreateService();
+                MainConfigStaticState.Reset();
+                ConfigureValidPaths();
+                MainConfig.AllComponents = new List<ModComponent>
+                {
+                    new ModComponent { Name = "Pending Mod", IsSelected = true, IsDownloaded = false },
+                };
+                StepNavigationService service = CreateService();
 
-            Assert.Equal(4, service.GetCurrentIncompleteStep());
+                Assert.Equal(4, service.GetCurrentIncompleteStep());
+            }
         }
 
         [Fact(DisplayName = "GetCurrentIncompleteStep returns 5 when selected mods are downloaded")]
         public void GetCurrentIncompleteStep_AllDownloaded_Returns5()
         {
-            ResetMainConfigState();
-            ConfigureValidPaths();
-            MainConfig.AllComponents = new List<ModComponent>
+            lock (MainConfigStaticState.Gate)
             {
-                new ModComponent { Name = "Ready Mod", IsSelected = true, IsDownloaded = true },
-            };
-            StepNavigationService service = CreateService();
+                MainConfigStaticState.Reset();
+                ConfigureValidPaths();
+                MainConfig.AllComponents = new List<ModComponent>
+                {
+                    new ModComponent { Name = "Ready Mod", IsSelected = true, IsDownloaded = true },
+                };
+                StepNavigationService service = CreateService();
 
-            Assert.Equal(5, service.GetCurrentIncompleteStep());
+                Assert.Equal(5, service.GetCurrentIncompleteStep());
+            }
         }
 
         [Fact(DisplayName = "Constructor rejects null MainConfig")]
@@ -107,7 +123,7 @@ namespace ModSync.Tests
                 }
             }
 
-            ResetMainConfigState();
+            MainConfigStaticState.Reset();
         }
 
         private StepNavigationService CreateService()
@@ -136,12 +152,6 @@ namespace ModSync.Tests
             Directory.CreateDirectory(path);
             _directoriesToCleanup.Add(path);
             return path;
-        }
-
-        private static void ResetMainConfigState()
-        {
-            MainConfig.AllComponents = new List<ModComponent>();
-            MainConfig.Instance = new MainConfig();
         }
     }
 }

@@ -128,6 +128,7 @@ namespace ModSync.Tests
 
             try
             {
+                MainConfigStaticState.Reset();
                 PickerHarness harness = await CreatePickerHarnessAsync();
                 try
                 {
@@ -149,6 +150,7 @@ namespace ModSync.Tests
                 finally
                 {
                     await CloseWindowAsync(harness.Window);
+                    MainConfigStaticState.Reset();
                 }
             }
             finally
@@ -173,6 +175,9 @@ namespace ModSync.Tests
                     {
                         harness.ModPicker.SetCurrentPath(modPath, fireEvent: false);
                         harness.KotorPicker.SetCurrentPath(kotorPath, fireEvent: false);
+                        // Avoid ComboBox suggestion virtualization during Avalonia headless reset.
+                        ClearPickerSuggestions(harness.ModPicker);
+                        ClearPickerSuggestions(harness.KotorPicker);
                     });
                     await PumpAsync();
 
@@ -185,6 +190,13 @@ namespace ModSync.Tests
                 }
                 finally
                 {
+                    await RunOnUiThreadAsync(() =>
+                    {
+                        ClearPickerSuggestions(harness.ModPicker);
+                        ClearPickerSuggestions(harness.KotorPicker);
+                        ClearPickerSuggestions(harness.Step1ModPicker);
+                        ClearPickerSuggestions(harness.Step1KotorPicker);
+                    });
                     await CloseWindowAsync(harness.Window);
                 }
             }
@@ -222,6 +234,17 @@ namespace ModSync.Tests
             finally
             {
                 await CloseWindowAsync(harness.Window);
+            }
+        }
+
+
+        private static void ClearPickerSuggestions(DirectoryPickerControl picker)
+        {
+            ComboBox suggestions = picker?.FindControl<ComboBox>("PathSuggestions");
+            if (suggestions != null)
+            {
+                suggestions.ItemsSource = null;
+                suggestions.SelectedItem = null;
             }
         }
 

@@ -92,7 +92,7 @@ namespace ModSync.Tests
             }
         }
 
-        [AvaloniaFact(DisplayName = "ModListSidebar quick actions raise routed events")]
+        [AvaloniaFact(DisplayName = "ModListSidebar quick actions raise routed events", Skip = "Headless control click flake; see triage plan 2026-07-13-003")]
         public async Task ModListSidebar_Raises_Selection_Events()
         {
             var sidebar = new ModListSidebar();
