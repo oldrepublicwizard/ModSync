@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using JetBrains.Annotations;
 
@@ -48,6 +49,14 @@ namespace ModSync.Core.Parsing
         [NotNull] private const string ModDirectoryPlaceholder = "<<modDirectory>>";
         [NotNull] private const string KotorDirectoryPlaceholder = "<<kotorDirectory>>";
         [NotNull] private const string LegacyGameDirectoryPlaceholder = "<<gameDirectory>>";
+
+        /// <summary>
+        /// Matches KOTOR loose-file names mentioned in guide prose (e.g. 153sion.dlg).
+        /// </summary>
+        [NotNull]
+        private static readonly Regex s_looseFileNamePattern = new Regex(
+            @"\b([\w\.\-]+\.(?:dlg|2da|tga|tpc|utc|uti|utm|utd|ute|uts|utw|ssf|bwm|mdl|mdx|txi|lip|lyt|vis|pth|ncs|gui))\b",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         /// <summary>
         /// Generates draft instructions for every component that has natural-language Directions prose
@@ -167,10 +176,15 @@ namespace ModSync.Core.Parsing
                     ? KotorDirectoryPlaceholder + @"\Movies"
                     : KotorDirectoryPlaceholder + @"\Override";
 
+                Match fileMatch = s_looseFileNamePattern.Match(directions);
+                List<string> sources = fileMatch.Success
+                    ? BuildLooseFileMoveSources(fileMatch.Groups[1].Value)
+                    : new List<string> { ModDirectoryPlaceholder + @"\*" };
+
                 return new Instruction
                 {
                     Action = Instruction.ActionType.Move,
-                    Source = new List<string> { ModDirectoryPlaceholder + @"\*" },
+                    Source = sources,
                     Destination = destination,
                     Overwrite = directions.IndexOf("do not overwrite", StringComparison.OrdinalIgnoreCase) < 0
                         && directions.IndexOf("don't overwrite", StringComparison.OrdinalIgnoreCase) < 0,
@@ -205,6 +219,54 @@ namespace ModSync.Core.Parsing
             string lower = text.ToLowerInvariant();
             return lower.IndexOf("loose-file", StringComparison.Ordinal) >= 0
                 || lower.IndexOf("loose file", StringComparison.Ordinal) >= 0;
+        }
+
+        /// <summary>
+        /// Builds sandboxed Move sources for a named loose file, including nested paths after Extract.
+        /// </summary>
+        [NotNull]
+        internal static List<string> BuildLooseFileMoveSources([NotNull] string fileName, int maxNestedDepth = 3)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                throw new ArgumentException("File name is required.", nameof(fileName));
+            }
+
+            string trimmed = fileName.Trim().Trim('"', '\'');
+            var sources = new List<string> { $"{ModDirectoryPlaceholder}\\{trimmed}" };
+
+            for (int depth = 1; depth <= maxNestedDepth; depth++)
+            {
+                sources.Add($"{ModDirectoryPlaceholder}\\{string.Join("\\", Enumerable.Repeat("*", depth))}\\{trimmed}");
+            }
+
+            return sources;
+        }
+
+        /// <summary>
+        /// Expands existing Move sources with nested mod-directory search paths for a named file.
+        /// </summary>
+        [NotNull]
+        internal static List<string> ExpandLooseFileMoveSources(
+            [CanBeNull] IEnumerable<string> existingSources,
+            [NotNull] string fileName,
+            int maxNestedDepth = 3)
+        {
+            var merged = new List<string>();
+            if (existingSources != null)
+            {
+                merged.AddRange(existingSources.Where(source => !string.IsNullOrWhiteSpace(source)));
+            }
+
+            foreach (string source in BuildLooseFileMoveSources(fileName, maxNestedDepth))
+            {
+                if (!merged.Any(existing => string.Equals(existing, source, StringComparison.OrdinalIgnoreCase)))
+                {
+                    merged.Add(source);
+                }
+            }
+
+            return merged;
         }
 
         /// <summary>

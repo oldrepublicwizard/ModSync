@@ -629,6 +629,81 @@ ___
         }
 
         [Test]
+        public void K2FullGuideFixture_IngestedSilentSion_InstallsFromNestedExtractFolder()
+        {
+            string fixturePath = Path.Combine(ResolveRepoRoot(), "src", "ModSync.Tests", "Fixtures", "k2_full_guide.md");
+            Assert.That(File.Exists(fixturePath), Is.True);
+
+            string kotorDir = Path.Combine(_testDirectory, "KOTOR");
+            string modDir = Path.Combine(_testDirectory, "Mods");
+            Directory.CreateDirectory(Path.Combine(kotorDir, "Override"));
+            File.WriteAllText(Path.Combine(kotorDir, "swkotor.exe"), "fake exe");
+            File.WriteAllText(Path.Combine(kotorDir, "dialog.tlk"), "fake dialog");
+            Directory.CreateDirectory(modDir);
+
+            string nestedDlg = Path.Combine(modDir, "Silent Sion Restoration", "153sion.dlg");
+            Directory.CreateDirectory(Path.GetDirectoryName(nestedDlg)!);
+            File.WriteAllText(nestedDlg, "silent sion dlg");
+
+            string ingestedToml = Path.Combine(_testDirectory, "k2_full_ingested.toml");
+            int convertExit = ModBuildConverter.Run(new[]
+            {
+                "convert",
+                "--input", fixturePath,
+                "-f", "toml",
+                "--parse-directions",
+                "-o", ingestedToml,
+                "--plaintext",
+            });
+
+            Assert.That(convertExit, Is.EqualTo(0));
+
+            StripDependenciesForInstallSmoke(ingestedToml, "Silent Sion Restoration");
+
+            int installExit = ModBuildConverter.Run(new[]
+            {
+                "install",
+                "--input", ingestedToml,
+                "--game-dir", kotorDir,
+                "--source-dir", modDir,
+                "--select", "mod:Silent Sion Restoration",
+                "--skip-validation",
+                "--best-effort",
+                "-y",
+            });
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(installExit, Is.EqualTo(0));
+                Assert.That(File.Exists(Path.Combine(kotorDir, "Override", "153sion.dlg")), Is.True,
+                    "Move draft should find 153sion.dlg after extract-style nesting");
+            });
+        }
+
+        [Test]
+        public void DraftInstructions_SilentSionMoveJust_IncludesNestedSearchPaths()
+        {
+            ModComponent component = new ModComponent
+            {
+                Name = "Silent Sion Restoration",
+                InstallationMethod = "Loose-File",
+                Directions = "Move just 153sion.dlg to the override.",
+            };
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(results, Has.Count.EqualTo(1));
+                Assert.That(component.Instructions, Has.Count.EqualTo(1));
+                Assert.That(component.Instructions[0].Action, Is.EqualTo(Instruction.ActionType.Move));
+                Assert.That(component.Instructions[0].Source, Does.Contain(@"<<modDirectory>>\153sion.dlg"));
+                Assert.That(component.Instructions[0].Source, Does.Contain(@"<<modDirectory>>\*\153sion.dlg"));
+                Assert.That(component.Instructions[0].Destination, Is.EqualTo(@"<<kotorDirectory>>\Override"));
+            });
+        }
+
+        [Test]
         public void K2FullGuideFixture_IngestedMultiModInstallSmoke_InstallsViaModSelect()
         {
             string fixturePath = Path.Combine(ResolveRepoRoot(), "src", "ModSync.Tests", "Fixtures", "k2_full_guide.md");
