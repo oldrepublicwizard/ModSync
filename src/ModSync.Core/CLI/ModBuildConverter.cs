@@ -397,7 +397,7 @@ namespace ModSync.Core.CLI
             [Option('d', "download", Required = false, HelpText = "Download all mod files to source-path before processing (requires --source-path)")]
             public bool Download { get; set; }
 
-            [Option('s', "select", Required = false, HelpText = "Select components by category or tier (format: 'category:Name' or 'tier:Name'). Can be specified multiple times.")]
+            [Option('s', "select", Required = false, HelpText = "Select components by category, tier, or mod name (format: 'category:Name', 'tier:Name', or 'mod:Name'). Can be specified multiple times.")]
             public IEnumerable<string> Select { get; set; }
 
             [Option("source-path", Required = false, HelpText = "Path to source directory containing downloaded mod files")]
@@ -497,7 +497,7 @@ namespace ModSync.Core.CLI
             [Option('d', "download", Required = false, HelpText = "Download all mod files to source-path before processing (requires --source-path)")]
             public bool Download { get; set; }
 
-            [Option('s', "select", Required = false, HelpText = "Select components by category or tier (format: 'category:Name' or 'tier:Name'). Can be specified multiple times.")]
+            [Option('s', "select", Required = false, HelpText = "Select components by category, tier, or mod name (format: 'category:Name', 'tier:Name', or 'mod:Name'). Can be specified multiple times.")]
             public IEnumerable<string> Select { get; set; }
 
             [Option("source-path", Required = false, HelpText = "Path to source directory containing downloaded mod files")]
@@ -576,7 +576,7 @@ namespace ModSync.Core.CLI
             [Option('s', "source-dir", Required = false, HelpText = "Source directory containing mod files (for file existence checks)")]
             public string SourceDirectory { get; set; }
 
-            [Option("select", Required = false, HelpText = "Select components to validate (format: 'category:Name' or 'tier:Name'). Can be specified multiple times.")]
+            [Option("select", Required = false, HelpText = "Select components to validate (format: 'category:Name', 'tier:Name', or 'mod:Name'). Can be specified multiple times.")]
             public IEnumerable<string> Select { get; set; }
 
             [Option("full", Required = false, Default = false, HelpText = "Perform full validation including environment checks (requires --game-dir and --source-dir)")]
@@ -610,7 +610,7 @@ namespace ModSync.Core.CLI
             [Option('s', "source-dir", Required = false, HelpText = "Source directory containing mod files (defaults to input file directory)")]
             public string SourceDirectory { get; set; }
 
-            [Option("select", Required = false, HelpText = "Select components to install (format: 'category:Name' or 'tier:Name'). Can be specified multiple times.")]
+            [Option("select", Required = false, HelpText = "Select components to install (format: 'category:Name', 'tier:Name', or 'mod:Name'). Can be specified multiple times.")]
             public IEnumerable<string> Select { get; set; }
 
             [Option("use-file-selection", Required = false, Default = false, HelpText = "Only install components with IsSelected=true in the file. Default (without this flag and without --select): select all components (full-build style).")]
@@ -1269,7 +1269,7 @@ componentName: null,
             return downloadCache;
         }
 
-        private static void ApplySelectionFilters(
+        internal static void ApplySelectionFilters(
             List<ModComponent> components,
             IEnumerable<string> selections)
         {
@@ -1289,6 +1289,7 @@ componentName: null,
 
             var selectedCategories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var selectedTiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var selectedModNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (string selection in selections)
             {
@@ -1300,7 +1301,7 @@ componentName: null,
                 string[] parts = selection.Split(new[] { ':' }, 2);
                 if (parts.Length != 2)
                 {
-                    Logger.LogWarning($"Invalid selection format: '{selection}'. Expected format: 'category:Name' or 'tier:Name'");
+                    Logger.LogWarning($"Invalid selection format: '{selection}'. Expected format: 'category:Name', 'tier:Name', or 'mod:Name'");
                     continue;
                 }
 
@@ -1317,9 +1318,14 @@ componentName: null,
                     selectedTiers.Add(value);
                     Logger.LogVerbose($"Added tier filter: {value}");
                 }
+                else if (string.Equals(type, "mod", StringComparison.Ordinal) || string.Equals(type, "name", StringComparison.Ordinal))
+                {
+                    selectedModNames.Add(value);
+                    Logger.LogVerbose($"Added mod name filter: {value}");
+                }
                 else
                 {
-                    Logger.LogWarning($"Unknown selection type: '{type}'. Use 'category' or 'tier'");
+                    Logger.LogWarning($"Unknown selection type: '{type}'. Use 'category', 'tier', or 'mod'");
                 }
             }
 
@@ -1338,6 +1344,19 @@ componentName: null,
             {
                 bool includeByCategory = false;
                 bool includeByTier = false;
+                bool includeByModName = false;
+
+                if (selectedModNames.Count > 0)
+                {
+                    includeByModName = selectedModNames.Any(filter =>
+                        string.Equals(component.Name, filter, StringComparison.OrdinalIgnoreCase)
+                        || (!string.IsNullOrEmpty(component.Name)
+                            && component.Name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0));
+                }
+                else
+                {
+                    includeByModName = true;
+                }
 
                 if (selectedCategories.Count > 0)
                 {
@@ -1384,7 +1403,7 @@ componentName: null,
                     includeByTier = true;
                 }
 
-                if (includeByCategory && includeByTier)
+                if (includeByModName && includeByCategory && includeByTier)
                 {
                     component.IsSelected = true;
                     selectedCount++;
@@ -1396,6 +1415,10 @@ componentName: null,
             }
 
             Logger.LogVerbose($"Selection filters applied: {selectedCount}/{components.Count} components selected");
+            if (selectedModNames.Count > 0)
+            {
+                Logger.LogVerbose($"Mod names: {string.Join(", ", selectedModNames)}");
+            }
             if (selectedCategories.Count > 0)
             {
                 Logger.LogVerbose($"Categories: {string.Join(", ", selectedCategories)}");
