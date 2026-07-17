@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace ModSync.Core.Services.Download
 {
-    public sealed class DownloadManager : IDisposable
+    public sealed class DownloadManager : Ports.Download.IDownloadProviderRegistry, IDisposable
     {
         private readonly List<IDownloadHandler> _handlers;
         private readonly Dictionary<string, DateTime> _lastProgressLogTime = new Dictionary<string, DateTime>(StringComparer.Ordinal);
@@ -36,6 +36,45 @@ namespace ModSync.Core.Services.Download
         public IDownloadHandler GetHandlerForUrl(string url)
         {
             return _handlers.Find(h => h.CanHandle(url));
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetProviderKeys()
+        {
+            var keys = new List<string>(_handlers.Count);
+            for (int i = 0; i < _handlers.Count; i++)
+            {
+                keys.Add(_handlers[i].GetProviderKey());
+            }
+
+            return keys;
+        }
+
+        /// <inheritdoc />
+        public async Task<DownloadResult> DownloadViaProviderAsync(
+            string url,
+            string destinationDirectory,
+            IProgress<DownloadProgress> progress = null,
+            List<string> targetFilenames = null,
+            CancellationToken cancellationToken = default)
+        {
+            IDownloadHandler handler = GetHandlerForUrl(url);
+            if (handler is null)
+            {
+                return DownloadResult.Failed("No handler configured for this URL");
+            }
+
+            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                _globalCancellationTokenSource.Token,
+                cancellationToken))
+            {
+                return await handler.DownloadAsync(
+                    url,
+                    destinationDirectory,
+                    progress,
+                    targetFilenames,
+                    linkedCts.Token).ConfigureAwait(false);
+            }
         }
 
         public async Task<Dictionary<string, List<string>>> ResolveUrlsToFilenamesAsync(

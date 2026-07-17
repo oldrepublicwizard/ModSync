@@ -15,7 +15,10 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 
+using System.IO;
+
 using ModSync.Core;
+using ModSync.Core.Ports.Updates;
 using ModSync.Core.Utility;
 using ModSync.Core.Services;
 using ModSync.Core.Services.Download;
@@ -384,6 +387,59 @@ namespace ModSync.Services
                 Header = "🔔 Check for Nexus Updates",
                 Command = ReactiveCommand.CreateFromTask(RunNexusUpdateCheckAsync),
             });
+
+            _ = items.Add(new MenuItem
+            {
+                Header = "Managed Deployment Status",
+                Command = ReactiveCommand.CreateFromTask(ShowManagedDeploymentStatusAsync),
+            });
+
+            _ = items.Add(new MenuItem
+            {
+                Header = "Purge Managed Deployments",
+                Command = ReactiveCommand.CreateFromTask(PurgeManagedDeploymentsAsync),
+            });
+        }
+
+        private async Task ShowManagedDeploymentStatusAsync()
+        {
+            Core.Services.Deployment.ManagedDeploymentStatus status = ManagedDeploymentActions.GetStatusOrClassic();
+            await InformationDialog.ShowInformationDialogAsync(
+                _parentWindow,
+                status.FormatIndicator(),
+                "Managed Deployment");
+        }
+
+        private async Task PurgeManagedDeploymentsAsync()
+        {
+            Core.Services.Deployment.ManagedDeploymentStatus status = ManagedDeploymentActions.GetStatusOrClassic();
+            if (!status.ManagedBackend)
+            {
+                await InformationDialog.ShowInformationDialogAsync(
+                    _parentWindow,
+                    "Managed deployment is not active. Enable it in Settings and set an active profile first.",
+                    "Purge Managed Deployments");
+                return;
+            }
+
+            string confirmMessage = status.HasDeployments
+                ? $"Remove all {status.DeployedComponentCount} managed deployment(s) from the game directory?\n\n" +
+                  "Vanilla backups will be restored where available. This cannot be undone from ModSync."
+                : "No managed deployments are recorded. Run purge anyway?";
+
+            bool? confirmed = await ConfirmationDialog.ShowConfirmationDialogAsync(
+                _parentWindow,
+                confirmText: confirmMessage);
+            if (confirmed != true)
+            {
+                return;
+            }
+
+            (bool success, string message) = await ManagedDeploymentActions.PurgeAsync().ConfigureAwait(true);
+            await InformationDialog.ShowInformationDialogAsync(
+                _parentWindow,
+                message,
+                success ? "Purge complete" : "Purge failed");
         }
 
         private async Task RunNexusUpdateCheckAsync()
@@ -400,7 +456,11 @@ namespace ModSync.Services
             using (var httpClient = new HttpClient())
             {
                 var apiClient = new NexusApiClient(httpClient, MainConfig.NexusModsApiKey);
-                var updateService = new ModUpdateCheckService(apiClient);
+                string settingsDirectory = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "ModSync");
+                IUpdateCheckResultStore resultStore = new JsonUpdateCheckResultStore(settingsDirectory);
+                var updateService = new ModUpdateCheckService(apiClient, resultStore);
                 ModUpdateCheckResult result = await updateService.CheckForUpdatesAsync(mods).ConfigureAwait(true);
 
                 foreach (ModComponent component in mods)
@@ -657,6 +717,16 @@ namespace ModSync.Services
                 {
                     Header = "Settings",
                     Command = ReactiveCommand.Create( () => callbacks.OnOpenSettings ),
+                },
+                new MenuItem
+                {
+                    Header = "Managed Deployment Status",
+                    Command = ReactiveCommand.CreateFromTask(ShowManagedDeploymentStatusAsync),
+                },
+                new MenuItem
+                {
+                    Header = "Purge Managed Deployments",
+                    Command = ReactiveCommand.CreateFromTask(PurgeManagedDeploymentsAsync),
                 },
                 new MenuItem
                 {

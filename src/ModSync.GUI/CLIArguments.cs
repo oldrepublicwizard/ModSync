@@ -6,21 +6,49 @@ using System;
 
 namespace ModSync
 {
+    /// <summary>
+    /// Holds command-line arguments passed to the application.
+    ///
+    /// Usage examples:
+    /// --kotorPath="C:\Path\To\Game"
+    /// --modDirectory="C:\Path\To\Mods"
+    /// --instructionFile="C:\Path\To\Instructions.toml"
+    /// --nxm=nxm://...
+    /// --modsync=modsync://install?url=...
+    /// </summary>
     public static class CLIArguments
     {
         public static string KotorPath { get; set; }
         public static string ModDirectory { get; set; }
         public static string InstructionFile { get; set; }
         public static string NxmUrl { get; set; }
+
+        /// <summary>
+        /// modsync:// protocol URL for "Install with ModSync" build deep links.
+        /// Set via --modsync=&lt;url&gt; or a bare positional argument starting with modsync://.
+        /// </summary>
         public static string ModSyncProtocolUrl { get; set; }
+
+        /// <summary>
+        /// When true, skip single-instance enforcement so a second GUI can start (dev/agent workflows).
+        /// </summary>
         public static bool AllowMultipleInstances { get; set; }
 
+        /// <summary>True when either protocol handoff URL was provided on the CLI.</summary>
         public static bool HasProtocolHandoffUrl =>
             !string.IsNullOrEmpty(NxmUrl) || !string.IsNullOrEmpty(ModSyncProtocolUrl);
 
+        /// <summary>
+        /// Prefer nxm when both are present (single secondary-launch forward payload).
+        /// </summary>
         public static string ProtocolHandoffUrl =>
             !string.IsNullOrEmpty(NxmUrl) ? NxmUrl : ModSyncProtocolUrl;
 
+        /// <summary>
+        /// Parses command-line arguments.
+        /// Supports formats: --kotorPath=value, --modDirectory=value, --instructionFile=value,
+        /// --nxm=value, --modsync=value, and bare nxm:// / modsync:// positional arguments.
+        /// </summary>
         public static void Parse(string[] args)
         {
             if (args == null || args.Length == 0)

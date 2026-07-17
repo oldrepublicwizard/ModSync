@@ -76,5 +76,17 @@ namespace ModSync.Core.Services.Download
             List<IDownloadHandler> handlers = CreateHandlers(httpClient, nexusModsApiKey, timeoutMinutes);
             return new DownloadManager(handlers);
         }
+
+        /// <summary>
+        /// Creates the standard download stack exposed as
+        /// <see cref="Ports.Download.IDownloadProviderRegistry"/> for GUI/CLI shared use.
+        /// </summary>
+        public static Ports.Download.IDownloadProviderRegistry CreateProviderRegistry(
+            HttpClient httpClient = null,
+            string nexusModsApiKey = null,
+            int timeoutMinutes = 180)
+        {
+            return CreateDownloadManager(httpClient, nexusModsApiKey, timeoutMinutes);
+        }
     }
 }

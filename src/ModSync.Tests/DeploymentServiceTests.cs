@@ -292,5 +292,40 @@ namespace ModSync.Tests
             bool result = await _service.UninstallComponentAsync(Guid.NewGuid());
             Assert.That(result, Is.False);
         }
+
+        [Test]
+        public async Task Uninstall_SkipsPathTraversalRelativePaths()
+        {
+            Guid guid = Guid.NewGuid();
+            string outsideFile = Path.Combine(_testRoot, "outside.txt");
+            File.WriteAllText(outsideFile, "must not delete");
+
+            string safeStaged = CreateStagedFile("safe", "Override/safe.txt", "safe");
+            DeploymentManifest manifest = await _service.DeployComponentAsync(guid, "Safe", safeStaged);
+
+            manifest.Entries.Add(new DeploymentManifestEntry
+            {
+                RelativePath = "../outside.txt",
+                SourceHash = "deadbeef",
+                Size = 1,
+                DeploymentMethod = DeploymentMethod.Copy,
+            });
+
+            string manifestPath = Path.Combine(_manifestRoot, "manifests", guid.ToString("D") + ".json");
+            if (!File.Exists(manifestPath))
+            {
+                // Locate wherever the service wrote the manifest.
+                manifestPath = Directory.GetFiles(_manifestRoot, guid.ToString("D") + ".json", SearchOption.AllDirectories)
+                    .Single();
+            }
+
+            File.WriteAllText(manifestPath, manifest.ToJson());
+
+            bool uninstalled = await _service.UninstallComponentAsync(guid);
+
+            Assert.That(uninstalled, Is.True);
+            Assert.That(File.Exists(outsideFile), Is.True, "Path-traversal target must not be deleted");
+            Assert.That(File.Exists(GamePath("Override/safe.txt")), Is.False);
+        }
     }
 }

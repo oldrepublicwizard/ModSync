@@ -20,6 +20,10 @@ namespace ModSync
                 Core.Logger.Initialize();
                 CLIArguments.Parse(args);
 
+                // Single-instance coordination for nxm:// and modsync:// protocol handlers.
+                // The primary instance listens on a per-user named pipe; later
+                // instances launched by the OS for a protocol link forward the URL to
+                // the primary and exit instead of opening a second window.
                 if (!CLIArguments.AllowMultipleInstances)
                 {
                     singleInstance = new Services.SingleInstanceService();

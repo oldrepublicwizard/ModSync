@@ -111,6 +111,7 @@ namespace ModSync.Dialogs
             LoadNxmProtocolSettings();
             LoadFileWatcherSettings();
             LoadFomodPostDownloadSettings();
+            LoadManagedDeploymentSettings();
 
             Logger.LogVerbose("SettingsDialog.InitializeFromMainWindow end");
         }
@@ -358,6 +359,33 @@ namespace ModSync.Dialogs
             catch (Exception ex)
             {
                 Logger.LogException(ex, "Failed to load FOMOD post-download settings");
+            }
+        }
+
+        private void LoadManagedDeploymentSettings()
+        {
+            try
+            {
+                CheckBox managedDeploymentCheckBox = this.FindControl<CheckBox>("ManagedDeploymentCheckBox");
+                TextBlock helperText = this.FindControl<TextBlock>("ManagedDeploymentHelperText");
+                if (managedDeploymentCheckBox is null)
+                {
+                    return;
+                }
+
+                Models.AppSettings appSettings = Models.SettingsManager.LoadSettings();
+                managedDeploymentCheckBox.IsChecked = appSettings.ManagedDeploymentEnabled;
+
+                bool hasActiveProfile = !string.IsNullOrWhiteSpace(appSettings.ActiveProfileName);
+                managedDeploymentCheckBox.IsEnabled = hasActiveProfile;
+                if (helperText != null)
+                {
+                    helperText.IsVisible = !hasActiveProfile;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex, "Failed to load managed deployment settings");
             }
         }
 
@@ -814,6 +842,19 @@ namespace ModSync.Dialogs
                 await SaveNxmProtocolSettingsAsync(settings);
 
                 settings.FomodPostDownloadMode = _fomodPostDownloadMode;
+
+                Models.AppSettings existingSettings = Models.SettingsManager.LoadSettings();
+                settings.ActiveProfileName = existingSettings.ActiveProfileName;
+
+                CheckBox managedDeploymentCheckBox = this.FindControl<CheckBox>("ManagedDeploymentCheckBox");
+                if (managedDeploymentCheckBox != null)
+                {
+                    settings.ManagedDeploymentEnabled = managedDeploymentCheckBox.IsChecked == true;
+                }
+                else
+                {
+                    settings.ManagedDeploymentEnabled = existingSettings.ManagedDeploymentEnabled;
+                }
 
                 Models.SettingsManager.SaveSettings(settings);
 

@@ -327,6 +327,15 @@ namespace ModSync.Tests
         }
 
         [Test]
+        public void GetProfileArtifactDirectory_UsesSanitizedProfileNameUnderProfilesFolder()
+        {
+            _service.CreateProfile("My Profile");
+            string artifactDir = _service.GetProfileArtifactDirectory("My Profile");
+            Assert.That(artifactDir, Does.StartWith(_service.ProfilesDirectory));
+            Assert.That(artifactDir, Does.Not.EndWith(".json"));
+        }
+
+        [Test]
         public void SanitizeProfileFileName_ReplacesInvalidCharacters()
         {
             string sanitized = ProfileService.SanitizeProfileFileName("My/Profile:With*Bad?Chars");

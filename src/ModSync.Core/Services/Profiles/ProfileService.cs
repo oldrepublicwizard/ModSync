@@ -9,6 +9,8 @@ using System.Linq;
 
 using JetBrains.Annotations;
 
+using ModSync.Core.Ports.Profiles;
+
 using Newtonsoft.Json;
 
 namespace ModSync.Core.Services.Profiles
@@ -27,7 +29,7 @@ namespace ModSync.Core.Services.Profiles
     /// minimal-blast-radius by design.
     /// </para>
     /// </summary>
-    public sealed class ProfileService
+    public sealed class ProfileService : IProfileStore
     {
         private const string ProfilesSubdirectory = "profiles";
         private const string ProfileFileExtension = ".json";
@@ -96,6 +98,14 @@ namespace ModSync.Core.Services.Profiles
         [NotNull]
         private string GetProfileFilePath([NotNull] string profileName) =>
             Path.Combine(_profilesDirectory, SanitizeProfileFileName(profileName) + ProfileFileExtension);
+
+        /// <summary>
+        /// Root directory for managed-deployment artifacts (staging, manifests) for
+        /// the named profile. Sibling to the profile JSON file in <c>profiles/</c>.
+        /// </summary>
+        [NotNull]
+        public string GetProfileArtifactDirectory([NotNull] string profileName) =>
+            Path.Combine(_profilesDirectory, SanitizeProfileFileName(profileName));
 
         /// <summary>Returns all profiles on disk, ordered by name. Corrupt files are skipped.</summary>
         [NotNull]
