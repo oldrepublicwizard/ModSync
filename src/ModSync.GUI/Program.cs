@@ -18,8 +18,6 @@ namespace ModSync
             try
             {
                 Core.Logger.Initialize();
-
-                // Parse command-line arguments
                 CLIArguments.Parse(args);
 
                 // Single-instance coordination for nxm:// and modsync:// protocol handlers.
@@ -65,34 +63,22 @@ namespace ModSync
                     EnqueueProtocolHandoffFromCli();
                 }
 
-                // Telemetry is initialized lazily inside MainWindow.InitializeTelemetryIfEnabled
-                // (called on window open) so that consent can be obtained from the user first.
-                // Record session start only if telemetry is actually enabled after that check.
-                Core.Services.TelemetryService.Instance.RecordSessionStart(
-                    componentCount: 0,
-                    selectedCount: 0
-                );
+                Core.Services.TelemetryService.Instance.RecordSessionStart(componentCount: 0, selectedCount: 0);
 
                 var startTime = System.Diagnostics.Stopwatch.StartNew();
                 _ = BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
                 startTime.Stop();
 
-                // Record session end on exit
                 Core.Services.TelemetryService.Instance.RecordSessionEnd(
                     durationMs: startTime.Elapsed.TotalMilliseconds,
-                    completed: true
-                );
+                    completed: true);
                 Core.Services.TelemetryService.Instance.Flush();
             }
             catch (Exception ex)
             {
                 Core.Logger.LogException(ex);
-                Core.Services.TelemetryService.Instance.RecordSessionEnd(
-                    durationMs: 0,
-                    completed: false
-                );
+                Core.Services.TelemetryService.Instance.RecordSessionEnd(durationMs: 0, completed: false);
                 Core.Services.TelemetryService.Instance.Flush();
-
                 throw;
             }
             finally

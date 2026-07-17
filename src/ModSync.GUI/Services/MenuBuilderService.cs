@@ -477,7 +477,7 @@ namespace ModSync.Services
 
                 if (result.RateLimitReached)
                 {
-                    summary += "\n\nStopped early: Nexus API rate limit reached.";
+                    summary += "\n\nStopped early: Nexus API rate limit reached. Unchecked mods keep their previous update badges.";
                 }
 
                 if (result.Errors.Count > 0)

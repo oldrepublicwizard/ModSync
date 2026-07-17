@@ -18,25 +18,9 @@ namespace ModSync
     /// </summary>
     public static class CLIArguments
     {
-        /// <summary>
-        /// Path to the KOTOR game directory (destination path).
-        /// </summary>
         public static string KotorPath { get; set; }
-
-        /// <summary>
-        /// Path to the mod directory (source path).
-        /// </summary>
         public static string ModDirectory { get; set; }
-
-        /// <summary>
-        /// Path to the instruction file to load automatically.
-        /// </summary>
         public static string InstructionFile { get; set; }
-
-        /// <summary>
-        /// nxm:// protocol URL handed to us by the OS (Nexus Mods "Mod Manager Download").
-        /// Set via --nxm=&lt;url&gt; or a bare positional argument starting with nxm://.
-        /// </summary>
         public static string NxmUrl { get; set; }
 
         /// <summary>
@@ -79,10 +63,8 @@ namespace ModSync
                     continue;
                 }
 
-                // Skip argument names
                 if (arg.StartsWith("--", StringComparison.OrdinalIgnoreCase) || arg.StartsWith("-", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Support --key=value format
                     int equalsIndex = arg.IndexOf('=');
                     if (equalsIndex > 0)
                     {
@@ -121,7 +103,6 @@ namespace ModSync
                 }
                 else if (arg.TrimStart().StartsWith("nxm://", StringComparison.OrdinalIgnoreCase))
                 {
-                    // The OS protocol handler passes the nxm URL as a bare positional argument.
                     NxmUrl = arg.Trim().Trim('"', '\'');
                     Core.Logger.Log("CLI: Received nxm URL via positional argument");
                 }

@@ -31,8 +31,10 @@ Classic remains default when the toggle is off. Session entry:
 `ManagedInstallSession` + `InstallationService.RunWithManagedInstallSessionAsync`
 (wizard + single-mod). Settings UI: Deployment checkbox (requires active profile).
 
-`[OPEN]` Still deferred: patcher provenance (ImmutableCheckpoint), uninstall/purge
-GUI, managed dry-run/VFS validation parity, CLI `--profile` polish (U3).
+`[OPEN]` Still deferred: patcher provenance (ImmutableCheckpoint), per-component
+uninstall GUI polish, managed dry-run/VFS validation parity, CLI `--profile`
+polish (U3). Follow-up plan:
+[docs/plans/2026-07-13-004-managed-deployment-validation-plan.md](../plans/2026-07-13-004-managed-deployment-validation-plan.md).
 
 Tests: `DeploymentServiceTests`, `ManagedInstallSessionTests`, `ModSyncSettingsTests`,
 `ParityPortsTests` (backend selector).

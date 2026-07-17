@@ -167,20 +167,27 @@ namespace ModSync.Core.Services
             NexusModInfo modInfo,
             ModUpdateCheckResult result)
         {
+            string apiVersion = modInfo.Version?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(apiVersion))
+            {
+                // Indeterminate API response — preserve existing metadata and badge state.
+                return;
+            }
+
             metadata.LastUpdateCheck = DateTime.UtcNow;
-            metadata.LatestKnownVersion = modInfo.Version;
+            metadata.LatestKnownVersion = apiVersion;
             result.CheckedCount++;
 
             if (string.IsNullOrWhiteSpace(metadata.ModVersion))
             {
                 // First check: adopt the provider-reported version as the baseline.
-                metadata.ModVersion = modInfo.Version;
+                metadata.ModVersion = apiVersion;
                 metadata.UpdateAvailable = false;
                 return;
             }
 
-            bool updateAvailable = !string.IsNullOrWhiteSpace(modInfo.Version)
-                && !string.Equals(metadata.ModVersion, modInfo.Version, StringComparison.OrdinalIgnoreCase);
+            string installedVersion = metadata.ModVersion.Trim();
+            bool updateAvailable = !string.Equals(installedVersion, apiVersion, StringComparison.OrdinalIgnoreCase);
             metadata.UpdateAvailable = updateAvailable;
 
             if (updateAvailable)
@@ -189,8 +196,8 @@ namespace ModSync.Core.Services
                 {
                     ComponentName = component.Name,
                     Url = url,
-                    InstalledVersion = metadata.ModVersion,
-                    LatestVersion = modInfo.Version,
+                    InstalledVersion = installedVersion,
+                    LatestVersion = apiVersion,
                 });
             }
         }

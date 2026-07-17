@@ -171,6 +171,47 @@ namespace ModSync.Tests
         }
 
         [Test]
+        public async Task Pipeline_ProgressTotalSteps_MatchesExecutedStages_WhenSkipsEnabled()
+        {
+            var components = new List<ModComponent>
+            {
+                new ModComponent
+                {
+                    Guid = Guid.NewGuid(),
+                    Name = "ProgressMod",
+                    IsSelected = true,
+                    Instructions = new ObservableCollection<Instruction>(),
+                },
+            };
+
+            var options = ValidationPipelineOptions.WizardFull;
+            options.SkipEnvironmentValidation = true;
+            options.SkipComponentArchiveValidation = true;
+            options.DryRun = false;
+
+            int reportedTotal = -1;
+            int maxStep = 0;
+            int invokeCount = 0;
+
+            ValidationPipelineResult result = await InstallationValidationPipeline.RunAsync(
+                components,
+                options,
+                (stage, step, totalSteps, message) =>
+                {
+                    invokeCount++;
+                    reportedTotal = totalSteps;
+                    maxStep = Math.Max(maxStep, step);
+                    Assert.That(step, Is.LessThanOrEqualTo(totalSteps));
+                }).ConfigureAwait(false);
+
+            // FullValidation with env skipped → Conflicts + InstallOrder only.
+            Assert.That(invokeCount, Is.EqualTo(2));
+            Assert.That(reportedTotal, Is.EqualTo(2));
+            Assert.That(maxStep, Is.EqualTo(reportedTotal));
+            Assert.That(result.Stages, Has.Count.EqualTo(2));
+        }
+
+        [Test]
         public void Install_WithoutSkipValidation_BlocksOnMissingArchives()
         {
             string gameDir = MainConfig.DestinationPath.FullName;

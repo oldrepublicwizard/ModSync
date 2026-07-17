@@ -4,12 +4,8 @@
 
 namespace ModSync.Services
 {
-    /// <summary>
-    /// Decides how a ModSync process should behave when coordinating with other instances.
-    /// </summary>
     public enum SecondaryLaunchAction
     {
-        /// <summary>Start a new GUI even though another instance is running (dev escape hatch).</summary>
         StartNewInstance,
 
         /// <summary>Forward an nxm:// or modsync:// URL to the primary instance and exit.</summary>
@@ -19,9 +15,6 @@ namespace ModSync.Services
         ForwardActivateAndExit,
     }
 
-    /// <summary>
-    /// Pure launch-policy helpers used by <see cref="Program"/> and unit tests.
-    /// </summary>
     public static class ApplicationLaunchCoordinator
     {
         /// <summary>Named-pipe message sent when a second non-protocol launch should focus the primary window.</summary>
