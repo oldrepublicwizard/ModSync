@@ -19,9 +19,11 @@ using ModSync.Core.Services;
 using ModSync.Core.Services.Download;
 using ModSync.Core.Services.Fomod;
 using ModSync.Core.Services.Installation;
+using ModSync.Core.Services.Profiles;
 using ModSync.Core.Services.Settings;
 using ModSync.Core.Services.Validation;
 using ModSync.Core.Utility;
+
 
 using Newtonsoft.Json;
 
@@ -689,6 +691,28 @@ namespace ModSync.Core.CLI
             public string Arguments { get; set; }
         }
 
+        [Verb("profile", HelpText = "List, create, delete, clone, rename, and activate install profiles")]
+        public class ProfileOptions : BaseOptions
+        {
+            [Option('a', "action", Required = true, HelpText = "list|show|create|delete|activate|clone|rename")]
+            public string Action { get; set; }
+
+            [Option('n', "name", Required = false, HelpText = "Profile name (create|delete|activate|show)")]
+            public string Name { get; set; }
+
+            [Option("from", Required = false, HelpText = "Source profile name (clone|rename)")]
+            public string From { get; set; }
+
+            [Option("to", Required = false, HelpText = "Target profile name (clone|rename)")]
+            public string To { get; set; }
+
+            [Option("settings-dir", Required = false, HelpText = "ModSync settings directory (default: AppData/ModSync)")]
+            public string SettingsDirectory { get; set; }
+
+            [Option("json", Required = false, Default = false, HelpText = "Emit JSON for list/show")]
+            public bool Json { get; set; }
+        }
+
         public static int Run(string[] args)
         {
             // Disable keyring BEFORE any Python initialization to prevent pip hanging
@@ -700,7 +724,7 @@ namespace ModSync.Core.CLI
 
             var parser = new Parser(with => with.HelpWriter = Console.Out);
 
-            return parser.ParseArguments<ConvertOptions, MergeOptions, ValidateOptions, InstallOptions, SetNexusApiKeyOptions, InstallPythonDepsOptions, HolopatcherOptions>(args)
+            return parser.ParseArguments<ConvertOptions, MergeOptions, ValidateOptions, InstallOptions, SetNexusApiKeyOptions, InstallPythonDepsOptions, HolopatcherOptions, ProfileOptions>(args)
             .MapResult(
                 (ConvertOptions opts) => RunConvertAsync(opts).GetAwaiter().GetResult(),
                 (MergeOptions opts) => RunMergeAsync(opts).GetAwaiter().GetResult(),
@@ -709,6 +733,7 @@ namespace ModSync.Core.CLI
                 (SetNexusApiKeyOptions opts) => RunSetNexusApiKeyAsync(opts).GetAwaiter().GetResult(),
                 (InstallPythonDepsOptions opts) => RunInstallPythonDepsAsync(opts).GetAwaiter().GetResult(),
                 (HolopatcherOptions opts) => RunHolopatcherAsync(opts).GetAwaiter().GetResult(),
+                (ProfileOptions opts) => RunProfileAsync(opts),
                 errs => 1);
         }
 
@@ -3367,6 +3392,204 @@ componentName: null,
 
                 return 1;
             }
+        }
+
+        private static int RunProfileAsync(ProfileOptions opts)
+        {
+            SetVerboseMode(opts.Verbose);
+
+            try
+            {
+                string settingsDirectory = string.IsNullOrWhiteSpace(opts.SettingsDirectory)
+                    ? ModSyncSettings.GetSettingsDirectory()
+                    : opts.SettingsDirectory.Trim();
+
+                var profileService = new ProfileService(settingsDirectory);
+                string action = (opts.Action ?? string.Empty).Trim().ToLowerInvariant();
+
+                switch (action)
+                {
+                    case "list":
+                        return ProfileCliList(profileService, settingsDirectory, opts.Json);
+                    case "show":
+                        return ProfileCliShow(profileService, RequireProfileName(opts.Name, "show"), opts.Json);
+                    case "create":
+                        return ProfileCliCreate(profileService, RequireProfileName(opts.Name, "create"));
+                    case "delete":
+                        return ProfileCliDelete(profileService, RequireProfileName(opts.Name, "delete"));
+                    case "activate":
+                        return ProfileCliActivate(profileService, settingsDirectory, RequireProfileName(opts.Name, "activate"));
+                    case "clone":
+                        return ProfileCliClone(
+                            profileService,
+                            RequireProfileName(opts.From ?? opts.Name, "clone", "--from or --name"),
+                            RequireProfileName(opts.To, "clone", "--to"));
+                    case "rename":
+                        return ProfileCliRename(
+                            profileService,
+                            RequireProfileName(opts.From ?? opts.Name, "rename", "--from or --name"),
+                            RequireProfileName(opts.To, "rename", "--to"));
+                    default:
+                        Logger.LogError($"Unknown profile action '{opts.Action}'. Use list|show|create|delete|activate|clone|rename.");
+                        return 1;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Profile command failed: {ex.Message}");
+                if (opts.Verbose)
+                {
+                    Logger.LogException(ex);
+                }
+
+                return 1;
+            }
+        }
+
+        [NotNull]
+        private static string RequireProfileName([CanBeNull] string name, [NotNull] string action, [CanBeNull] string flagHint = null)
+        {
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                return name.Trim();
+            }
+
+            string hint = string.IsNullOrWhiteSpace(flagHint) ? "--name" : flagHint;
+            throw new ArgumentException($"Profile action '{action}' requires {hint}.");
+        }
+
+        private static int ProfileCliList([NotNull] ProfileService profileService, [NotNull] string settingsDirectory, bool json)
+        {
+            List<Profile> profiles = profileService.ListProfiles();
+            ModSyncSettings settings = ModSyncSettings.LoadFromDirectory(settingsDirectory);
+            string active = settings.ActiveProfileName ?? string.Empty;
+
+            if (json)
+            {
+                var payload = profiles.Select(profile => new
+                {
+                    profile.Name,
+                    profile.KotorDirectory,
+                    profile.ModDirectory,
+                    profile.InstructionFilePath,
+                    ComponentSelectionCount = profile.ComponentSelections?.Count ?? 0,
+                    profile.CreatedUtc,
+                    profile.LastUsedUtc,
+                    IsActive = string.Equals(profile.Name, active, StringComparison.OrdinalIgnoreCase),
+                });
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(payload, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+                return 0;
+            }
+
+            if (profiles.Count == 0)
+            {
+                Logger.LogAsync($"No profiles found in {profileService.ProfilesDirectory}").GetAwaiter().GetResult();
+                return 0;
+            }
+
+            Logger.LogAsync($"Profiles ({profiles.Count}):").GetAwaiter().GetResult();
+            foreach (Profile profile in profiles)
+            {
+                string marker = string.Equals(profile.Name, active, StringComparison.OrdinalIgnoreCase) ? " *" : string.Empty;
+                Logger.LogAsync($"  - {profile.Name}{marker}").GetAwaiter().GetResult();
+            }
+
+            if (!string.IsNullOrWhiteSpace(active))
+            {
+                Logger.LogAsync($"Active profile (settings.json): {active}").GetAwaiter().GetResult();
+            }
+
+            return 0;
+        }
+
+        private static int ProfileCliShow([NotNull] ProfileService profileService, [NotNull] string profileName, bool json)
+        {
+            Profile profile = profileService.LoadProfile(profileName);
+            if (profile is null)
+            {
+                Logger.LogError($"Profile '{profileName}' was not found.");
+                return 1;
+            }
+
+            if (json)
+            {
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(profile, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+                return 0;
+            }
+
+            Logger.LogAsync($"Profile: {profile.Name}").GetAwaiter().GetResult();
+            Logger.LogAsync($"  KOTOR: {profile.KotorDirectory ?? "(unset)"}").GetAwaiter().GetResult();
+            Logger.LogAsync($"  Mod workspace: {profile.ModDirectory ?? "(unset)"}").GetAwaiter().GetResult();
+            Logger.LogAsync($"  Instruction file: {profile.InstructionFilePath ?? "(unset)"}").GetAwaiter().GetResult();
+            Logger.LogAsync($"  Component selections: {profile.ComponentSelections?.Count ?? 0}").GetAwaiter().GetResult();
+            return 0;
+        }
+
+        private static int ProfileCliCreate([NotNull] ProfileService profileService, [NotNull] string profileName)
+        {
+            Profile profile = profileService.CreateProfile(profileName);
+            Logger.LogAsync($"Created profile '{profile.Name}' under {profileService.ProfilesDirectory}").GetAwaiter().GetResult();
+            return 0;
+        }
+
+        private static int ProfileCliDelete([NotNull] ProfileService profileService, [NotNull] string profileName)
+        {
+            if (!profileService.DeleteProfile(profileName))
+            {
+                Logger.LogError($"Profile '{profileName}' was not found.");
+                return 1;
+            }
+
+            Logger.LogAsync($"Deleted profile '{profileName}'.").GetAwaiter().GetResult();
+            return 0;
+        }
+
+        private static int ProfileCliActivate(
+            [NotNull] ProfileService profileService,
+            [NotNull] string settingsDirectory,
+            [NotNull] string profileName)
+        {
+            Profile profile = profileService.LoadProfile(profileName);
+            if (profile is null)
+            {
+                Logger.LogError($"Profile '{profileName}' was not found.");
+                return 1;
+            }
+
+            ModSyncSettings settings = ModSyncSettings.LoadFromDirectory(settingsDirectory);
+            settings.ActiveProfileName = profile.Name;
+            settings.SaveManagedDeploymentFieldsToDirectory(settingsDirectory);
+            profile.LastUsedUtc = DateTime.UtcNow;
+            profileService.SaveProfile(profile);
+            Logger.LogAsync($"Activated profile '{profile.Name}' (saved to settings.json).").GetAwaiter().GetResult();
+            return 0;
+        }
+
+        private static int ProfileCliClone(
+            [NotNull] ProfileService profileService,
+            [NotNull] string fromName,
+            [NotNull] string toName)
+        {
+            Profile source = profileService.LoadProfile(fromName);
+            if (source is null)
+            {
+                Logger.LogError($"Source profile '{fromName}' was not found.");
+                return 1;
+            }
+
+            Profile clone = profileService.CloneProfile(source, toName);
+            Logger.LogAsync($"Cloned profile '{fromName}' to '{clone.Name}'.").GetAwaiter().GetResult();
+            return 0;
+        }
+
+        private static int ProfileCliRename(
+            [NotNull] ProfileService profileService,
+            [NotNull] string fromName,
+            [NotNull] string toName)
+        {
+            Profile renamed = profileService.RenameProfile(fromName, toName);
+            Logger.LogAsync($"Renamed profile '{fromName}' to '{renamed.Name}'.").GetAwaiter().GetResult();
+            return 0;
         }
 
         private static async Task<int> RunSetNexusApiKeyAsync(SetNexusApiKeyOptions opts)
