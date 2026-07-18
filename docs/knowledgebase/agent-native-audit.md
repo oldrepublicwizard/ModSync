@@ -51,7 +51,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 | Set mod / game directories | GUI preload or CLI `-g` / `-s` | Yes |
 | Paste / ingest guide | GUI clipboard; CLI `convert --stdin` / `-i` + `--parse-directions` | Yes (file/stdin); OS clipboard `[UI]` |
 | `modsync://` open/install link | `--modsync=` / URI argv → handoff | Yes (consume); Settings toggle deferred |
-| Run validation | `ValidatePage` or `validate --full` / `--dry-run` | Yes (selection flags differ) |
+| Run validation | `ValidatePage` or `validate --full` / `--dry-run` / `validate --output json` | Yes (selection flags differ) |
 | Fetch downloads | Wizard / `ScrapeDownloadsButton` | Partial — CLI `install -d` / `convert -d`; status/stop `[UI]` |
 | Post-download FOMOD configure | GUI after Fetch Downloads | Yes — CLI TTY / `--fomod-choices` / `--fomod-skip` |
 | FOMOD configure-before-validate/install gate | GUI + Core `FomodConfigurationGate` | Yes — shared fail-closed gate |
@@ -62,7 +62,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 | Widescreen-only install block | Dynamic wizard pages | No — desktop only |
 | Aspyr notice (K2) | `AspyrNoticePage` | No — desktop only |
 | Rich-text / spoiler UI | GUI controls | No |
-| ValidatePage stage cards / copy report | Wizard presentation | Partial — pipeline Full; presentation `[UI]` |
+| ValidatePage stage cards / copy report | Wizard presentation | Partial — pipeline Full; `--output json` for machine reports; presentation `[UI]` |
 | Telemetry-auth sidecar | Separate Python stack | Routed via `telemetry-auth/README.md` |
 
 **Strengths:** `[REPO]` `ModBuildConverter` covers validate/install/convert/merge; FOMOD Plan 123 + gate; guide paste (#171); `modsync://` Phase 1–2; managed CLI overrides (#177); `install_best_effort.sh` documents a full-build-style headless path.
@@ -156,7 +156,7 @@ Files are the interface: instruction TOMLs, ingested drafts under `tmp/`, `tmp/k
 2. **Download status / stop** — CLI can download; live progress and stop controls are `[UI]` only.
 3. **Widescreen + Aspyr flows** — K2 wizard-only pages; no CLI equivalent.
 4. **Managed dry-run / VFS validation parity** — deferred `[OPEN]` in [managed-deployment.md](managed-deployment.md); classic VFS validate does not fully model managed staging/deploy.
-5. **Validation presentation / machine output** — stage-card UX / copy-report / go-to-first-issue remain `[UI]`; no structured JSON validation report for agents.
+5. **Validation presentation / machine output** — stage-card UX / copy-report / go-to-first-issue remain `[UI]`; CLI supports `validate --output json` for structured reports.
 
 Honorable mentions: OS clipboard paste still `[UI]` (stdin/file ingest covers agents); `modsync://` Settings checkbox deferred.
 
@@ -168,7 +168,7 @@ Honorable mentions: OS clipboard paste still `[UI]` (stdin/file ingest covers ag
 2. **Tier 1:** Treat GUI-only flows as `[UI]` in plans; check [agent-action-parity.md](agent-action-parity.md) before assuming headless parity.
 3. **Tier 2:** When adding wizard steps, add a CLI or script path—or document the gap in the parity matrix.
 4. **Tier 2:** Close managed dry-run/VFS validation parity ([plan 004](../plans/2026-07-13-004-managed-deployment-validation-plan.md)).
-5. **Tier 3:** Optional: structured JSON validation output; CLI profile list/create/activate verbs.
+5. **Tier 3:** Optional: extend JSON validation schema with per-mod issue IDs; CLI profile list/create/activate verbs.
 
 ## Strengths summary
 
