@@ -41,6 +41,7 @@ Validate an instruction file. Structural checks work with `-i` alone; environmen
 | `--dry-run-only` | No | VFS dry-run only; skips per-component archive existence checks (requires game + source dirs) |
 | `--errors-only` | No | Suppress warnings/info |
 | `--ignore-errors` | No | Best-effort dependency order |
+| `--output` | No | Output format: `text` (default) or `json` (machine-readable report on stdout) |
 
 **Example:**
 
@@ -55,10 +56,14 @@ dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
 
 dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
   validate -i ./mod-builds/TOMLs/KOTOR1_Full.toml \
-  -g ./tmp/kotor_template -s ./tmp/mod_downloads --dry-run-only
+  -g ./tmp/kotor_template -s ./tmp/mod_downloads --dry-run-only --output json
 ```
 
 With an empty mod workspace, `--dry-run` runs archive checks first and often exits non-zero before VFS simulation. Use `--dry-run-only` when you want VFS structural validation without requiring archives on disk.
+
+**JSON output:** `--output json` writes a single JSON document to stdout (stages, counts, dry-run issues). Progress logs are suppressed so agents can parse stdout directly. Early failures (missing input file, missing dirs) also emit JSON with an `error` field.
+
+**Tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~ValidateCliJsonTests|FullyQualifiedName~ValidationPipelineJsonFormatterTests"`
 
 ---
 

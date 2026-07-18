@@ -19,6 +19,18 @@ namespace ModSync.Core
         private static readonly object s_initializationLock = new object();
         private static readonly NLog.Logger s_logger = LogManager.GetCurrentClassLogger();
 
+        /// <summary>
+        /// When enabled, suppresses console/stderr log mirroring so machine-readable CLI output (e.g. validate --output json) owns stdout.
+        /// File and memory NLog targets remain active.
+        /// </summary>
+        public static bool MachineReadableConsoleMode { get; private set; }
+
+        public static void SetMachineReadableConsoleMode(bool enabled)
+        {
+            MachineReadableConsoleMode = enabled;
+            GlobalDiagnosticsContext.Set("SuppressConsoleLogging", enabled ? "true" : "false");
+        }
+
         public enum LogType
         {
             Info,
@@ -75,7 +87,7 @@ namespace ModSync.Core
                 Logged?.Invoke(logMessage);
 
                 // Only output to console/error if not fileOnly
-                if (!fileOnly)
+                if (!fileOnly && !MachineReadableConsoleMode)
                 {
                     // Output to appropriate destination based on context
                     if (IsRunningInTestContext())
