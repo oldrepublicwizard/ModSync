@@ -26,6 +26,8 @@ namespace ModSync.Tests
         private static readonly string GoldenTomlRelative = Path.Combine("mod-builds", "TOMLs", "KOTOR2_Full.toml");
         private const string SilentSionModName = "Silent Sion Restoration";
         private const string SilentSionArchive = "Silent Sion Restoration.zip";
+        private const string PrestigeModName = "Prestige Class Saving Throw Fixes";
+        private const string PrestigeArchive = "TSL_prestige_save_fixes.zip";
 
         private string _testDirectory;
         private string _modDirectory;
@@ -166,6 +168,59 @@ namespace ModSync.Tests
         }
 
         [Test]
+        [Timeout(600_000)]
+        public void K2FullGuideFixture_RoundTripPrestige_DownloadAndInstalls_LongRunning()
+        {
+            (string fixturePath, string goldenTomlPath) = ResolveInputs();
+            string roundTripToml = Path.Combine(_testDirectory, "k2_roundtrip_prestige.toml");
+
+            K2FullGuideRoundTripHelper.WriteRoundTripToml(
+                fixturePath,
+                goldenTomlPath,
+                roundTripToml,
+                PrestigeModName);
+
+            int installExit = ModBuildConverter.Run(new[]
+            {
+                "install",
+                "--input", roundTripToml,
+                "--game-dir", _kotorDirectory,
+                "--source-dir", _modDirectory,
+                "--select", "mod:" + PrestigeModName,
+                "--download",
+                "--skip-validation",
+                "--best-effort",
+                "-y",
+            });
+
+            string overrideDir = Path.Combine(_kotorDirectory, "Override");
+            string[] overrideTwoDas = Directory.Exists(overrideDir)
+                ? Directory.GetFiles(overrideDir, "*.2da", SearchOption.TopDirectoryOnly)
+                : Array.Empty<string>();
+            string[] modWorkspaceFiles = Directory.Exists(_modDirectory)
+                ? Directory.GetFiles(_modDirectory, "*", SearchOption.AllDirectories)
+                : Array.Empty<string>();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(installExit, Is.EqualTo(0),
+                    "round-trip install --download should complete for Prestige Class (best-effort)");
+                Assert.That(
+                    File.Exists(Path.Combine(_modDirectory, PrestigeArchive))
+                    || modWorkspaceFiles.Any(path => path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)),
+                    Is.True,
+                    "Prestige archive should be present in the mod workspace after download");
+                Assert.That(
+                    modWorkspaceFiles.Any(path =>
+                        path.IndexOf("jedimaster_sithlord", StringComparison.OrdinalIgnoreCase) >= 0),
+                    Is.True,
+                    "Extract should unpack jedimaster_sithlord fixes under the mod workspace");
+                Assert.That(overrideTwoDas.Length, Is.GreaterThan(0),
+                    "Jedi Master/Sith Lord folder Move should install at least one .2da to Override");
+            });
+        }
+
+        [Test]
         public void MergedSilentSion_ResourceRegistryListsArchiveFilenames()
         {
             (string fixturePath, string goldenTomlPath) = ResolveInputs();
@@ -233,6 +288,42 @@ namespace ModSync.Tests
                         && source.IndexOf('*', StringComparison.Ordinal) >= 0),
                     Is.True,
                     "Round-trip Move should search nested extract folders for 153sion.dlg");
+            });
+        }
+
+        [Test]
+        public void RoundTripHelper_OverlayPrestige_AddsExtractAndNestedFolderMove()
+        {
+            (string fixturePath, string goldenTomlPath) = ResolveInputs();
+            string roundTripToml = Path.Combine(_testDirectory, "k2_roundtrip_prestige.toml");
+
+            K2FullGuideRoundTripHelper.WriteRoundTripToml(
+                fixturePath,
+                goldenTomlPath,
+                roundTripToml,
+                PrestigeModName);
+
+            List<ModComponent> components = FileLoadingService.LoadFromFile(roundTripToml).ToList();
+            ModComponent prestige = components.First(c =>
+                c.Name.IndexOf(PrestigeModName, StringComparison.OrdinalIgnoreCase) >= 0);
+
+            Instruction moveInstruction = prestige.Instructions.First(i => i.Action == Instruction.ActionType.Move);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(prestige.ResourceRegistry?.Count, Is.GreaterThan(0));
+                Assert.That(
+                    prestige.Instructions.Any(i =>
+                        i.Action == Instruction.ActionType.Extract
+                        && i.Source.Any(s => s.IndexOf(PrestigeArchive, StringComparison.OrdinalIgnoreCase) >= 0)),
+                    Is.True,
+                    "Round-trip overlay should prepend Extract for TSL_prestige_save_fixes.zip");
+                Assert.That(
+                    moveInstruction.Source.Any(source =>
+                        source.IndexOf("sithlord", StringComparison.OrdinalIgnoreCase) >= 0
+                        && source.IndexOf('*', StringComparison.Ordinal) >= 0),
+                    Is.True,
+                    "Round-trip Move should search nested folders for jedimaster_sithlord fixes");
             });
         }
 

@@ -270,6 +270,134 @@ namespace ModSync.Core.Parsing
         }
 
         /// <summary>
+        /// Builds sandboxed Move sources for a named folder (optionally path-like prose), including nested
+        /// paths after Extract and slug/fuzzy variants when archive folders differ from guide wording.
+        /// </summary>
+        [NotNull]
+        internal static List<string> BuildFolderMoveSources([NotNull] string folderPhrase, int maxNestedDepth = 3)
+        {
+            if (string.IsNullOrWhiteSpace(folderPhrase))
+            {
+                throw new ArgumentException("Folder phrase is required.", nameof(folderPhrase));
+            }
+
+            string trimmed = folderPhrase.Trim().Trim('"', '\'', '.', ' ', ',', ';');
+            trimmed = Regex.Replace(trimmed, @"^\s*the\s+", string.Empty, RegexOptions.IgnoreCase);
+
+            var folderCandidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                trimmed.Replace('/', '\\'),
+            };
+
+            foreach (string slug in GenerateFolderSlugCandidates(trimmed))
+            {
+                folderCandidates.Add(slug);
+            }
+
+            var sources = new List<string>();
+            foreach (string candidate in folderCandidates)
+            {
+                if (string.IsNullOrWhiteSpace(candidate))
+                {
+                    continue;
+                }
+
+                sources.Add($"{ModDirectoryPlaceholder}\\{candidate}\\*");
+
+                for (int depth = 1; depth <= maxNestedDepth; depth++)
+                {
+                    sources.Add($"{ModDirectoryPlaceholder}\\{string.Join("\\", Enumerable.Repeat("*", depth))}\\{candidate}\\*");
+                }
+
+                string fuzzySegment = BuildFuzzyFolderSegmentPattern(candidate);
+                if (!string.IsNullOrWhiteSpace(fuzzySegment))
+                {
+                    for (int depth = 1; depth <= maxNestedDepth; depth++)
+                    {
+                        sources.Add($"{ModDirectoryPlaceholder}\\{string.Join("\\", Enumerable.Repeat("*", depth))}\\{fuzzySegment}\\*");
+                    }
+                }
+            }
+
+            return sources;
+        }
+
+        /// <summary>
+        /// Expands existing Move sources with nested folder search paths for guide prose folder names.
+        /// </summary>
+        [NotNull]
+        internal static List<string> ExpandFolderMoveSources(
+            [CanBeNull] IEnumerable<string> existingSources,
+            [NotNull] string folderPhrase,
+            int maxNestedDepth = 3)
+        {
+            var merged = new List<string>();
+            if (existingSources != null)
+            {
+                merged.AddRange(existingSources.Where(source => !string.IsNullOrWhiteSpace(source)));
+            }
+
+            foreach (string source in BuildFolderMoveSources(folderPhrase, maxNestedDepth))
+            {
+                if (!merged.Any(existing => string.Equals(existing, source, StringComparison.OrdinalIgnoreCase)))
+                {
+                    merged.Add(source);
+                }
+            }
+
+            return merged;
+        }
+
+        [NotNull]
+        private static IEnumerable<string> GenerateFolderSlugCandidates([NotNull] string phrase)
+        {
+            string[] segments = phrase
+                .Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => segment.Length > 0)
+                .ToArray();
+
+            if (segments.Length == 0)
+            {
+                yield break;
+            }
+
+            yield return string.Join("\\", segments);
+
+            if (segments.Length >= 2)
+            {
+                string head = segments[0].Replace(" ", string.Empty).ToLowerInvariant();
+                string tail = string.Join(" ", segments.Skip(1)).ToLowerInvariant();
+                tail = Regex.Replace(tail, @"\bsith\s+lord\b", "sithlord", RegexOptions.IgnoreCase);
+                yield return $"{head}_{tail}";
+            }
+        }
+
+        [CanBeNull]
+        private static string BuildFuzzyFolderSegmentPattern([NotNull] string folderCandidate)
+        {
+            string segment = folderCandidate;
+            int lastSeparator = Math.Max(folderCandidate.LastIndexOf('\\'), folderCandidate.LastIndexOf('/'));
+            if (lastSeparator >= 0 && lastSeparator < folderCandidate.Length - 1)
+            {
+                segment = folderCandidate.Substring(lastSeparator + 1);
+            }
+
+            string merged = Regex.Replace(segment.ToLowerInvariant(), @"\bsith\s+lord\b", "sithlord");
+            string[] tokens = merged
+                .Split(new[] { ' ', '_', '-', '/', '\\' }, StringSplitOptions.RemoveEmptyEntries)
+                .Where(token => token.Length > 3 || string.Equals(token, "fixes", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            if (tokens.Length == 0)
+            {
+                return null;
+            }
+
+            return "*" + string.Join("*", tokens) + "*";
+        }
+
+        /// <summary>
         /// Normalizes placeholders and enforces the path-sandboxing rules on a draft instruction:
         /// every Source entry and any non-empty Destination must start with
         /// <c>&lt;&lt;modDirectory&gt;&gt;</c> or <c>&lt;&lt;kotorDirectory&gt;&gt;</c>,

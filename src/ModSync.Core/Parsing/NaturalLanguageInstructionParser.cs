@@ -1048,15 +1048,13 @@ namespace ModSync.Core.Parsing
             if (folderMatch.Success)
             {
                 string folder = folderMatch.Groups["folder"].Value.Trim();
-                // Normalize folder name
                 folder = folder.Trim('"', '\'', ' ');
-                sources.Add($"<<modDirectory>>\\{folder}\\*");
+                sources.AddRange(DraftInstructionService.BuildFolderMoveSources(folder));
 
-                // Check for second folder
                 if (folderMatch.Groups["folder2"].Success)
                 {
                     string folder2 = folderMatch.Groups["folder2"].Value.Trim().Trim('"', '\'', ' ');
-                    sources.Add($"<<modDirectory>>\\{folder2}\\*");
+                    sources.AddRange(DraftInstructionService.BuildFolderMoveSources(folder2));
                 }
                 return sources;
             }
@@ -1114,7 +1112,7 @@ namespace ModSync.Core.Parsing
                     // Otherwise treat as folder
                     else if (actionType == Instruction.ActionType.Move || actionType == Instruction.ActionType.Copy)
                     {
-                        sources.Add($"<<modDirectory>>\\{cleaned}\\*");
+                        sources.AddRange(DraftInstructionService.BuildFolderMoveSources(cleaned));
                     }
                     else
                     {
