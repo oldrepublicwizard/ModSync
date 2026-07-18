@@ -183,6 +183,36 @@ dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "Name~AutoGenerateLo
 
 ---
 
+### `settings`
+
+Read or write keys in persisted `settings.json` (same file as the GUI `AppSettings` store). Merges into the existing JSON document without removing unrelated GUI-owned keys.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `-a` / `--action` | Yes | `list`, `get`, or `set` |
+| `-k` / `--key` | For get/set | Setting key (camelCase JSON names, e.g. `sourcePath`, `managedDeploymentEnabled`) |
+| `--value` | For set | New value (`true`/`false`, numbers, JSON literals, or strings). Omit or pass empty to remove the key. |
+| `--settings-dir` | No | Settings directory (default: platform AppData / `~/.config/ModSync`) |
+| `--json` | No | JSON output for list/get/set |
+| `--reveal-secrets` | No | Include sensitive values such as `nexusModsApiKey` (default redacts to `***`) |
+
+**Examples:**
+
+```bash
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  settings --action list --json --settings-dir ./tmp/modsync_settings
+
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  settings --action set --key sourcePath --value ./tmp/mod_downloads --settings-dir ./tmp/modsync_settings
+
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  settings --action set --key managedDeploymentEnabled --value true --settings-dir ./tmp/modsync_settings
+```
+
+**Tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~SettingsCliTests"`
+
+---
+
 ### `set-nexus-api-key`
 
 Store and optionally validate a Nexus Mods API key.
