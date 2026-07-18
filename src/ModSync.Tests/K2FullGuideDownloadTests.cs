@@ -26,6 +26,8 @@ namespace ModSync.Tests
         private static readonly string GoldenTomlRelative = Path.Combine("mod-builds", "TOMLs", "KOTOR2_Full.toml");
         private const string SilentSionModName = "Silent Sion Restoration";
         private const string SilentSionArchive = "Silent Sion Restoration.zip";
+        private const string PrestigeModName = "Prestige Class Saving Throw Fixes";
+        private const string PrestigeArchive = "TSL_prestige_save_fixes.zip";
 
         private string _testDirectory;
         private string _modDirectory;

@@ -229,13 +229,21 @@ namespace ModSync.Tests
                 @"\b([\w\.\-]+\.(?:dlg|2da|tga|tpc|utc|uti|utm|utd|ute|uts|utw|ssf|bwm|mdl|mdx|txi|lip|lyt|vis|pth|ncs|gui))\b",
                 RegexOptions.IgnoreCase);
 
-            if (!fileMatch.Success)
+            if (fileMatch.Success)
             {
+                move.Source = DraftInstructionService.ExpandLooseFileMoveSources(move.Source, fileMatch.Groups[1].Value);
                 return;
             }
 
-            string fileName = fileMatch.Groups[1].Value;
-            move.Source = DraftInstructionService.ExpandLooseFileMoveSources(move.Source, fileName);
+            Match folderMatch = Regex.Match(
+                component.Directions,
+                @"(?:only\s+install|install\s+only)\s+(?:the\s+)?(?<folder>[^.;\n]+?)(?:\.|$|\s)",
+                RegexOptions.IgnoreCase);
+
+            if (folderMatch.Success)
+            {
+                move.Source = DraftInstructionService.ExpandFolderMoveSources(move.Source, folderMatch.Groups["folder"].Value);
+            }
         }
 
         private static bool ShouldIncludeRegistryArchive(string modName, string archiveFileName)

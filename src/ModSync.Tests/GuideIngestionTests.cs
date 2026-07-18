@@ -704,6 +704,93 @@ ___
         }
 
         [Test]
+        public void DraftInstructions_PrestigeClassAdvisory_IncludesNestedFolderSearch()
+        {
+            ModComponent component = new ModComponent
+            {
+                Name = "Prestige Class Saving Throw Fixes",
+                InstallationMethod = "Loose-File Mod",
+                Directions = "I advise users to only install the Jedi Master/Sith Lord fixes.",
+            };
+
+            IReadOnlyList<DraftInstructionResult> results = DraftInstructionService.GenerateDraftInstructions(new[] { component });
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(results, Has.Count.EqualTo(1));
+                Assert.That(component.Instructions[0].Action, Is.EqualTo(Instruction.ActionType.Move));
+                Assert.That(
+                    component.Instructions[0].Source.Any(source =>
+                        source.IndexOf("Jedi Master", StringComparison.OrdinalIgnoreCase) >= 0
+                        && source.IndexOf('*', StringComparison.Ordinal) >= 0),
+                    Is.True,
+                    "Folder Move should include nested search paths for Jedi Master/Sith Lord fixes");
+                Assert.That(
+                    component.Instructions[0].Source.Any(source =>
+                        source.IndexOf("sithlord", StringComparison.OrdinalIgnoreCase) >= 0
+                        && source.IndexOf("fixes", StringComparison.OrdinalIgnoreCase) >= 0),
+                    Is.True,
+                    "Folder Move should include slug/fuzzy variants for jedimaster_sithlord fixes");
+            });
+        }
+
+        [Test]
+        public void K2FullGuideFixture_IngestedPrestige_InstallsFromNestedExtractFolder()
+        {
+            string fixturePath = Path.Combine(ResolveRepoRoot(), "src", "ModSync.Tests", "Fixtures", "k2_full_guide.md");
+            Assert.That(File.Exists(fixturePath), Is.True);
+
+            string kotorDir = Path.Combine(_testDirectory, "KOTOR");
+            string modDir = Path.Combine(_testDirectory, "Mods");
+            Directory.CreateDirectory(Path.Combine(kotorDir, "Override"));
+            File.WriteAllText(Path.Combine(kotorDir, "swkotor.exe"), "fake exe");
+            File.WriteAllText(Path.Combine(kotorDir, "dialog.tlk"), "fake dialog");
+            Directory.CreateDirectory(modDir);
+
+            string nestedFolder = Path.Combine(
+                modDir,
+                "TSL_prestige_save_fixes",
+                "TSL_prestige_save_fixes",
+                "jedimaster_sithlord fixes");
+            Directory.CreateDirectory(nestedFolder);
+            File.WriteAllText(Path.Combine(nestedFolder, "prestige_fix.2da"), "2DA V2.0\n");
+
+            string ingestedToml = Path.Combine(_testDirectory, "k2_full_ingested.toml");
+            int convertExit = ModBuildConverter.Run(new[]
+            {
+                "convert",
+                "--input", fixturePath,
+                "-f", "toml",
+                "--parse-directions",
+                "-o", ingestedToml,
+                "--plaintext",
+            });
+
+            Assert.That(convertExit, Is.EqualTo(0));
+
+            StripDependenciesForInstallSmoke(ingestedToml, "Prestige Class Saving Throw Fixes");
+
+            int installExit = ModBuildConverter.Run(new[]
+            {
+                "install",
+                "--input", ingestedToml,
+                "--game-dir", kotorDir,
+                "--source-dir", modDir,
+                "--select", "mod:Prestige Class Saving Throw Fixes",
+                "--skip-validation",
+                "--best-effort",
+                "-y",
+            });
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(installExit, Is.EqualTo(0));
+                Assert.That(File.Exists(Path.Combine(kotorDir, "Override", "prestige_fix.2da")), Is.True,
+                    "Folder Move draft should find prestige_fix.2da after extract-style nesting");
+            });
+        }
+
+        [Test]
         public void K2FullGuideFixture_IngestedMultiModInstallSmoke_InstallsViaModSelect()
         {
             string fixturePath = Path.Combine(ResolveRepoRoot(), "src", "ModSync.Tests", "Fixtures", "k2_full_guide.md");

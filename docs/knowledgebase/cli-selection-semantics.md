@@ -34,7 +34,7 @@ Full round-trip (golden URLs + ingested NLP → download → extract → Overrid
 ./scripts/agents/k2_merged_roundtrip_download_install_smoke.sh
 ```
 
-Wraps `K2FullGuideFixture_RoundTripSilentSion_DownloadAndInstalls_LongRunning`. NLP Move drafts for single loose files include nested `<<modDirectory>>/*…/filename` sources so post-extract paths resolve.
+Wraps `K2FullGuideFixture_RoundTripSilentSion_DownloadAndInstalls_LongRunning`. NLP Move drafts for single loose files include nested `<<modDirectory>>/*…/filename` sources so post-extract paths resolve. Folder advisories (e.g. Prestige Class “only install the Jedi Master/Sith Lord fixes”) add nested folder wildcards plus slug/fuzzy variants (`jedimaster_sithlord fixes`) via `DraftInstructionService.BuildFolderMoveSources`.
 
 ## `validate` without `--select` (default)
 
