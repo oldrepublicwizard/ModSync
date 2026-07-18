@@ -52,6 +52,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 | Paste / ingest guide | GUI clipboard; CLI `convert --stdin` / `-i` + `--parse-directions` | Yes (file/stdin); OS clipboard `[UI]` |
 | `modsync://` open/install link | `--modsync=` / URI argv → handoff | Yes (consume); Settings toggle deferred |
 | Run validation | `ValidatePage` or `validate --full` / `--dry-run` | Yes (selection flags differ) |
+| Read/write app settings | Settings UI / `settings.json` | Partial — `settings list|get|set` CLI; theme/spoiler UI still `[UI]` |
 | Fetch downloads | Wizard / `ScrapeDownloadsButton` | Partial — CLI `install -d` / `convert -d`; status/stop `[UI]` |
 | Post-download FOMOD configure | GUI after Fetch Downloads | Yes — CLI TTY / `--fomod-choices` / `--fomod-skip` |
 | FOMOD configure-before-validate/install gate | GUI + Core `FomodConfigurationGate` | Yes — shared fail-closed gate |
@@ -77,7 +78,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 
 | Tool layer | Examples |
 |------------|----------|
-| Atomic CLI verbs | `validate`, `install`, `convert`, `merge`, `holopatcher` |
+| Atomic CLI verbs | `validate`, `install`, `convert`, `merge`, `settings`, `holopatcher` |
 | Composition | `install -d --concurrent --best-effort -y`; `convert --stdin --parse-directions` |
 | Scripts | Thin wrappers (`cli_validate.sh`, `run_headless_tests.sh`, `cli_full_build_pipeline.sh`) |
 
