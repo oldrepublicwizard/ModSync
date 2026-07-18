@@ -11,14 +11,14 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 | Principles scored | 8 / 8 |
 | Weighted average | **73%** |
 | Headless agent readiness | Strong for Core CLI + tests + guide ingest + FOMOD gate + managed CLI overrides |
-| Desktop-only gap | Widescreen/Aspyr, download status UI, profile CRUD UI, ValidatePage presentation polish |
+| Desktop-only gap | Widescreen/Aspyr, download status UI, ValidatePage presentation polish |
 
 ## Capability snapshot (2026-07-17)
 
 | Area | Status | Agent path | Notes |
 |------|--------|------------|-------|
 | Managed install (engine + wizard wiring) | Shipped | Settings `managedDeploymentEnabled` + active profile → `ManagedInstallSession` | See [managed-deployment.md](managed-deployment.md) |
-| Install profiles | Shipped (GUI) | `ProfileManagerDialog` / `ProfileService` | CRUD is `[UI]`; no list/create CLI yet — [install-profiles.md](install-profiles.md) |
+| Install profiles | Shipped | `profile` CLI + `ProfileManagerDialog` / `ProfileService` | CRUD + activate via CLI — [install-profiles.md](install-profiles.md) |
 | CLI `install --managed` / `--no-managed` / `--profile` | Shipped (#177) | `install --managed --profile <name>` / `--no-managed` | Fail-closed without resolvable profile — [core-cli-reference.md](core-cli-reference.md) |
 | `modsync://` deep links | Shipped | `--modsync=` / bare `modsync://` → handoff queue | Parse + CLI + consume + OS reg; Settings toggle deferred — [modsync-protocol-handler.md](modsync-protocol-handler.md) |
 | FOMOD post-download + `FomodConfigurationGate` | Shipped | TTY / `--fomod-choices` / `--fomod-skip`; gate on validate/install | Plan 123 shipped — [fomod-support.md](fomod-support.md) |
@@ -30,7 +30,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 
 | # | Principle | Score | Summary |
 |---|-----------|-------|---------|
-| 1 | **Parity** | 20/25 (80%) | FOMOD CLI + gate, guide ingest, and managed `--managed`/`--profile` (#177) closed major gaps; profile CRUD still GUI-only. |
+| 1 | **Parity** | 20/25 (80%) | FOMOD CLI + gate, guide ingest, managed `--managed`/`--profile` (#177), and `profile` CRUD verb closed major gaps. |
 | 2 | **Granularity** | 16/20 (80%) | CLI verbs are composable; scripts wrap common combos without hiding primitives. |
 | 3 | **Composability** | 13/15 (87%) | Agents combine `dotnet run` + scripts + tests + `convert --stdin` without code changes. |
 | 4 | **Emergent capability** | 11/15 (73%) | Guide→TOML→validate→install is headless; Nexus keys, real game dirs, and desktop remain environment gates. |
@@ -56,8 +56,8 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 | Post-download FOMOD configure | GUI after Fetch Downloads | Yes — CLI TTY / `--fomod-choices` / `--fomod-skip` |
 | FOMOD configure-before-validate/install gate | GUI + Core `FomodConfigurationGate` | Yes — shared fail-closed gate |
 | Install mods (classic) | Wizard or `install` | Yes |
-| Managed hardlink deploy | Settings + active profile; CLI `--managed` / `--no-managed` / `--profile` (#177) | Yes (install overrides); profile CRUD still GUI |
-| Profile save/activate/CRUD | `ProfileManagerDialog` | Partial — Core `ProfileService` exists; no CLI list/create/delete verbs |
+| Managed hardlink deploy | Settings + active profile; CLI `--managed` / `--no-managed` / `--profile` (#177) | Yes (install overrides + `profile activate`) |
+| Profile save/activate/CRUD | `ProfileManagerDialog` or `profile --action …` | Yes — Core `ProfileService`; CLI list/create/delete/clone/rename/activate |
 | Mod selection / filters | `ModSelectionPage` UI | Partial — CLI `--select` / `--use-file-selection` |
 | Widescreen-only install block | Dynamic wizard pages | No — desktop only |
 | Aspyr notice (K2) | `AspyrNoticePage` | No — desktop only |
@@ -67,7 +67,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 
 **Strengths:** `[REPO]` `ModBuildConverter` covers validate/install/convert/merge; FOMOD Plan 123 + gate; guide paste (#171); `modsync://` Phase 1–2; managed CLI overrides (#177); `install_best_effort.sh` documents a full-build-style headless path.
 
-**Gaps:** `[OPEN]` Profile CRUD and download status remain GUI-centric. Widescreen/Aspyr are `[UI]` only. Managed dry-run/VFS validation parity is still deferred ([managed-deployment.md](managed-deployment.md)).
+**Gaps:** `[OPEN]` Download status remains GUI-centric. Widescreen/Aspyr are `[UI]` only. Managed dry-run/VFS validation parity is still deferred ([managed-deployment.md](managed-deployment.md)).
 
 **Recommendations (Tier 1):** Keep [agent-action-parity.md](agent-action-parity.md) and [core-cli-reference.md](core-cli-reference.md) current when wizard pages or install flags change.
 
@@ -77,7 +77,7 @@ This product is a **desktop mod installer**, not a web agent host. Scores reflec
 
 | Tool layer | Examples |
 |------------|----------|
-| Atomic CLI verbs | `validate`, `install`, `convert`, `merge`, `holopatcher` |
+| Atomic CLI verbs | `validate`, `install`, `convert`, `merge`, `profile`, `holopatcher` |
 | Composition | `install -d --concurrent --best-effort -y`; `convert --stdin --parse-directions` |
 | Scripts | Thin wrappers (`cli_validate.sh`, `run_headless_tests.sh`, `cli_full_build_pipeline.sh`) |
 
@@ -97,7 +97,7 @@ Agents can assemble workflows from:
 - `mod-builds` TOMLs / markdown guides at repo root
 - `modsync://` URLs for instruction fetch/handoff
 
-**Gaps:** No MCP tools inside the app; MCP wrappers in `scripts/agents/mcp_*.sh` are optional IDE tooling, not product features. Profile CRUD still requires GUI or direct JSON under `{settingsDir}/profiles/`.
+**Gaps:** No MCP tools inside the app; MCP wrappers in `scripts/agents/mcp_*.sh` are optional IDE tooling, not product features.
 
 ---
 
@@ -152,11 +152,10 @@ Files are the interface: instruction TOMLs, ingested drafts under `tmp/`, `tmp/k
 
 ## Top agent-native gaps (2026-07-17)
 
-1. **Profile CRUD** — save/activate/clone/rename/delete only via `ProfileManagerDialog` `[UI]`; no `profile` CLI verb (install can select an existing profile via `--profile`).
-2. **Download status / stop** — CLI can download; live progress and stop controls are `[UI]` only.
-3. **Widescreen + Aspyr flows** — K2 wizard-only pages; no CLI equivalent.
-4. **Managed dry-run / VFS validation parity** — deferred `[OPEN]` in [managed-deployment.md](managed-deployment.md); classic VFS validate does not fully model managed staging/deploy.
-5. **Validation presentation / machine output** — stage-card UX / copy-report / go-to-first-issue remain `[UI]`; no structured JSON validation report for agents.
+1. **Download status / stop** — CLI can download; live progress and stop controls are `[UI]` only.
+2. **Widescreen + Aspyr flows** — K2 wizard-only pages; no CLI equivalent.
+3. **Managed dry-run / VFS validation parity** — deferred `[OPEN]` in [managed-deployment.md](managed-deployment.md); classic VFS validate does not fully model managed staging/deploy.
+4. **Validation presentation / machine output** — stage-card UX / copy-report / go-to-first-issue remain `[UI]`; no structured JSON validation report for agents.
 
 Honorable mentions: OS clipboard paste still `[UI]` (stdin/file ingest covers agents); `modsync://` Settings checkbox deferred.
 
@@ -168,7 +167,7 @@ Honorable mentions: OS clipboard paste still `[UI]` (stdin/file ingest covers ag
 2. **Tier 1:** Treat GUI-only flows as `[UI]` in plans; check [agent-action-parity.md](agent-action-parity.md) before assuming headless parity.
 3. **Tier 2:** When adding wizard steps, add a CLI or script path—or document the gap in the parity matrix.
 4. **Tier 2:** Close managed dry-run/VFS validation parity ([plan 004](../plans/2026-07-13-004-managed-deployment-validation-plan.md)).
-5. **Tier 3:** Optional: structured JSON validation output; CLI profile list/create/activate verbs.
+5. **Tier 3:** Optional: structured JSON validation output.
 
 ## Strengths summary
 

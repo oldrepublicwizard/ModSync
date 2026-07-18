@@ -183,6 +183,38 @@ dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "Name~AutoGenerateLo
 
 ---
 
+### `profile`
+
+Manage install profiles under `{settingsDir}/profiles/` via `ProfileService` (same storage as `ProfileManagerDialog`).
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `-a` / `--action` | Yes | `list`, `show`, `create`, `delete`, `activate`, `clone`, `rename` |
+| `-n` / `--name` | For create/delete/activate/show | Profile name |
+| `--from` | For clone/rename | Source profile name (or use `--name` as source) |
+| `--to` | For clone/rename | Target profile name |
+| `--settings-dir` | No | ModSync settings directory (default: platform AppData / `~/.config/ModSync`) |
+| `--json` | No | JSON output for `list` and `show` |
+
+**Examples:**
+
+```bash
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  profile --action create --name "K2 Full Build" --settings-dir ./tmp/modsync_settings
+
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  profile --action activate --name "K2 Full Build" --settings-dir ./tmp/modsync_settings
+
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  profile --action list --json --settings-dir ./tmp/modsync_settings
+```
+
+`activate` writes `activeProfileName` to `settings.json` (same field used by managed deploy). See [install-profiles.md](install-profiles.md).
+
+**Tests:** `dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~ProfileCliTests"`
+
+---
+
 ### `set-nexus-api-key`
 
 Store and optionally validate a Nexus Mods API key.

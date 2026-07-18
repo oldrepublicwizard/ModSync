@@ -31,6 +31,23 @@ directories into the existing static `MainConfig` via its instance accessors
 untouched. The stored `InstructionFilePath` is informational; activation does not
 auto-load the instruction file.
 
+## CLI
+
+Headless agents use the `profile` verb on `ModBuildConverter` (same `ProfileService` storage as the GUI):
+
+```bash
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  profile --action list --settings-dir ./tmp/modsync_settings
+
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  profile --action create --name "My Build" --settings-dir ./tmp/modsync_settings
+
+dotnet run --project src/ModSync.Core/ModSync.Core.csproj -f net9.0 -- \
+  profile --action activate --name "My Build" --settings-dir ./tmp/modsync_settings
+```
+
+Actions: `list`, `show`, `create`, `delete`, `activate`, `clone`, `rename`. Use `--json` on `list`/`show` for machine-readable output. See [core-cli-reference.md](core-cli-reference.md).
+
 ## GUI
 
 `src/ModSync.GUI/Dialogs/ProfileManagerDialog.axaml(.cs)` lists profiles with
@@ -50,6 +67,9 @@ the global context menu.
 capture/apply against real `ModComponent` instances and `MainConfig` (statics saved and
 restored per test), filename sanitization, corrupt-file skipping.
 
+`src/ModSync.Tests/ProfileCliTests.cs`: CLI `profile` verb create/delete/activate/clone/rename.
+
 ```bash
 dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~ProfileService"
+dotnet test src/ModSync.Tests/ModSync.Tests.csproj --filter "FullyQualifiedName~ProfileCliTests"
 ```
